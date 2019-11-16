@@ -95,7 +95,7 @@ namespace PointCloudClassification {
 			}
 		}
 
-		void backward(float learningRate, float *incomingGradient, float *outgoingGradient) {
+		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
 
 			float *weightTranspose;
 			cudaMalloc((void**)&weightTranspose, inputDim * outputDim * sizeof(float));

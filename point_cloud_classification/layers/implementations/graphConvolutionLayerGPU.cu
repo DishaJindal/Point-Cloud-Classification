@@ -49,7 +49,7 @@ namespace PointCloudClassification {
 			
 		}
 
-		void backward(float learningRate, float *incomingGradient, float *outgoingGradient) {
+		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
 
 			
 		}

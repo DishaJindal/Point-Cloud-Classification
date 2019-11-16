@@ -8,8 +8,29 @@
 namespace PointCloudClassification {
 	class GraphConvolutionLayer : public Layer {
 		protected : 
-			float *weight = NULL;
-			float *inputs = NULL;
+			/* 
+				Weight matrix
+			*/
+			float *W = NULL;
+			/* 
+				Derivative w.r.t. weight matrix
+			*/
+			float *dW = NULL;
+
+			/* 
+				Input
+			*/
+			float *A = NULL;
+			/* 
+				Derivative w.r.t. input
+			*/
+			float *dA = NULL;
+			/* 
+				Output of this layer
+			*/
+			float *Z = NULL;
+			
+
 			int inputDim;
 			int batchDim;
 			int outputDim;
@@ -33,6 +54,6 @@ namespace PointCloudClassification {
 		}
 		
 		void forward(float *input, float *output, bool test = false);
-		void backward(float learningRate, float *incomingGradient, float *outgoingGradient);
+		void backward(float *incomingGradient, float *outgoingGradient, float learningRate);
 	};
 }

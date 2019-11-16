@@ -6,6 +6,7 @@ set(SOURCE_FILES
 	"RELUActivationLayer.h"
 	"sigmoidActivationLayer.h"
 	"softmaxActivationLayer.h"
+	"crossEntropyLoss.h"
 )
 
 include_directories(.)

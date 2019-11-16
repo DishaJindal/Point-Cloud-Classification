@@ -1,7 +1,7 @@
 #include "common.h"
 #include "../../utilities/kernels.h"
 #include "../layer.h"
-#include "../sigmoidActivationLayer.h"
+#include "../crossEntropyLoss.h"
 #include <fstream>
 #include <string>
 
@@ -27,11 +27,11 @@ namespace PointCloudClassification {
 		}
 	}
 
-	class sigmoidActivationLayerCPU : public sigmoidActivationLayer {
-		sigmoidActivationLayerCPU() {};
+	class CrossEntropyLossCPU : public CrossEntropyLoss {
+		CrossEntropyLossCPU() {};
 
-		sigmoidActivationLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer);
+		CrossEntropyLossCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
+			CrossEntropyLoss(inputDim, outputDim, batchDim, lastLayer);
 		}
 
 		void forward(float *inputArg, float *outputArg, bool test) {

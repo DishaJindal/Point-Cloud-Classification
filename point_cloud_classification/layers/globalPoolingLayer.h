@@ -8,8 +8,20 @@
 namespace PointCloudClassification {
 	class GlobalPoolingLayer : public Layer {
 		protected : 
-			float *weight = NULL;
-			float *inputs = NULL;
+			/* 
+				Input
+			*/
+			float *Z = NULL;
+			/* 
+				Derivative w.r.t. input
+			*/
+			float *dZ = NULL;
+			/* 
+				Output of this layer
+			*/
+			float *A = NULL;
+			
+
 			int inputDim;
 			int batchDim;
 			int outputDim;
@@ -33,6 +45,6 @@ namespace PointCloudClassification {
 		}
 		
 		void forward(float *input, float *output, bool test = false);
-		void backward(float learningRate, float *incomingGradient, float *outgoingGradient);
+		void backward(float *incomingGradient, float *outgoingGradient, float learningRate);
 	};
 }

@@ -11,6 +11,8 @@ set(SOURCE_FILES
 	"RELUActivationLayerGPU.cu"
 	"sigmoidActivationLayerGPU.cu"
 	"softmaxActivationLayerGPU.cu"
+	"crossEntropyLossCPU.cu"
+	"crossEntropyLossGPU.cu"
 )
 
 cuda_add_library(implementations

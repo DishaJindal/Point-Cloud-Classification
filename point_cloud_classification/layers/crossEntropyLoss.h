@@ -6,20 +6,20 @@
 #include <math.h>
 
 namespace PointCloudClassification {
-	class RELUActivationLayer : public Layer {
+	class CrossEntropyLoss : public Layer {
 		protected : 
 			/* 
 				Input
 			*/
-			float *Z = NULL;
+			float *A = NULL;
 			/* 
 				Derivative w.r.t. input
 			*/
-			float *dZ = NULL;
+			float *dA = NULL;
 			/* 
 				Output of this layer
 			*/
-			float *A = NULL;
+			float *L = NULL;
 			
 
 			int inputDim;
@@ -28,8 +28,8 @@ namespace PointCloudClassification {
 			bool lastLayer;
 
 		public:
-			RELUActivationLayer() {};
-			RELUActivationLayer(int inputDim, int outputDim, int batchDim, bool lastLayer) {
+			CrossEntropyLoss() {};
+			CrossEntropyLoss(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 				this->inputDim = inputDim;
 				this->outputDim = outputDim;
 				this->batchDim = batchDim;

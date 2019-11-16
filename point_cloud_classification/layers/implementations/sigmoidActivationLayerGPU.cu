@@ -41,5 +41,13 @@ namespace PointCloudClassification {
 			cudaMemcpy(weight, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 			cudaMalloc((void**)&inputs, inputDim * batchDim * sizeof(float));
 		}
+
+		void forward(float *inputArg, float *outputArg, bool test) {
+
+		}
+
+		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
+
+		}
 	};
 }
