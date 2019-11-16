@@ -3,6 +3,9 @@ set(SOURCE_FILES
 	"fullyConnectedLayer.h"
 	"graphConvolutionLayer.h"
 	"globalPoolingLayer.h"
+	"RELUActivationLayer.h"
+	"sigmoidActivationLayer.h"
+	"softmaxActivationLayer.h"
 )
 
 include_directories(.)

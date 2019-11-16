@@ -1,7 +1,7 @@
 #include "common.h"
 #include "../../utilities/kernels.h"
 #include "../layer.h"
-#include "../graphConvolutionLayer.h"
+#include "../sigmoidActivationLayer.h"
 #include <fstream>
 #include <string>
 
@@ -27,12 +27,11 @@ namespace PointCloudClassification {
 		}
 	}
 
-	class GraphConvolutionLayerCPU : public GraphConvolutionLayer {
-		GraphConvolutionLayerCPU() {};
+	class sigmoidActivationLayerCPU : public sigmoidActivationLayer {
+		sigmoidActivationLayerCPU() {};
 
-	public:
-		GraphConvolutionLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			GraphConvolutionLayer(inputDim, outputDim, batchDim, lastLayer);
+		sigmoidActivationLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
+			sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer);
 		}
 
 		void forward(float *inputArg, float *outputArg, bool test) {

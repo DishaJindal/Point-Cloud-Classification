@@ -3,7 +3,7 @@
 #include "common.h"
 #include "../../utilities/kernels.h"
 #include "../layer.h"
-#include "../globalPoolingLayer.h"
+#include "../sigmoidActivationLayer.h"
 #include <fstream>
 #include <string>
 #include "device_launch_parameters.h"
@@ -22,9 +22,6 @@ namespace PointCloudClassification {
         return timer;
     }
 
-	
-
-
 	void genArray(int n, float *a) {
 		srand(11);
 
@@ -33,27 +30,16 @@ namespace PointCloudClassification {
 		}
 	}
 
-	class GlobalPoolingLayerGPU : public GlobalPoolingLayer {
-		GlobalPoolingLayerGPU() {};
-		
-	public:
-		GlobalPoolingLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			GlobalPoolingLayer(inputDim, outputDim, batchDim, lastLayer);
+	class sigmoidActivationLayerGPU : public sigmoidActivationLayer {
+		sigmoidActivationLayerGPU() {};
+
+		sigmoidActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
+			sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer);
 			cudaMalloc((void **)&weight, inputDim * outputDim * sizeof(float));
 			float *weightRand = new float[inputDim * outputDim];
 			genArray(inputDim * outputDim, weightRand);
 			cudaMemcpy(weight, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 			cudaMalloc((void**)&inputs, inputDim * batchDim * sizeof(float));
-		}
-
-
-		void forward(float *inputArg, float *outputArg, bool test) {
-			
-		}
-
-		void backward(float learningRate, float *incomingGradient, float *outgoingGradient) {
-
-			
 		}
 	};
 }

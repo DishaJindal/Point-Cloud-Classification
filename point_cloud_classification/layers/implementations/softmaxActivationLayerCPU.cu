@@ -1,7 +1,7 @@
 #include "common.h"
 #include "../../utilities/kernels.h"
 #include "../layer.h"
-#include "../graphConvolutionLayer.h"
+#include "../softmaxActivationLayer.h"
 #include <fstream>
 #include <string>
 
@@ -27,12 +27,11 @@ namespace PointCloudClassification {
 		}
 	}
 
-	class GraphConvolutionLayerCPU : public GraphConvolutionLayer {
-		GraphConvolutionLayerCPU() {};
+	class softmaxActivationLayerCPU : public softmaxActivationLayer {
+		softmaxActivationLayerCPU() {};
 
-	public:
-		GraphConvolutionLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			GraphConvolutionLayer(inputDim, outputDim, batchDim, lastLayer);
+		softmaxActivationLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
+			softmaxActivationLayer(inputDim, outputDim, batchDim, lastLayer);
 		}
 
 		void forward(float *inputArg, float *outputArg, bool test) {

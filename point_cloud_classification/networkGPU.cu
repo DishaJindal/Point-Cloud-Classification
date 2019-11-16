@@ -137,8 +137,6 @@ namespace PointCloudClassification {
 			cudaFree(outgoingGradient);
 		}
 		cudaFree(incomingGradient);
-
-
 	}
 
 

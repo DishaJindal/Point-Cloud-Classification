@@ -6,7 +6,6 @@
 #include <math.h>
 
 namespace PointCloudClassification {
-    Common::PerformanceTimer& timer();
 	class FullyConnectedLayer : public Layer {
 		protected : 
 			float *weight = NULL;

@@ -1,12 +1,9 @@
-#include <cuda.h>
-#include <cuda_runtime.h>
 #include "common.h"
 #include "../../utilities/kernels.h"
 #include "../layer.h"
 #include "../globalPoolingLayer.h"
 #include <fstream>
 #include <string>
-#include "device_launch_parameters.h"
 
 #ifndef imax
 #define imax(a,b) (((a)>(b))?(a):(b))
@@ -36,11 +33,6 @@ namespace PointCloudClassification {
 	public: 
 		GlobalPoolingLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			GlobalPoolingLayer(inputDim, outputDim, batchDim, lastLayer);
-			cudaMalloc((void **)&weight, inputDim * outputDim * sizeof(float));
-			float *weightRand = new float[inputDim * outputDim];
-			genArray(inputDim * outputDim, weightRand);
-			cudaMemcpy(weight, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
-			cudaMalloc((void**)&inputs, inputDim * batchDim * sizeof(float));
 		}
 
 		void forward(float *inputArg, float *outputArg, bool test) {

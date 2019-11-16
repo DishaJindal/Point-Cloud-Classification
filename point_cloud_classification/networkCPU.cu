@@ -1,12 +1,9 @@
-#include <cuda.h>
-#include <cuda_runtime.h>
 #include "common.h"
 #include "network.h"
 #include "layers/layer.h"
 #include "layers/implementations/fullyConnectedLayerCPU.cu"
 #include <fstream>
 #include <string>
-#include "device_launch_parameters.h"
 
 #ifndef imax
 #define imax(a,b) (((a)>(b))?(a):(b))
