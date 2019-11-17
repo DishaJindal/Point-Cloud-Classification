@@ -44,10 +44,29 @@ namespace PointCloudClassification {
 		void forward(float *inputArg, float *outputArg, bool test) {
 			MatrixCPU* m = new MatrixCPU();
 			m->multiply(inputArg, W, batchDim, inputDim, outputDim, outputArg);
+
+			// Store input and output of this layer
+			memcpy(A, inputArg, batchDim * inputDim * sizeof(float));
+			memcpy(Z, outputArg, batchDim * outputDim * sizeof(float));
 		}
 
+		/*
+			outgoingGradient = incomingGradient x W.T
+			dW = A.T x incomingGradient
+		*/
 		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
+			MatrixCPU* m = new MatrixCPU();
+			
+			// Compute gradient w.r.t weights
+			float *ATranspose = (float*) malloc(inputDim * batchDim * sizeof(float));
+			m->transpose(A, batchDim, inputDim, ATranspose);
+			m->multiply(ATranspose, incomingGradient, inputDim, batchDim, outputDim, dW);
 
+			// Compute outgoingGradient (w.r.t. input)
+			m->multiplyTranspose(incomingGradient, W, batchDim, outputDim, inputDim, outgoingGradient);
+
+			//Update weight matrix
+			m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
 		}
 	};
 }

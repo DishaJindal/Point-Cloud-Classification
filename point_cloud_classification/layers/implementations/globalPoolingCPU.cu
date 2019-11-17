@@ -35,6 +35,11 @@ namespace PointCloudClassification {
 			GlobalPoolingLayer(inputDim, outputDim, batchDim, lastLayer);
 		}
 
+		/*
+			inputArg -> N x D (N - number of points per sample)
+			outputArg -> 1 x D
+			Takes maximum across all points
+		*/
 		void forward(float *inputArg, float *outputArg, bool test) {
 
 		}

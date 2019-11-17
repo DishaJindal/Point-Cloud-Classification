@@ -14,19 +14,19 @@
 namespace PointCloudClassification {
     using Common::PerformanceTimer;
 
-	float GraphConvolutionNetworkCPU::loss(float *label, float *predicted) {
-		return 0;
-	}
-
-	GraphConvolutionNetworkGPU::GraphConvolutionNetworkGPU(int inputDim, int numHiddenLayers, int *hiddenDim, int outputDim, int batchDim) {
+	GraphConvolutionNetworkGPU::GraphConvolutionNetworkCPU(int inputDim, int outputDim, int batchDim) {
 
 	}
 
-	void GraphConvolutionNetworkGPU::forward(float *input, float *output, bool test) {
+	void GraphConvolutionNetworkGPU::addLayer(Layer* layer){
+		this->layers.push_back(layer);
+	}
+
+	void GraphConvolutionNetworkGPU::forward(float *input, float *prediction, bool test) {
 
 	}
 
-	void GraphConvolutionNetworkGPU::backward(float *label, float *predicted, float learningRate) {
+	void GraphConvolutionNetworkGPU::backward(float *trueLabel, float *prediction, Loss *loss, float learningRate) {
 
 	}
 }

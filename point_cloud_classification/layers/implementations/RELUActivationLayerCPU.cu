@@ -34,12 +34,26 @@ namespace PointCloudClassification {
 			RELUActivationLayer(inputDim, outputDim, batchDim, lastLayer);
 		}
 
+		/*
+			inputArg -> batchDim x inputDim
+			outputArg -> batchDim x inputDim
+		*/
 		void forward(float *inputArg, float *outputArg, bool test) {
-
+			for(int i = 0; i < batchDim; i++){
+				for(int j = 0; j < inputDim; j++){
+					outputArg[i * inputDim + j] = imax(inputArg[i * inputDim + j], 0);
+					A[i * inputDim + j] = outputArg[i * inputDim + j];
+					Z[i * inputDim + j] = inputArg[i * inputDim + j];
+				}
+			}
 		}
 
 		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
-
+			for(int i = 0; i < batchDim; i++){
+				for(int j = 0; j < inputDim; j++){
+					outgoingGradient[i * inputDim + j] = (Z[i * inputDim + j] > 0) ? incomingGradient[i * inputDim + j] : 0;
+				}
+			}
 		}
 	};
 }

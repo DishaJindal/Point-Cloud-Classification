@@ -32,16 +32,22 @@ namespace PointCloudClassification {
 			
 
 			int inputDim;
-			int batchDim;
 			int outputDim;
+
+			int batchDim;
+			int numPoints;
+			int numFilters;
+
 			bool lastLayer;
 
 	public:
 		GraphConvolutionLayer() {};
-		GraphConvolutionLayer(int inputDim, int outputDim, int batchDim, bool lastLayer) {
+		GraphConvolutionLayer(int numPoints, int inputDim, int outputDim, int batchDim, int numFilters, bool lastLayer) {
+			this->numPoints = numPoints;
 			this->inputDim = inputDim;
 			this->outputDim = outputDim;
 			this->batchDim = batchDim;
+			this->numFilters = numFilters;
 			this->lastLayer = lastLayer;
 		}
 

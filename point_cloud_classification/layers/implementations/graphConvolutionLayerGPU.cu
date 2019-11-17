@@ -35,8 +35,8 @@ namespace PointCloudClassification {
 		GraphConvolutionLayerGPU() {};
 		
 	public:
-		GraphConvolutionLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			GraphConvolutionLayer(inputDim, outputDim, batchDim, lastLayer);
+		GraphConvolutionLayerGPU(int numPoints, int inputDim, int outputDim, int batchDim, int numFilters, bool lastLayer) {
+			GraphConvolutionLayer(numPoints, inputDim, outputDim, batchDim, numFilters, lastLayer);
 		}
 
 

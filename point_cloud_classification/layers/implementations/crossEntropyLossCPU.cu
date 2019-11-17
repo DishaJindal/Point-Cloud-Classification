@@ -29,17 +29,14 @@ namespace PointCloudClassification {
 
 	class CrossEntropyLossCPU : public CrossEntropyLoss {
 		CrossEntropyLossCPU() {};
-
-		CrossEntropyLossCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			CrossEntropyLoss(inputDim, outputDim, batchDim, lastLayer);
+		
+		float cost(float *prediction, float *trueLabel, int batchDim, int numClasses) {
+			
 		}
 
-		void forward(float *inputArg, float *outputArg, bool test) {
-
-		}
-
-		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
-
+		void dcost(float *prediction, float *trueLabel, float *gradient, int batchDim, int numClasses) {
+			MatrixCPU* m = new MatrixCPU();
+			m->subtract(trueLabel, prediction, batchDim, numClasses, gradient);
 		}
 	};
 }

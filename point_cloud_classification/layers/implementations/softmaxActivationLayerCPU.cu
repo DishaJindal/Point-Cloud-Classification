@@ -34,7 +34,28 @@ namespace PointCloudClassification {
 			softmaxActivationLayer(inputDim, outputDim, batchDim, lastLayer);
 		}
 
+		/*
+			inputArg -> batchDim x inputDim
+			outputArg -> batchDim x inputDim
+		*/
 		void forward(float *inputArg, float *outputArg, bool test) {
+			float* sum = (float*) malloc(batchDim * sizeof(float));
+			for(int i = 0; i < batchDim; i++){
+				sum[i] = 0;
+				for(int j = 0; j < inputDim; j++){
+					float res = exp(inputArg[i * inputDim + j]);
+					sum[i] += res;
+					outputArg[i * inputDim + j] = res;
+				}
+			}
+
+			for(int i = 0; i < batchDim; i++){
+				for(int j = 0; j < inputDim; j++){
+					outputArg[i * inputDim + j] /= sum[i];
+					A[i * inputDim + j] = outputArg[i * inputDim + j];
+					Z[i * inputDim + j] = inputArg[i * inputDim + j];
+				}
+			}
 
 		}
 
