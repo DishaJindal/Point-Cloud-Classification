@@ -9,7 +9,7 @@ namespace PointCloudClassification {
 	class FullyConnectedLayer : public Layer {
 		protected :
 			/* 
-				Weight matrix
+				Weight matrix - (inputDim x outputDim)
 			*/
 			float *W = NULL;
 			/* 
@@ -18,7 +18,7 @@ namespace PointCloudClassification {
 			float *dW = NULL;
 
 			/* 
-				Input
+				Input - (batchDim x inputDim)
 			*/
 			float *A = NULL;
 			/* 
@@ -26,7 +26,7 @@ namespace PointCloudClassification {
 			*/
 			float *dA = NULL;
 			/* 
-				Output of this layer
+				Output of this layer - (batchDim x outputDim)
 			*/
 			float *Z = NULL;
 			

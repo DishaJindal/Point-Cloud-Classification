@@ -37,11 +37,6 @@ namespace PointCloudClassification {
 	public:
 		GraphConvolutionLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			GraphConvolutionLayer(inputDim, outputDim, batchDim, lastLayer);
-			cudaMalloc((void **)&weight, inputDim * outputDim * sizeof(float));
-			float *weightRand = new float[inputDim * outputDim];
-			genArray(inputDim * outputDim, weightRand);
-			cudaMemcpy(weight, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
-			cudaMalloc((void**)&inputs, inputDim * batchDim * sizeof(float));
 		}
 
 

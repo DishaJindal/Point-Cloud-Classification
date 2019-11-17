@@ -10,8 +10,11 @@
 
 class Matrix{
 public:
-	void multiply(float* A, float* B, float* output);
-	void add(float* A, float* B, float* output);
-	void subtract(float* A, float* B, float* output);
-	void printMatrix(float* A);
-}
+	virtual void multiply(float* A, float* B, int m, int n, int p, float* output) = 0;
+	virtual void add(float* A, float* B, int m, int n, float* output) = 0;
+	virtual void subtract(float* A, float* B, int m, int n, float* output) = 0;
+	virtual void printMatrix(float* A, int m, int n) = 0;
+};
+
+
+

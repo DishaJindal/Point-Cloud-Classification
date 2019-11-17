@@ -39,19 +39,19 @@ namespace PointCloudClassification {
 	public:
 		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer);
-			cudaMalloc((void **)&weight, inputDim * outputDim * sizeof(float));
+			cudaMalloc((void **)&W, inputDim * outputDim * sizeof(float));
 			float *weightRand = new float[inputDim * outputDim];
 			genArray(inputDim * outputDim, weightRand);
-			cudaMemcpy(weight, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
-			cudaMalloc((void**)&inputs, inputDim * batchDim * sizeof(float));
+			cudaMemcpy(W, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
+			cudaMalloc((void**)&A, inputDim * batchDim * sizeof(float));
 		}
 
 
 		void forward(float *inputArg, float *outputArg, bool test) {
-			cudaMemcpy(inputs, inputArg, batchDim * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+			cudaMemcpy(A, inputArg, batchDim * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 			int gridRows = (batchDim*outputDim + blockSize - 1) / blockSize;
 
-			Utilities::kernMultiplyMatrices<<<gridRows, blockSize >>>(inputArg, weight, outputArg, batchDim, inputDim, outputDim);
+			Utilities::kernMultiplyMatrices<<<gridRows, blockSize >>>(inputArg, W, outputArg, batchDim, inputDim, outputDim);
 			checkCUDAError("kernMultiplyMatrices");
 
 			dim3 fullBlocksPerGrid((outputDim*batchDim + blockSize - 1) / blockSize);
@@ -84,7 +84,7 @@ namespace PointCloudClassification {
 			if (test) {
 				printf("\n\n\tWeights : ");
 				float *tempWeight = new float[inputDim * outputDim];
-				cudaMemcpy(tempWeight, weight, inputDim * outputDim * sizeof(float), cudaMemcpyDeviceToHost);
+				cudaMemcpy(tempWeight, W, inputDim * outputDim * sizeof(float), cudaMemcpyDeviceToHost);
 				for (int i = 0; i < inputDim * outputDim; i++) {
 					if (i % outputDim == 0) {
 						printf("\n\t\t");
@@ -102,7 +102,7 @@ namespace PointCloudClassification {
 			checkCUDAError("cudaMalloc");
 
 			int gridRows = (inputDim*outputDim + blockSize - 1) / blockSize;
-			Utilities::kernTransposeMatrices << <gridRows, blockSize >> > (weight, weightTranspose, inputDim, outputDim);
+			Utilities::kernTransposeMatrices << <gridRows, blockSize >> > (W, weightTranspose, inputDim, outputDim);
 			checkCUDAError("kernTransposeMatrices");
 
 			float *outgoingGradientLocal;
@@ -120,7 +120,7 @@ namespace PointCloudClassification {
 			float *inputDerivatived;
 			cudaMalloc((void**)&inputDerivatived, batchDim * inputDim * sizeof(float));
 			dim3 fullBlocksPerGrid((inputDim * batchDim + blockSize - 1) / blockSize);
-			Utilities::kernActivateReLUDerivative << <fullBlocksPerGrid, blockSize >> > (inputs, inputDerivatived, inputDim * batchDim);
+			Utilities::kernActivateReLUDerivative << <fullBlocksPerGrid, blockSize >> > (A, inputDerivatived, inputDim * batchDim);
 			checkCUDAError("kernActivateReLUDerivative");
 
 
@@ -136,7 +136,7 @@ namespace PointCloudClassification {
 			cudaMalloc((void**)&inputTranspose, inputDim * batchDim * sizeof(float));
 
 			gridRows = (inputDim*batchDim + blockSize - 1) / blockSize;
-			Utilities::kernTransposeMatrices << <gridRows, blockSize >> > (inputs, inputTranspose, batchDim, inputDim);
+			Utilities::kernTransposeMatrices << <gridRows, blockSize >> > (A, inputTranspose, batchDim, inputDim);
 			checkCUDAError("kernTransposeMatrices");
 
 			float *gradient;
@@ -153,7 +153,7 @@ namespace PointCloudClassification {
 			checkCUDAError("kernMultMatricesWithScalar");
 
 
-			Utilities::kernSubtractMatrices << <gridRows, blockSize >> > (weight, gradient, weight, inputDim, outputDim);
+			Utilities::kernSubtractMatrices << <gridRows, blockSize >> > (W, gradient, W, inputDim, outputDim);
 			checkCUDAError("kernSubtractMatrices");
 
 			cudaFree(gradient);

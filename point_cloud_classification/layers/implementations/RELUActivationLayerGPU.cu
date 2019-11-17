@@ -35,11 +35,7 @@ namespace PointCloudClassification {
 
 		RELUActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			RELUActivationLayer(inputDim, outputDim, batchDim, lastLayer);
-			cudaMalloc((void **)&weight, inputDim * outputDim * sizeof(float));
-			float *weightRand = new float[inputDim * outputDim];
-			genArray(inputDim * outputDim, weightRand);
-			cudaMemcpy(weight, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
-			cudaMalloc((void**)&inputs, inputDim * batchDim * sizeof(float));
+
 		}
 
 		void forward(float *inputArg, float *outputArg, bool test) {

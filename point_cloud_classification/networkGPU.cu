@@ -127,7 +127,7 @@ namespace PointCloudClassification {
 		for (int i = layers.size() - 1; i >= 0; i--) {
 			cudaMalloc((void**)&outgoingGradient, batchDim*layers[i]->getInputDim() * sizeof(float));
 			checkCUDAError("cudaMalloc");
-			layers[i]->backward(learningRate, incomingGradient, outgoingGradient);
+			layers[i]->backward(incomingGradient, outgoingGradient, learningRate);
 			cudaFree(incomingGradient);
 			checkCUDAError("cudaFree");
 			cudaMalloc((void**)&incomingGradient, batchDim*layers[i]->getInputDim() * sizeof(float));

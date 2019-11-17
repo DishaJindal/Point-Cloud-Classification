@@ -4,6 +4,7 @@
 #include "../fullyConnectedLayer.h"
 #include <fstream>
 #include <string>
+#include "../../utilities/matrixCPU.cu"
 
 #ifndef imax
 #define imax(a,b) (((a)>(b))?(a):(b))
@@ -32,10 +33,17 @@ namespace PointCloudClassification {
 
 		FullyConnectedLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer);
+
+			// Randomly initialize weight matrix
+			genArray(inputDim * outputDim, W);
 		}
 
+		/*
+			outputArg = inputArg x W
+		*/
 		void forward(float *inputArg, float *outputArg, bool test) {
-
+			MatrixCPU* m = new MatrixCPU();
+			m->multiply(inputArg, W, batchDim, inputDim, outputDim, outputArg);
 		}
 
 		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
