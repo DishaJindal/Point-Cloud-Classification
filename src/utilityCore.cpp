@@ -206,26 +206,43 @@ std::vector<glm::vec3> utilityCore::readPointCloud(std::string filename) {
 
 std::vector<glm::vec3> utilityCore::farthestSample(std::vector<glm::vec3> &points, int numOfSamplePoints) {
 	std::vector<glm::vec3> sampledPoints;
-	int numPoints = points.size();
 	sampledPoints.push_back(points[0]);
 	for (int i = 1; i < numOfSamplePoints; i++) {
 		glm::vec3 farthestPoint = sampledPoints[0];
 		float maxDistance = 0;
-		for (int j = 0; j < numPoints; j++) {
-			if (std::find(sampledPoints.begin(), sampledPoints.end(),points[j]) != sampledPoints.end()) continue;
+		int index = 0;
+		for (int j = 0; j < points.size(); j++) {
 			float minDistance = INT_MAX;
 			for (int k = 0; k < sampledPoints.size(); k++) {
 				float dist = glm::distance(sampledPoints[k], points[j]);
 				if (dist < minDistance) {
 					minDistance = dist;
 				}
+				if (minDistance < maxDistance) {
+					break;
+				}
 			}
 			if (maxDistance < minDistance) {
 				maxDistance = minDistance;
 				farthestPoint = points[j];
+				index = j;
 			}
 		}
+		points.erase(points.begin() + index);
 		sampledPoints.push_back(farthestPoint);
 	}
 	return sampledPoints;
 }
+
+float* utilityCore::convertFromVectorToFloatPtr(std::vector<glm::vec3> &points) {
+	float *convertedPoints;
+	int numPoints = points.size();
+	convertedPoints = new float[numPoints * 3];
+	for (int i = 0; i < numPoints; i++) {
+		for (int j = 0; j < 3; j++) {
+			convertedPoints[i * 3 + j] = points[i][j];
+		}
+	}
+	return convertedPoints;
+}
+
