@@ -26,7 +26,9 @@ add_subdirectory(point_cloud_classification)
 
 cuda_add_executable(${CMAKE_PROJECT_NAME}
     "src/main.cpp"
-	"src/testing_helpers.hpp"
+    "src/testing_helpers.hpp"
+    "src/utilityCore.hpp"
+    "src/utilityCore.cpp"
     )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
