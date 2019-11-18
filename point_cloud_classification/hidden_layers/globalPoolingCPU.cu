@@ -27,7 +27,7 @@ namespace PointCloudClassification {
 			outputArg -> 1 x D
 			Takes maximum across all points
 		*/
-		void forward(float *inputArg, float *outputArg, bool test) {
+		void forward(std::vector<float*> inputArg, std::vector<float*> outputArg, bool test) {
 
 		}
 

@@ -22,7 +22,13 @@ namespace PointCloudClassification {
 		this->layers.push_back(layer);
 	}
 
-	void GraphConvolutionNetworkCPU::forward(float *input, float *prediction, bool test) {
+	void GraphConvolutionNetworkCPU::forward(std::vector<float*> input, std::vector<float*> prediction, bool test) {
+		std::vector<float*> output;
+		for(auto layer: this->layers){
+			layer->forward(input, output, false);
+			input = output;
+		}
+		prediction = output;
 
 	}
 

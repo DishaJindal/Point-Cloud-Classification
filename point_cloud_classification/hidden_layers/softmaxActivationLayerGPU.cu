@@ -23,7 +23,7 @@ namespace PointCloudClassification {
 			softmaxActivationLayer(inputDim, outputDim, batchDim, lastLayer);
 		}
 
-		void forward(float *inputArg, float *outputArg, bool test) {
+		void forward(std::vector<float*> inputArg, std::vector<float*> outputArg, bool test) {
 
 		}
 

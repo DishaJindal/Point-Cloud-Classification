@@ -27,7 +27,14 @@ namespace PointCloudClassification {
 		/*
 			outputArg = inputArg x W
 		*/
-		void FullyConnectedLayer::forward(float *inputArg, float *outputArg, bool test) {
+		void FullyConnectedLayer::forward(std::vector<float*> inputArg, std::vector<float*> outputArg, bool test) {
+			float* flattenedInput = (float*) malloc(batchDim * inputDim * sizeof(float));
+			int i = 0;
+			for(auto current: inputArg){
+				memcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float));
+			}
+			float* flattenedOutput = (float*) malloc(batchDim * outputDim * sizeof(float));
+			
 			MatrixCPU* m = new MatrixCPU();
 			m->multiply(inputArg, W, batchDim, inputDim, outputDim, outputArg);
 

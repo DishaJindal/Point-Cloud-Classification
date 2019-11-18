@@ -59,7 +59,7 @@ namespace PointCloudClassification {
 			return outputDim;
 		}
 		
-		void forward(float *input, float *output, bool test = false);
+		void forward(std::vector<float*> input, fstd::vector<float*> output, bool test = false);
 		void backward(float *incomingGradient, float *outgoingGradient, float learningRate);
 	};
 }
