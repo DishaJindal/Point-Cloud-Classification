@@ -24,7 +24,7 @@ namespace PointCloudClassification {
 			inputArg -> batchDim x inputDim
 			outputArg -> batchDim x inputDim
 		*/
-		void forward(std::vector<float*> inputArg, std::vector<float*> outputArg, bool test) {
+		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
 			// float* sum = (float*) malloc(batchDim * sizeof(float));
 			// for(int i = 0; i < batchDim; i++){
 			// 	sum[i] = 0;

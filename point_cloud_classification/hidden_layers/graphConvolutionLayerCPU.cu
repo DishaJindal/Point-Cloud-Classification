@@ -22,7 +22,7 @@ namespace PointCloudClassification {
 			GraphConvolutionLayer(numPoints, inputDim, outputDim, batchDim, numFilters, lastLayer);
 		}
 
-		void forward(std::vector<float*> inputArg, std::vector<float*> outputArg, bool test) {
+		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
 
 		}
 

@@ -14,25 +14,25 @@
 
 namespace PointCloudClassification {
 
-	GraphConvolutionNetworkCPU::GraphConvolutionNetworkCPU(int inputDim, int outputDim, int batchDim) {
-
+	NetworkCPU::NetworkCPU(int inputFeatures, int numClasses, int batchSize) {
+		this->inputFeatures = inputFeatures;
+		this->numClasses = numClasses;
+		this->batchSize = batchSize;
 	}
 
-	void GraphConvolutionNetworkCPU::addLayer(Layer* layer){
+	void NetworkCPU::addLayer(Layer* layer){
 		this->layers.push_back(layer);
 	}
 
-	void GraphConvolutionNetworkCPU::forward(std::vector<float*> input, std::vector<float*> prediction, bool test) {
-		std::vector<float*> output;
+	std::vector<float*> NetworkCPU::forward(std::vector<float*> input, bool test) {
+		//std::vector<float*> output;
 		for(auto layer: this->layers){
-			layer->forward(input, output, false);
-			input = output;
+			input = layer->forward(input, false);
 		}
-		prediction = output;
-
+		return input;
 	}
 
-	void GraphConvolutionNetworkCPU::backward(float *trueLabel, float *prediction, float learningRate) {
+	void NetworkCPU::backward(float *trueLabel, float *prediction, float learningRate) {
 
 	}
 }

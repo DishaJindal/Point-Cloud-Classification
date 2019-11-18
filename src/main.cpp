@@ -27,13 +27,13 @@ using namespace PointCloudClassification;
 int main(int argc, char* argv[]) {
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
-	vector<float> samples; //Data from file will be stored here
+	vector<float*> samples; //Data from file will be stored here
 
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
 	vector<float*> transformed_inputs;
 	for (int i = 0; i < num_points; i++) {
-		float* current_sample = &samples[i];
+		float* current_sample = samples[i];
 		Graph::Graph g (current_sample, num_points, l1_features, num_neighbours);
 
 		float* A = g.get_A();
@@ -47,6 +47,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	//Build the network
+	PointCloudClassification::NetworkCPU gcn (num_points * l1_features, num_classes, batch_size);
+	gcn.addLayer(new PointCloudClassification::FullyConnectedLayerCPU(num_points * l1_features, 1000, batch_size, false));
+
+	std::vector<float*> op = gcn.forward(samples, false);
 
 	// Train 
 	int number_of_batches = ceil(num_points / batch_size);

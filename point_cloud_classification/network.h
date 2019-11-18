@@ -9,16 +9,19 @@
 namespace PointCloudClassification {
     Common::PerformanceTimer& timer();
 
-	class GraphConvolutionNetworkCPU {
+	class NetworkCPU {
 
 		std::vector<Layer*> layers;
 		Loss *loss;
-		int batchDim;
+		int batchSize;
+		int numClasses;
+		int inputFeatures; //Number of elements in every element of the vector (of batches)
+
 	public :
-		GraphConvolutionNetworkCPU(int inputDim, int outputDim, int batchDim);
+		NetworkCPU(int inputFeatures, int numClasses, int batchSize);
 		void addLayer(Layer* layer);
 
-		void forward(float *input, float *prediction, bool test = false);
+		std::vector<float*> forward(std::vector<float*> input, bool test);
 		void backward(float *trueLabel, float *prediction, float learningRate);
 	};
 

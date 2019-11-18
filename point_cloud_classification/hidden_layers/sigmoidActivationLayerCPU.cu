@@ -33,7 +33,7 @@ namespace PointCloudClassification {
 			inputArg -> batchDim x inputDim
 			outputArg -> batchDim x inputDim
 		*/
-		void forward(std::vector<float*> inputArg, std::vector<float*> outputArg, bool test) {
+		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
 			// for(int i = 0; i < batchDim; i++){
 			// 	for(int j = 0; j < inputDim; j++){
 			// 		outputArg[i * inputDim + j] = sigmoid(inputArg[i * inputDim + j]);
