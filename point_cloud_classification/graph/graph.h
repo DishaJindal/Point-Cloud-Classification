@@ -19,21 +19,21 @@ namespace Graph {
 			  Sorts by distance
 			  Keeps k nearest
 			*/
-			float* find_adj(float *points, int n, int f_in, int k);
+			void fill_adj(float *points, int n, int f_in, int k);
 			
 			/*
 				I − D^(−1/2) * W * (D^(−1/2))
 			*/
-			float* normalize_adj(const float* A);
+			float* normalize_adj(const float* A, int n);
 			
 			/*
 				I - Lnorm
 			*/
-			float* find_laplacian(const float* Anorm);
+			float* find_laplacian(const float* Anorm, int n);
 			
 			/* 
 				Lnorm = 2L/λmax − I
 			*/
-			float* normalize_laplacian(const float* L, const int n);
+			void fill_normalized_laplacian(const float* L, const int n);
 	};
 }
