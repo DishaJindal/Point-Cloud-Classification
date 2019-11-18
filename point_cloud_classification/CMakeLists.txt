@@ -7,9 +7,9 @@ set(SOURCE_FILES
     )
 
 include_directories(.)
-add_subdirectory(layers)
 add_subdirectory(utilities)
 add_subdirectory(graph)
+add_subdirectory(hidden_layers)
 
 cuda_add_library(point_cloud_classification
     ${SOURCE_FILES}
@@ -17,7 +17,7 @@ cuda_add_library(point_cloud_classification
     )
 
 target_link_libraries(point_cloud_classification
-	layers
-	utilities    
+	utilities
 	graph
+	hidden_layers
 	)

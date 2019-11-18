@@ -1,7 +1,9 @@
 #include "common.h"
-#include "../../utilities/kernels.h"
-#include "../layer.h"
-#include "../crossEntropyLoss.h"
+#include "../utilities/kernels.h"
+#include "../utilities/matrix.h"
+#include "../utilities/utils.h"
+#include "layer.h"
+#include "crossEntropyLoss.h"
 #include <fstream>
 #include <string>
 
@@ -12,25 +14,12 @@
 #define blockSize 128
 
 namespace PointCloudClassification {
-    using Common::PerformanceTimer;
-    PerformanceTimer& timer()
-    {
-        static PerformanceTimer timer;
-        return timer;
-    }
-
-	void genArray(int n, float *a) {
-		srand(11);
-
-		for (int i = 0; i < n; i++) {
-			a[i] = ((2 *((rand() * 1.0 )/ RAND_MAX)) - 1) * 0.0002;
-		}
-	}
 
 	class CrossEntropyLossCPU : public CrossEntropyLoss {
 		CrossEntropyLossCPU() {};
 		
 		float cost(float *prediction, float *trueLabel, int batchDim, int numClasses) {
+			return 0;
 			
 		}
 

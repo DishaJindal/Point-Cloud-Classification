@@ -43,11 +43,11 @@ namespace Graph {
 	};
 	
 	float* Graph::normalize_adj(const float* A) {
-
+		return nullptr;
 	};
 
 	float* Graph::find_laplacian(const float* Anorm) {
-
+		return nullptr;
 	};
 
 	float* Graph::normalize_laplacian(const float* L, const int n) {

@@ -1,7 +1,8 @@
 #include "common.h"
 #include "network.h"
-#include "layers/layer.h"
-#include "layers/implementations/fullyConnectedLayerCPU.cu"
+#include "hidden_layers/layer.h"
+#include "hidden_layers/loss.h"
+#include "hidden_layers/fullyConnectedLayerCPU.cu"
 #include <fstream>
 #include <string>
 
@@ -12,21 +13,20 @@
 #define blockSize 128
 
 namespace PointCloudClassification {
-    using Common::PerformanceTimer;
 
-	GraphConvolutionNetworkGPU::GraphConvolutionNetworkCPU(int inputDim, int outputDim, int batchDim) {
+	GraphConvolutionNetworkCPU::GraphConvolutionNetworkCPU(int inputDim, int outputDim, int batchDim) {
 
 	}
 
-	void GraphConvolutionNetworkGPU::addLayer(Layer* layer){
+	void GraphConvolutionNetworkCPU::addLayer(Layer* layer){
 		this->layers.push_back(layer);
 	}
 
-	void GraphConvolutionNetworkGPU::forward(float *input, float *prediction, bool test) {
+	void GraphConvolutionNetworkCPU::forward(float *input, float *prediction, bool test) {
 
 	}
 
-	void GraphConvolutionNetworkGPU::backward(float *trueLabel, float *prediction, Loss *loss, float learningRate) {
+	void GraphConvolutionNetworkCPU::backward(float *trueLabel, float *prediction, Loss *loss, float learningRate) {
 
 	}
 }

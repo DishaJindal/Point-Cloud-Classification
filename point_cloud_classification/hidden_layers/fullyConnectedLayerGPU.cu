@@ -1,9 +1,10 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include "common.h"
-#include "../../utilities/kernels.h"
-#include "../layer.h"
-#include "../fullyConnectedLayer.h"
+#include "../utilities/kernels.h"
+#include "../utilities/utils.h"
+#include "layer.h"
+#include "fullyConnectedLayer.h"
 #include <fstream>
 #include <string>
 #include "device_launch_parameters.h"
@@ -15,33 +16,15 @@
 #define blockSize 128
 
 namespace PointCloudClassification {
-    using Common::PerformanceTimer;
-    PerformanceTimer& timer()
-    {
-        static PerformanceTimer timer;
-        return timer;
-    }
-
-	
-
-
-	void genArray(int n, float *a) {
-		srand(11);
-
-		for (int i = 0; i < n; i++) {
-			a[i] = ((2 *((rand() * 1.0 )/ RAND_MAX)) - 1) * 0.0002;
-		}
-	}
 
 	class FullyConnectedLayerGPU : public FullyConnectedLayer {
 		FullyConnectedLayerGPU() {};
 		
 	public:
-		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer);
+		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer)  {
 			cudaMalloc((void **)&W, inputDim * outputDim * sizeof(float));
 			float *weightRand = new float[inputDim * outputDim];
-			genArray(inputDim * outputDim, weightRand);
+			Utilities::genArray(inputDim * outputDim, weightRand);
 			cudaMemcpy(W, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 			cudaMalloc((void**)&A, inputDim * batchDim * sizeof(float));
 		}

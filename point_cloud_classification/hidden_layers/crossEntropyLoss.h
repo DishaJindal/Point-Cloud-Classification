@@ -7,8 +7,6 @@
 
 namespace PointCloudClassification {
 	class CrossEntropyLoss : public Loss {
-		protected : 
-
 		public:
 			CrossEntropyLoss() {};
 			

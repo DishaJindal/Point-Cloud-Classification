@@ -4,6 +4,7 @@ set(SOURCE_FILES
     "matrix.h"
     "matrixCPU.cu"
     "matrixGPU.cu"
+    "utils.h"
     )
 
 cuda_add_library(utilities

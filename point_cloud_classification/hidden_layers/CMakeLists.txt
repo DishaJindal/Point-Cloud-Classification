@@ -1,5 +1,14 @@
 set(SOURCE_FILES
-	"fullyConnectedLayerCPU.cu"
+	"layer.h"
+	"loss.h"
+	"fullyConnectedLayer.h"
+	"graphConvolutionLayer.h"
+	"globalPoolingLayer.h"
+	"RELUActivationLayer.h"
+	"sigmoidActivationLayer.h"
+	"softmaxActivationLayer.h"
+	"crossEntropyLoss.h"
+        "fullyConnectedLayerCPU.cu"
 	"fullyConnectedLayerGPU.cu"
 	"globalPoolingCPU.cu"
 	"globalPoolingGPU.cu"
@@ -15,7 +24,7 @@ set(SOURCE_FILES
 	"crossEntropyLossGPU.cu"
 )
 
-cuda_add_library(implementations
+cuda_add_library(hidden_layers
     ${SOURCE_FILES}
     OPTIONS -arch=sm_61
-)
+    )

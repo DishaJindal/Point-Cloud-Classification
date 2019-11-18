@@ -5,8 +5,6 @@
 #include <math.h>
 
 namespace PointCloudClassification {
-    Common::PerformanceTimer& timer();
-	
 	class Loss {
 	public:
 		virtual ~Loss() = 0;

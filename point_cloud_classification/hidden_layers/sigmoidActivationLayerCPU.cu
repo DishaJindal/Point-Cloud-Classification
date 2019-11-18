@@ -1,7 +1,8 @@
 #include "common.h"
-#include "../../utilities/kernels.h"
-#include "../layer.h"
-#include "../sigmoidActivationLayer.h"
+#include "../utilities/kernels.h"
+#include "../utilities/utils.h"
+#include "layer.h"
+#include "sigmoidActivationLayer.h"
 #include <fstream>
 #include <string>
 
@@ -12,32 +13,21 @@
 #define blockSize 128
 
 namespace PointCloudClassification {
-    using Common::PerformanceTimer;
-    PerformanceTimer& timer()
-    {
-        static PerformanceTimer timer;
-        return timer;
-    }
-
-	void genArray(int n, float *a) {
-		srand(11);
-
-		for (int i = 0; i < n; i++) {
-			a[i] = ((2 *((rand() * 1.0 )/ RAND_MAX)) - 1) * 0.0002;
-		}
-	}
 
 	class sigmoidActivationLayerCPU : public sigmoidActivationLayer {
+	private:
+		float sigmoid(float z) {
+			float sig = (1.0f / (1.0f + exp(-z)));
+			return sig;
+		}
+	public:
 		sigmoidActivationLayerCPU() {};
 
 		sigmoidActivationLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer);
 		}
 
-		private float sigmoid(float z){
-			float sig = (1.0f / (1.0f + exp(-z)));
-			return sig;
-		}
+		
 
 		/*
 			inputArg -> batchDim x inputDim

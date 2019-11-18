@@ -51,8 +51,7 @@ namespace PointCloudClassification {
 			int getOutputDim() {
 				return outputDim;
 			}
-			
-			void forward(float *input, float *output, bool test = false);
-			void backward(float *incomingGradient, float *outgoingGradient, float learningRate);
+			void forward(float *input, float *output, bool test = false) = 0;
+			void backward(float *incomingGradient, float *outgoingGradient, float learningRate) = 0;
 		};
 }
