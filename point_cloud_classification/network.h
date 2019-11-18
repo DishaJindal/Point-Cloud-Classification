@@ -12,13 +12,14 @@ namespace PointCloudClassification {
 	class GraphConvolutionNetworkCPU {
 
 		std::vector<Layer*> layers;
+		Loss *loss;
 		int batchDim;
 	public :
 		GraphConvolutionNetworkCPU(int inputDim, int outputDim, int batchDim);
 		void addLayer(Layer* layer);
 
 		void forward(float *input, float *prediction, bool test = false);
-		void backward(float *trueLabel, float *prediction, Loss *loss, float learningRate);
+		void backward(float *trueLabel, float *prediction, float learningRate);
 	};
 
 	class GraphConvolutionNetworkGPU {

@@ -26,7 +26,7 @@ namespace PointCloudClassification {
 
 	}
 
-	void GraphConvolutionNetworkCPU::backward(float *trueLabel, float *prediction, Loss *loss, float learningRate) {
+	void GraphConvolutionNetworkCPU::backward(float *trueLabel, float *prediction, float learningRate) {
 
 	}
 }
