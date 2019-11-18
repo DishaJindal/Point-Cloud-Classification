@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/matrix.h"
 #include "../utilities/utils.h"

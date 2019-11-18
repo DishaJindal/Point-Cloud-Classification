@@ -12,7 +12,8 @@
 #include "testing_helpers.hpp"
 #include "point_cloud_classification/graph/graph.h"
 #include "point_cloud_classification/utilities/matrix.h"
-#include "point_cloud_classification/utilities/parameters.cpp"
+#include "parameters.hpp"
+#include "point_cloud_classification/hidden_layers/fullyConnectedLayerCPU.cu"
 #include <fstream>
 #include <string>
 #include <Windows.h>
@@ -32,7 +33,9 @@ int main(int argc, char* argv[]) {
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
 	vector<float*> transformed_inputs;
-	for (int i = 0; i < num_points; i++) {
+	int l1_features = 3;
+
+	/*for (int i = 0; i < PointCloudClassification::num_points; i++) {
 		float* current_sample = samples[i];
 		Graph::Graph g (current_sample, num_points, l1_features, num_neighbours);
 
@@ -44,11 +47,12 @@ int main(int argc, char* argv[]) {
 
 		float* L = g.get_Lnorm();
 		laplacians.push_back(L);
-	}
+	}*/
 
 	//Build the network
 	PointCloudClassification::NetworkCPU gcn (num_points * l1_features, num_classes, batch_size);
-	gcn.addLayer(new PointCloudClassification::FullyConnectedLayerCPU(num_points * l1_features, 1000, batch_size, false));
+	PointCloudClassification::FullyConnectedLayerCPU fc1(num_points * l1_features, 1000, batch_size, false);
+	gcn.addLayer(&fc1);
 
 	std::vector<float*> op = gcn.forward(samples, false);
 

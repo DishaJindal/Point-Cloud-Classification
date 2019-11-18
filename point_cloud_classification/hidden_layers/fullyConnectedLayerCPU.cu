@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/matrix.h"
 #include "../utilities/utils.h"
@@ -17,6 +17,7 @@
 namespace PointCloudClassification {
 
 	class FullyConnectedLayerCPU : public FullyConnectedLayer {
+	public:
 		FullyConnectedLayerCPU() {};
 
 		FullyConnectedLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer)  {
@@ -43,6 +44,7 @@ namespace PointCloudClassification {
 			memcpy(A, flattenedInput, batchDim * inputDim * sizeof(float));
 			memcpy(Z, flattenedOutput, batchDim * outputDim * sizeof(float));
 
+			std::vector<float*> outputArg;
 			for(int i = 0; i < batchDim; i++){
 				outputArg.push_back(flattenedOutput + (i * outputDim));
 			}
