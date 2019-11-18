@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "layers/layer.h"
+#include "layers/loss.h"
 #include <vector>
 #include <math.h>
 
@@ -17,7 +18,7 @@ namespace PointCloudClassification {
 		void addLayer(Layer* layer);
 
 		void forward(float *input, float *prediction, bool test = false);
-		void backward(float *trueLabel, float *prediction, Loss loss, float learningRate);
+		void backward(float *trueLabel, float *prediction, Loss* loss, float learningRate);
 	};
 
 	class GraphConvolutionNetworkGPU {

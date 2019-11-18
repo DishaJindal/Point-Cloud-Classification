@@ -28,16 +28,18 @@ namespace PointCloudClassification {
 	}
 
 	class sigmoidActivationLayerCPU : public sigmoidActivationLayer {
+	private: float sigmoid(float z) {
+			float sig = (1.0f / (1.0f + exp(-z)));
+			return sig;
+		}
+		
 		sigmoidActivationLayerCPU() {};
 
 		sigmoidActivationLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer);
 		}
 
-		private float sigmoid(float z){
-			float sig = (1.0f / (1.0f + exp(-z)));
-			return sig;
-		}
+		
 
 		/*
 			inputArg -> batchDim x inputDim

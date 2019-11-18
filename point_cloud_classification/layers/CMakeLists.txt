@@ -1,5 +1,6 @@
 set(SOURCE_FILES
 	"layer.h"
+	"loss.h"
 	"fullyConnectedLayer.h"
 	"graphConvolutionLayer.h"
 	"globalPoolingLayer.h"

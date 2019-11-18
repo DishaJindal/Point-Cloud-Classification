@@ -6,8 +6,7 @@
 #include "common.h"
 #include "graph.h"
 #include "device_launch_parameters.h"
-#include "Spectra/SymEigsSolver.h"
-#include "Eigen/src/Core/Matrix.h"
+
 //#include 
 //#include <eigen-eigen-323c052e1731/Eigen>
 //#include <eigen3/Eigen/Core>
@@ -27,6 +26,16 @@ namespace Graph {
 		float* L = find_laplacian(Anorm, n);
 		fill_normalized_laplacian(L, n);
 	};
+
+	vector<int> sort_indexes(const vector<float> &v) {
+
+		// initialize original index locations
+		vector<int> idx(v.size());
+		iota(idx.begin(), idx.end(), 0);
+		// sort indexes based on comparing values in v
+		sort(idx.begin(), idx.end(), [&v](float i1, float i2) {return v[i1] < v[i2]; });
+		return idx;
+	}
 
 	float* Graph::get_A() {
 		return A;
@@ -117,13 +126,5 @@ namespace Graph {
 		}
 	};
 
-	vector<int> sort_indexes(const vector<float> &v) {
 
-		// initialize original index locations
-		vector<int> idx(v.size());
-		iota(idx.begin(), idx.end(), 0);
-		// sort indexes based on comparing values in v
-		sort(idx.begin(), idx.end(), [&v](float i1, float i2) {return v[i1] < v[i2]; });
-		return idx;
-	}
 }
