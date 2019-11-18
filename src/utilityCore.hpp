@@ -41,6 +41,7 @@ extern std::string convertIntToString(int number);
 extern std::istream& safeGetline(std::istream& is, std::string& t); //Thanks to http://stackoverflow.com/a/6089413
 extern std::vector<glm::vec3> readPointCloud(std::string filename);
 extern std::vector<glm::vec3> farthestSample(std::vector<glm::vec3> &points, int numOfSamplePoints);
+extern float* convertFromVectorToFloatPtr(std::vector<glm::vec3> &points);
 
 //-----------------------------
 //-------GLM Printers----------
