@@ -18,8 +18,8 @@ namespace PointCloudClassification {
 		GlobalPoolingLayerCPU() {};
 
 	public: 
-		GlobalPoolingLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			GlobalPoolingLayer(inputDim, outputDim, batchDim, lastLayer);
+		GlobalPoolingLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : GlobalPoolingLayer(inputDim, outputDim, batchDim, lastLayer) {
+			
 		}
 
 		/*
@@ -31,7 +31,7 @@ namespace PointCloudClassification {
 
 		}
 
-		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
 
 
 		}

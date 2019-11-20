@@ -18,15 +18,15 @@ namespace PointCloudClassification {
 		GraphConvolutionLayerCPU() {};
 
 	public:
-		GraphConvolutionLayerCPU(int numPoints, int inputDim, int outputDim, int batchDim, int numFilters, bool lastLayer) {
-			GraphConvolutionLayer(numPoints, inputDim, outputDim, batchDim, numFilters, lastLayer);
+		GraphConvolutionLayerCPU(int numPoints, int inputDim, int outputDim, int batchDim, int numFilters, bool lastLayer) : GraphConvolutionLayer(numPoints, inputDim, outputDim, batchDim, numFilters, lastLayer) {
+		
 		}
 
 		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
 
 		}
 
-		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
 
 		}
 	};

@@ -11,17 +11,12 @@ namespace PointCloudClassification {
 			/* 
 				Input
 			*/
-			float *Z = NULL;
+			std::vector<float*> A;
 			/* 
 				Derivative w.r.t. input
 			*/
 			float *dZ = NULL;
-			/* 
-				Output of this layer
-			*/
-			float *A = NULL;
 			
-
 			int inputDim;
 			int batchDim;
 			int outputDim;
@@ -45,7 +40,7 @@ namespace PointCloudClassification {
 			}
 			
 			std::vector<float*> forward(std::vector<float*> input, bool test = false) = 0;
-			void backward(float *incomingGradient, float *outgoingGradient, float learningRate) = 0;
+			std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) = 0;
 		};
 }
 

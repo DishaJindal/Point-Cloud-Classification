@@ -12,6 +12,23 @@ using namespace std;
 using namespace PointCloudClassification;
 
 namespace Tests {
+	void testMatrixTranspose() {
+		MatrixCPU* m = new MatrixCPU();
+		float A[3 * 2] = { 1,2,3,4,5,6 };
+		
+		std::cout << "A: " << endl;
+		m->printMatrix(A, 3, 2);
+		std::cout << std::endl;
+
+		float* B = (float*)malloc(3 * 2 * sizeof(float));
+		m->transpose(A, 3, 2, B);
+
+		std::cout << "A.T: " << endl;
+		m->printMatrix(B, 2, 3);
+		std::cout << std::endl;
+		std::cout << std::endl;
+	}
+	
 	void testMatrixMultiplication() {
 		MatrixCPU* m = new MatrixCPU();
 		float A[3 * 2] = { 1,2,3,4,5,6 };
@@ -31,6 +48,27 @@ namespace Tests {
 		std::cout << std::endl;
 		std::cout << std::endl;
 	}
+
+	void testMatrixMultiplicationTranspose() {
+		MatrixCPU* m = new MatrixCPU();
+		float A[3 * 2] = { 1,2,3,4,5,6 };
+		float B[5 * 2] = { 1,2,3,4,5,6, 7, 8, 9, 10 };
+		float* C = (float*)malloc(3 * 5 * sizeof(float));
+		m->multiplyTranspose(A, B, 3, 2, 5, C);
+		std::cout << "A: " << endl;
+		m->printMatrix(A, 3, 2);
+		std::cout << std::endl;
+
+		std::cout << "B: " << endl;
+		m->printMatrix(B, 5, 2);
+		std::cout << std::endl;
+
+		std::cout << "C = A X B : " << endl;
+		m->printMatrix(C, 3, 5);
+		std::cout << std::endl;
+		std::cout << std::endl;
+	}
+
 
 	void testFCLayer() {
 		PointCloudClassification::NetworkCPU gcn(num_points * l1_features, num_classes, batch_size);
@@ -152,8 +190,8 @@ namespace Tests {
 	void testCrossEntropyLoss() {
 		PointCloudClassification::NetworkCPU gcn(3, num_classes, batch_size);
 
-		PointCloudClassification::softmaxActivationLayerCPU softmax1(3, batch_size, false);
-		gcn.addLayer(&softmax1);
+		PointCloudClassification::FullyConnectedLayerCPU fc1(3, 3, batch_size, false);
+		gcn.addLayer(&fc1);
 		PointCloudClassification::CrossEntropyLossCPU celoss(batch_size, 3);
 		gcn.setLoss(&celoss);
 

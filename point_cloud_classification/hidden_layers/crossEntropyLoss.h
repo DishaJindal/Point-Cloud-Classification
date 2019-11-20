@@ -17,7 +17,7 @@ namespace PointCloudClassification {
 				this->numClasses = numClasses;
 			}
 			
-			void dcost(float *prediction, float *trueLabel, float *gradient, int batchDim, int numClasses) = 0;
+			std::vector<float*> dcost(std::vector<float*> prediction, std::vector<float*> trueLabel) = 0;
 			float cost(std::vector<float*> prediction, std::vector<float*> trueLabel) = 0;
 		};
 }

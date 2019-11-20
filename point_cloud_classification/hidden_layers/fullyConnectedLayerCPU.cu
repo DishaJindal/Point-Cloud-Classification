@@ -26,6 +26,7 @@ namespace PointCloudClassification {
 
 			// Randomly initialize weight matrix
 			W = (float*)malloc(inputDim * outputDim * sizeof(float));
+			A = (float*)malloc(batchDim * inputDim * sizeof(float));
 			Utilities::genArray(inputDim * outputDim, W);
 		}
 
@@ -50,8 +51,8 @@ namespace PointCloudClassification {
 			//free(flattenedInput);
 			
 			// Store input and output of this layer
-			/*memcpy(A, flattenedInput, batchDim * inputDim * sizeof(float));
-			memcpy(Z, flattenedOutput, batchDim * outputDim * sizeof(float));*/
+			memcpy(A, flattenedInput, batchDim * inputDim * sizeof(float));
+			//memcpy(Z, flattenedOutput, batchDim * outputDim * sizeof(float));
 
 			std::vector<float*> outputArg;
 			for(int i = 0; i < batchDim; i++){
@@ -66,19 +67,35 @@ namespace PointCloudClassification {
 			outgoingGradient = incomingGradient x W.T
 			dW = A.T x incomingGradient
 		*/
-		void FullyConnectedLayer::backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
+			float* flattenedInput = (float*)malloc(batchDim * outputDim * sizeof(float));
+			int i = 0;
+			for (auto current : incomingGradient) {
+				memcpy(flattenedInput + (i * outputDim), current, outputDim * sizeof(float));
+				i++;
+			}
+			float* flattenedOutput = (float*)malloc(batchDim * inputDim * sizeof(float));
+
 			MatrixCPU* m = new MatrixCPU();
 			
 			// Compute gradient w.r.t weights
 			float *ATranspose = (float*) malloc(inputDim * batchDim * sizeof(float));
 			m->transpose(A, batchDim, inputDim, ATranspose);
-			m->multiply(ATranspose, incomingGradient, inputDim, batchDim, outputDim, dW);
+			m->multiply(ATranspose, flattenedInput, inputDim, batchDim, outputDim, dW);
 
 			// Compute outgoingGradient (w.r.t. input)
-			m->multiplyTranspose(incomingGradient, W, batchDim, outputDim, inputDim, outgoingGradient);
+			m->multiplyTranspose(flattenedInput, W, batchDim, outputDim, inputDim, flattenedOutput);
 
 			//Update weight matrix
 			m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
+
+			std::vector<float*> outgoingGradient;
+			for (int i = 0; i < batchDim; i++) {
+				outgoingGradient.push_back(flattenedOutput + (i * inputDim));
+			}
+			//free(flattenedOutput);
+
+			return outgoingGradient;
 		}
 	};
 }
