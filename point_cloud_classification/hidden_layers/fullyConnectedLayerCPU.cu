@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/matrix.h"
@@ -21,7 +23,9 @@ namespace PointCloudClassification {
 		FullyConnectedLayerCPU() {};
 
 		FullyConnectedLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer)  {
+
 			// Randomly initialize weight matrix
+			W = (float*)malloc(inputDim * outputDim * sizeof(float));
 			Utilities::genArray(inputDim * outputDim, W);
 		}
 
@@ -35,19 +39,26 @@ namespace PointCloudClassification {
 				memcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float));
 				i++;
 			}
+			/*std::cout << "Flattened: " << std::endl;
+			std::cout << flattenedInput[(0 * inputDim) + 0] << " " << flattenedInput[(0 * inputDim) + 1] << " " << flattenedInput[(0 * inputDim) + 2] << std::endl;
+			std::cout << flattenedInput[(1 * inputDim) + 0] << " " << flattenedInput[(1 * inputDim) + 1] << " " << flattenedInput[(1 * inputDim) + 2] << std::endl;
+			std::cout << flattenedInput[(2 * inputDim) + 0] << " " << flattenedInput[(2 * inputDim) + 1] << " " << flattenedInput[(2 * inputDim) + 2] << std::endl;*/
 			float* flattenedOutput = (float*) malloc(batchDim * outputDim * sizeof(float));
 			
 			MatrixCPU* m = new MatrixCPU();
 			m->multiply(flattenedInput, W, batchDim, inputDim, outputDim, flattenedOutput);
-
+			//free(flattenedInput);
+			
 			// Store input and output of this layer
-			memcpy(A, flattenedInput, batchDim * inputDim * sizeof(float));
-			memcpy(Z, flattenedOutput, batchDim * outputDim * sizeof(float));
+			/*memcpy(A, flattenedInput, batchDim * inputDim * sizeof(float));
+			memcpy(Z, flattenedOutput, batchDim * outputDim * sizeof(float));*/
 
 			std::vector<float*> outputArg;
 			for(int i = 0; i < batchDim; i++){
 				outputArg.push_back(flattenedOutput + (i * outputDim));
 			}
+			//free(flattenedOutput);
+			
 			return outputArg;
 		}
 

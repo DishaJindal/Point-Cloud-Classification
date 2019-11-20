@@ -15,10 +15,11 @@
 namespace PointCloudClassification {
 
 	class RELUActivationLayerCPU : public RELUActivationLayer {
+	public:
 		RELUActivationLayerCPU() {};
 
-		RELUActivationLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			RELUActivationLayer(inputDim, outputDim, batchDim, lastLayer);
+		RELUActivationLayerCPU(int inputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
+		
 		}
 
 		/*
@@ -26,13 +27,30 @@ namespace PointCloudClassification {
 			outputArg -> batchDim x inputDim
 		*/
 		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
-			// for(int i = 0; i < batchDim; i++){
-			// 	for(int j = 0; j < inputDim; j++){
-			// 		outputArg[i * inputDim + j] = imax(inputArg[i * inputDim + j], 0);
-			// 		A[i * inputDim + j] = outputArg[i * inputDim + j];
-			// 		Z[i * inputDim + j] = inputArg[i * inputDim + j];
-			// 	}
-			// }
+			float* flattenedInput = (float*)malloc(batchDim * inputDim * sizeof(float));
+			int i = 0;
+			for (auto current : inputArg) {
+				memcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float));
+				i++;
+			}
+			float* flattenedOutput = (float*)malloc(batchDim * outputDim * sizeof(float));
+
+			 for(int i = 0; i < batchDim; i++){
+			 	for(int j = 0; j < inputDim; j++){
+					flattenedOutput[i * inputDim + j] = imax(flattenedInput[i * inputDim + j], 0);
+			 		//A[i * inputDim + j] = outputArg[i * inputDim + j];
+			 		//Z[i * inputDim + j] = inputArg[i * inputDim + j];
+			 	}
+			 }
+			 //free(flattenedInput);
+
+			 std::vector<float*> outputArg;
+			 for (int i = 0; i < batchDim; i++) {
+				 outputArg.push_back(flattenedOutput + (i * outputDim));
+			 }
+			 //free(flattenedOutput);
+
+			 return outputArg;
 		}
 
 		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {

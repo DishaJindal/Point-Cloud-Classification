@@ -7,10 +7,17 @@
 
 namespace PointCloudClassification {
 	class CrossEntropyLoss : public Loss {
-		public:
+	protected:
+		int batchDim;
+		int numClasses;
+	public:
 			CrossEntropyLoss() {};
+			CrossEntropyLoss(int batchDim, int numClasses) {
+				this->batchDim = batchDim;
+				this->numClasses = numClasses;
+			}
 			
-			float cost(float *prediction, float *trueLabel, int batchDim, int numClasses);
-			void dcost(float *prediction, float *trueLabel, float *gradient, int batchDim, int numClasses);
+			void dcost(float *prediction, float *trueLabel, float *gradient, int batchDim, int numClasses) = 0;
+			float cost(std::vector<float*> prediction, std::vector<float*> trueLabel) = 0;
 		};
 }

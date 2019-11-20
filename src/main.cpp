@@ -12,8 +12,12 @@
 #include "testing_helpers.hpp"
 #include "point_cloud_classification/graph/graph.h"
 #include "point_cloud_classification/utilities/matrix.h"
-#include "parameters.hpp"
+#include "point_cloud_classification/utilities/utils.h"
+#include "point_cloud_classification/utilities/parameters.cpp"
 #include "point_cloud_classification/hidden_layers/fullyConnectedLayerCPU.cu"
+
+#include "point_cloud_classification/tests/test.h"
+
 #include <fstream>
 #include <string>
 #include <Windows.h>
@@ -28,7 +32,8 @@ using namespace PointCloudClassification;
 int main(int argc, char* argv[]) {
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
-	vector<float*> samples; //Data from file will be stored here
+	
+	//vector<float*> samples; //Data from file will be stored here
 
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
@@ -49,12 +54,27 @@ int main(int argc, char* argv[]) {
 		laplacians.push_back(L);
 	}*/
 
-	//Build the network
-	PointCloudClassification::NetworkCPU gcn (num_points * l1_features, num_classes, batch_size);
-	PointCloudClassification::FullyConnectedLayerCPU fc1(num_points * l1_features, 1000, batch_size, false);
-	gcn.addLayer(&fc1);
+	// Tests
+	cout << "Testing Matrix Multiplication ..." << endl;
+	Tests::testMatrixMultiplication();
 
-	std::vector<float*> op = gcn.forward(samples, false);
+	cout << "Testing Fully Connected Layer ..." << endl;
+	Tests::testFCLayer();
+
+	cout << "Testing RELU Activation Layer ..." << endl;
+	Tests::testRELULayer();
+
+	cout << "Testing Softmax Activation Layer ..." << endl;
+	Tests::testSoftmaxLayer();
+
+	cout << "Testing Sigmoid Activation Layer ..." << endl;
+	Tests::testSigmoidLayer();
+
+	cout << "Testing Cross Entropy Layer ..." << endl;
+	Tests::testCrossEntropyLoss();
+
+	//Build the network
+	
 
 	// Train 
 	int number_of_batches = ceil(num_points / batch_size);

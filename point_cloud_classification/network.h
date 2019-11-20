@@ -20,8 +20,10 @@ namespace PointCloudClassification {
 	public :
 		NetworkCPU(int inputFeatures, int numClasses, int batchSize);
 		void addLayer(Layer* layer);
+		void setLoss(Loss* loss);
 
 		std::vector<float*> forward(std::vector<float*> input, bool test);
+		float calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel);
 		void backward(float *trueLabel, float *prediction, float learningRate);
 	};
 

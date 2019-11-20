@@ -24,12 +24,20 @@ namespace PointCloudClassification {
 		this->layers.push_back(layer);
 	}
 
+	void NetworkCPU::setLoss(Loss* loss) {
+		this->loss = loss;
+	}
+
 	std::vector<float*> NetworkCPU::forward(std::vector<float*> input, bool test) {
 		//std::vector<float*> output;
 		for(auto layer: this->layers){
 			input = layer->forward(input, false);
 		}
 		return input;
+	}
+
+	float NetworkCPU::calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel) {
+		return loss->cost(prediction, trueLabel);
 	}
 
 	void NetworkCPU::backward(float *trueLabel, float *prediction, float learningRate) {

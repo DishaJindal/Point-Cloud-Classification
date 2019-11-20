@@ -23,8 +23,8 @@ namespace PointCloudClassification {
 	public:
 		sigmoidActivationLayerCPU() {};
 
-		sigmoidActivationLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer);
+		sigmoidActivationLayerCPU(int inputDim, int batchDim, bool lastLayer) : sigmoidActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
+			
 		}
 
 		
@@ -34,13 +34,28 @@ namespace PointCloudClassification {
 			outputArg -> batchDim x inputDim
 		*/
 		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
-			// for(int i = 0; i < batchDim; i++){
-			// 	for(int j = 0; j < inputDim; j++){
-			// 		outputArg[i * inputDim + j] = sigmoid(inputArg[i * inputDim + j]);
-			// 		A[i * inputDim + j] = outputArg[i * inputDim + j];
-			// 		Z[i * inputDim + j] = inputArg[i * inputDim + j];
-			// 	}
-			// }
+			float* flattenedInput = (float*)malloc(batchDim * inputDim * sizeof(float));
+			int i = 0;
+			for (auto current : inputArg) {
+				memcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float));
+				i++;
+			}
+			float* flattenedOutput = (float*)malloc(batchDim * outputDim * sizeof(float));
+
+			for(int i = 0; i < batchDim; i++){
+			 	for(int j = 0; j < inputDim; j++){
+					flattenedOutput[i * inputDim + j] = sigmoid(flattenedInput[i * inputDim + j]);
+			 		/*A[i * inputDim + j] = outputArg[i * inputDim + j];
+			 		Z[i * inputDim + j] = inputArg[i * inputDim + j];*/
+			 	}
+			 }
+
+			std::vector<float*> outputArg;
+			for (int i = 0; i < batchDim; i++) {
+				outputArg.push_back(flattenedOutput + (i * outputDim));
+			}
+
+			return outputArg;
 		}
 
 		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
