@@ -20,8 +20,7 @@ namespace PointCloudClassification {
 	class sigmoidActivationLayerGPU : public sigmoidActivationLayer {
 		sigmoidActivationLayerGPU() {};
 
-		sigmoidActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer);
+		sigmoidActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer) {
 		}
 
 		void forward(float *inputArg, float *outputArg, bool test) {

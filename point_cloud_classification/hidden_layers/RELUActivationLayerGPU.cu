@@ -19,8 +19,7 @@ namespace PointCloudClassification {
 	class RELUActivationLayerGPU : public RELUActivationLayer {
 		RELUActivationLayerGPU() {};
 
-		RELUActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			RELUActivationLayer(inputDim, outputDim, batchDim, lastLayer);
+		RELUActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, outputDim, batchDim, lastLayer) {
 
 		}
 

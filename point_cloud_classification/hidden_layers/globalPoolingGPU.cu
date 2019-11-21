@@ -21,8 +21,8 @@ namespace PointCloudClassification {
 		GlobalPoolingLayerGPU() {};
 		
 	public:
-		GlobalPoolingLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			GlobalPoolingLayer(inputDim, outputDim, batchDim, lastLayer);
+		GlobalPoolingLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : GlobalPoolingLayer(inputDim, outputDim, batchDim, lastLayer){
+			
 		}
 
 

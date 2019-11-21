@@ -19,8 +19,8 @@ namespace PointCloudClassification {
 	class softmaxActivationLayerGPU : public softmaxActivationLayer {
 		softmaxActivationLayerGPU() {};
 
-		softmaxActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-			softmaxActivationLayer(inputDim, outputDim, batchDim, lastLayer);
+		softmaxActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : softmaxActivationLayer(inputDim, outputDim, batchDim, lastLayer) {
+			
 		}
 
 		void forward(std::vector<float*> inputArg, std::vector<float*> outputArg, bool test) {
