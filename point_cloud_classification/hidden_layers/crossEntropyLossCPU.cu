@@ -29,11 +29,13 @@ namespace PointCloudClassification {
 			std::vector<float*> softmaxOutput;
 			for (int i = 0; i < batchDim; i++) {
 				all_sum[i] = 0;
+				float* temp = (float*)malloc(numClasses * sizeof(float));
 				for (int j = 0; j < numClasses; j++) {
 					float res = exp(prediction[i][j]);
 					all_sum[i] += res;
-					softmaxOutput[i][j] = res;
+					temp[j] = res;
 				}
+				softmaxOutput.push_back(temp);
 			}
 
 			for (int i = 0; i < batchDim; i++) {
@@ -41,6 +43,12 @@ namespace PointCloudClassification {
 					softmaxOutput[i][j] /= all_sum[i];
 				}
 			}
+
+			std::cout << "OUTPUT: " << std::endl;
+			std::cout << softmaxOutput[0][0] << " " << softmaxOutput[0][1] << " " << softmaxOutput[0][2] << std::endl;
+			std::cout << softmaxOutput[1][0] << " " << softmaxOutput[1][1] << " " << softmaxOutput[1][2] << std::endl;
+			std::cout << softmaxOutput[2][0] << " " << softmaxOutput[2][1] << " " << softmaxOutput[2][2] << std::endl;
+			std::cout << std::endl;
 			
 			float sum = 0;
 			for (int i = 0; i < batchDim; i++) {

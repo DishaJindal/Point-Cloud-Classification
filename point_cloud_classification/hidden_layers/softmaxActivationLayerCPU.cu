@@ -61,7 +61,8 @@ namespace PointCloudClassification {
 		}
 
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
-
+			std::vector<float*> sample;
+			return sample;
 		}
 	};
 }
