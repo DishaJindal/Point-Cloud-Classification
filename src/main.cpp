@@ -55,8 +55,14 @@ int main(int argc, char* argv[]) {
 	}*/
 
 	// Tests
+	cout << "Testing Matrix Transpose ..." << endl;
+	Tests::testMatrixTranspose();
+
 	cout << "Testing Matrix Multiplication ..." << endl;
 	Tests::testMatrixMultiplication();
+
+	cout << "Testing Matrix Multiplication Transpose ..." << endl;
+	Tests::testMatrixMultiplicationTranspose();
 
 	cout << "Testing Fully Connected Layer ..." << endl;
 	Tests::testFCLayer();
@@ -72,6 +78,9 @@ int main(int argc, char* argv[]) {
 
 	cout << "Testing Cross Entropy Layer ..." << endl;
 	Tests::testCrossEntropyLoss();
+	
+	cout << "Testing Fully Connected Layer Backward..." << endl;
+	Tests::testFCLayerBackward();
 
 	//Build the network
 	

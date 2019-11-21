@@ -41,7 +41,7 @@ void MatrixCPU::multiplyTranspose(float* A, float* B, int m, int n, int p, float
 void MatrixCPU::transpose(float* A, int m, int n, float* output){
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++) {
-			output[i * n + j] = A[j * m + i];
+			output[j * m + i] = A[i * n + j];
 		}
 	}
 }

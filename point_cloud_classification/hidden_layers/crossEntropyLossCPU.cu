@@ -62,10 +62,12 @@ namespace PointCloudClassification {
 
 		std::vector<float*> dcost(std::vector<float*> prediction, std::vector<float*> trueLabel) {
 			std::vector<float*> outgoingGradient;
-			for (int i = 0; i > batchDim; i++) {
+			for (int i = 0; i < batchDim; i++) {
+				float* temp = (float*)malloc(numClasses * sizeof(float));
 				for (int j = 0; j < numClasses; j++) {
-					outgoingGradient[i][j] = trueLabel[i][j] - prediction[i][j];
+					temp[j] = trueLabel[i][j] - prediction[i][j];
 				}
+				outgoingGradient.push_back(temp);
 			}
 			return outgoingGradient;
 		}

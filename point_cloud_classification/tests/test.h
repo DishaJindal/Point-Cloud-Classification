@@ -233,4 +233,77 @@ namespace Tests {
 		float l = gcn.calculateLoss(op, trueLabels);
 		std::cout << "LOSS: " << l << std::endl;
 	}
+
+	void testFCLayerBackward() {
+		PointCloudClassification::NetworkCPU gcn(num_points * l1_features, num_classes, batch_size);
+		/*PointCloudClassification::FullyConnectedLayerCPU fc1(num_points * l1_features, 100, batch_size, false);
+		gcn.addLayer(&fc1);*/
+		PointCloudClassification::FullyConnectedLayerCPU fc2(100, 3, batch_size, false);
+		gcn.addLayer(&fc2);
+		PointCloudClassification::CrossEntropyLossCPU celoss(batch_size, 3);
+		gcn.setLoss(&celoss);
+
+		vector<float*> samples; //Data from file will be stored here
+		vector<float*> trueLabels;
+		float temp_true[3 * 3] = { 0, 1, 0, 1, 0, 0, 0, 0, 1 };
+		int number_of_random_examples = batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(100 * sizeof(float));
+
+			Utilities::genArray(100, temp);
+			samples.push_back(temp);
+
+			trueLabels.push_back(temp_true + (i * 3));
+		}
+
+		std::cout << "SAMPLE: " << std::endl;
+		std::cout << samples[0][0] << " " << samples[0][1] << " " << samples[0][2] << std::endl;
+		std::cout << samples[1][0] << " " << samples[1][1] << " " << samples[1][2] << std::endl;
+		std::cout << samples[2][0] << " " << samples[2][1] << " " << samples[2][2] << std::endl;
+		std::cout << std::endl;
+
+		std::vector<float*> op = gcn.forward(samples, false);
+
+		float l = gcn.calculateLoss(op, trueLabels);
+		std::cout << "*****LOSS: " << l << std::endl;
+
+		gcn.backward(op, trueLabels, 0.01);
+
+		op = gcn.forward(samples, false);
+
+		std::cout << "NEW OUTPUT: " << std::endl;
+		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
+		std::cout << op[1][0] << " " << op[1][1] << " " << op[1][2] << std::endl;
+		std::cout << op[2][0] << " " << op[2][1] << " " << op[2][2] << std::endl;
+		std::cout << std::endl;
+
+		l = gcn.calculateLoss(op, trueLabels);
+		std::cout << "******NEW LOSS: " << l << std::endl;
+
+		gcn.backward(op, trueLabels, 0.01);
+
+		op = gcn.forward(samples, false);
+
+		std::cout << "NEW OUTPUT: " << std::endl;
+		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
+		std::cout << op[1][0] << " " << op[1][1] << " " << op[1][2] << std::endl;
+		std::cout << op[2][0] << " " << op[2][1] << " " << op[2][2] << std::endl;
+		std::cout << std::endl;
+
+		l = gcn.calculateLoss(op, trueLabels);
+		std::cout << "*******NEW LOSS: " << l << std::endl;
+
+		gcn.backward(op, trueLabels, 0.01);
+
+		op = gcn.forward(samples, false);
+
+		std::cout << "NEW OUTPUT: " << std::endl;
+		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
+		std::cout << op[1][0] << " " << op[1][1] << " " << op[1][2] << std::endl;
+		std::cout << op[2][0] << " " << op[2][1] << " " << op[2][2] << std::endl;
+		std::cout << std::endl;
+
+		l = gcn.calculateLoss(op, trueLabels);
+		std::cout << "*****NEW LOSS: " << l << std::endl;
+	}
 }
