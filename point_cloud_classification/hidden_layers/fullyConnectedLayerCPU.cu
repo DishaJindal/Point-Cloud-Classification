@@ -46,12 +46,6 @@ namespace PointCloudClassification {
 			std::cout << flattenedInput[(1 * inputDim) + 0] << " " << flattenedInput[(1 * inputDim) + 1] << " " << flattenedInput[(1 * inputDim) + 2] << std::endl;
 			std::cout << flattenedInput[(2 * inputDim) + 0] << " " << flattenedInput[(2 * inputDim) + 1] << " " << flattenedInput[(2 * inputDim) + 2] << std::endl;*/
 			float* flattenedOutput = (float*) malloc(batchDim * outputDim * sizeof(float));
-			
-			std::cout << "FWD W: " << std::endl;
-			std::cout << W[(0 * inputDim) + 0] << " " << W[(0 * inputDim) + 1] << " " << W[(0 * inputDim) + 2] << std::endl;
-			std::cout << W[(1 * inputDim) + 0] << " " << W[(1 * inputDim) + 1] << " " << W[(1 * inputDim) + 2] << std::endl;
-			std::cout << W[(2 * inputDim) + 0] << " " << W[(2 * inputDim) + 1] << " " << W[(2 * inputDim) + 2] << std::endl;
-			std::cout << std::endl;
 
 			MatrixCPU* m = new MatrixCPU();
 			m->multiply(flattenedInput, W, batchDim, inputDim, outputDim, flattenedOutput);
@@ -84,12 +78,6 @@ namespace PointCloudClassification {
 			float* flattenedOutput = (float*)malloc(batchDim * inputDim * sizeof(float));
 
 			MatrixCPU* m = new MatrixCPU();
-
-			std::cout << "OLD W: " << std::endl;
-			std::cout << W[(0 * inputDim) + 0] << " " << W[(0 * inputDim) + 1] << " " << W[(0 * inputDim) + 2] << std::endl;
-			std::cout << W[(1 * inputDim) + 0] << " " << W[(1 * inputDim) + 1] << " " << W[(1 * inputDim) + 2] << std::endl;
-			std::cout << W[(2 * inputDim) + 0] << " " << W[(2 * inputDim) + 1] << " " << W[(2 * inputDim) + 2] << std::endl;
-			std::cout << std::endl;
 			
 			// Compute gradient w.r.t weights
 			float *ATranspose = (float*) malloc(inputDim * batchDim * sizeof(float));
@@ -101,12 +89,6 @@ namespace PointCloudClassification {
 
 			//Update weight matrix
 			m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
-
-			std::cout << "NEW W: " << std::endl;
-			std::cout << W[(0 * inputDim) + 0] << " " << W[(0 * inputDim) + 1] << " " << W[(0 * inputDim) + 2] << std::endl;
-			std::cout << W[(1 * inputDim) + 0] << " " << W[(1 * inputDim) + 1] << " " << W[(1 * inputDim) + 2] << std::endl;
-			std::cout << W[(2 * inputDim) + 0] << " " << W[(2 * inputDim) + 1] << " " << W[(2 * inputDim) + 2] << std::endl;
-			std::cout << std::endl;
 
 			std::vector<float*> outgoingGradient;
 			for (int i = 0; i < batchDim; i++) {

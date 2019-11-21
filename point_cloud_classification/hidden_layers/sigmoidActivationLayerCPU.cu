@@ -62,9 +62,11 @@ namespace PointCloudClassification {
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
 			std::vector<float*> outgoingGradient;
 			for(int i = 0; i < batchDim; i++){
+				float* temp = (float*)malloc(inputDim * sizeof(float));
 				for(int j = 0; j < inputDim; j++){
-					outgoingGradient[i][j] = incomingGradient[i][j] * A[i][j] * (1 - A[i][j]);
+					temp[j] = incomingGradient[i][j] * A[i][j] * (1 - A[i][j]);
 				}
+				outgoingGradient.push_back(temp);
 			}
 			return outgoingGradient;
 		}

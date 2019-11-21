@@ -65,7 +65,7 @@ namespace PointCloudClassification {
 			for (int i = 0; i < batchDim; i++) {
 				float* temp = (float*)malloc(numClasses * sizeof(float));
 				for (int j = 0; j < numClasses; j++) {
-					temp[j] = trueLabel[i][j] - prediction[i][j];
+					temp[j] = prediction[i][j] - trueLabel[i][j];
 				}
 				outgoingGradient.push_back(temp);
 			}

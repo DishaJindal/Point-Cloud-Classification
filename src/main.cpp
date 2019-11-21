@@ -55,32 +55,50 @@ int main(int argc, char* argv[]) {
 	}*/
 
 	// Tests
+	cout << "********************************************************" << endl;
 	cout << "Testing Matrix Transpose ..." << endl;
 	Tests::testMatrixTranspose();
+	cout << "********************************************************" << endl;
 
+	cout << "********************************************************" << endl;
 	cout << "Testing Matrix Multiplication ..." << endl;
 	Tests::testMatrixMultiplication();
+	cout << "********************************************************" << endl;
 
+	cout << "********************************************************" << endl;
 	cout << "Testing Matrix Multiplication Transpose ..." << endl;
 	Tests::testMatrixMultiplicationTranspose();
+	cout << "********************************************************" << endl;
 
+	cout << "********************************************************" << endl;
 	cout << "Testing Fully Connected Layer ..." << endl;
 	Tests::testFCLayer();
+	cout << "********************************************************" << endl;
 
+	cout << "********************************************************" << endl;
 	cout << "Testing RELU Activation Layer ..." << endl;
 	Tests::testRELULayer();
+	cout << "********************************************************" << endl;
 
+	cout << "********************************************************" << endl;
 	cout << "Testing Softmax Activation Layer ..." << endl;
 	Tests::testSoftmaxLayer();
+	cout << "********************************************************" << endl;
 
+	cout << "********************************************************" << endl;
 	cout << "Testing Sigmoid Activation Layer ..." << endl;
 	Tests::testSigmoidLayer();
+	cout << "********************************************************" << endl;
 
+	cout << "********************************************************" << endl;
 	cout << "Testing Cross Entropy Layer ..." << endl;
 	Tests::testCrossEntropyLoss();
+	cout << "********************************************************" << endl;
 	
-	cout << "Testing Fully Connected Layer Backward..." << endl;
-	Tests::testFCLayerBackward();
+	cout << "********************************************************" << endl;
+	cout << "Testing All Backward..." << endl;
+	Tests::testAllBackward();
+	cout << "********************************************************" << endl;
 
 	//Build the network
 	

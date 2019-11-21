@@ -234,12 +234,15 @@ namespace Tests {
 		std::cout << "LOSS: " << l << std::endl;
 	}
 
-	void testFCLayerBackward() {
+	void testAllBackward() {
 		PointCloudClassification::NetworkCPU gcn(num_points * l1_features, num_classes, batch_size);
-		/*PointCloudClassification::FullyConnectedLayerCPU fc1(num_points * l1_features, 100, batch_size, false);
-		gcn.addLayer(&fc1);*/
+		PointCloudClassification::FullyConnectedLayerCPU fc1(num_points * l1_features, 100, batch_size, false);
+		gcn.addLayer(&fc1);
+		PointCloudClassification::RELUActivationLayerCPU relu1(100, batch_size, false);
+		gcn.addLayer(&relu1);
 		PointCloudClassification::FullyConnectedLayerCPU fc2(100, 3, batch_size, false);
 		gcn.addLayer(&fc2);
+		
 		PointCloudClassification::CrossEntropyLossCPU celoss(batch_size, 3);
 		gcn.setLoss(&celoss);
 
@@ -248,9 +251,9 @@ namespace Tests {
 		float temp_true[3 * 3] = { 0, 1, 0, 1, 0, 0, 0, 0, 1 };
 		int number_of_random_examples = batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
-			float* temp = (float*)malloc(100 * sizeof(float));
+			float* temp = (float*)malloc(num_points * l1_features * sizeof(float));
 
-			Utilities::genArray(100, temp);
+			Utilities::genArray(num_points * l1_features, temp);
 			samples.push_back(temp);
 
 			trueLabels.push_back(temp_true + (i * 3));
