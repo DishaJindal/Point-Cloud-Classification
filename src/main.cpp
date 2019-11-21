@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
 	vector<float*> transformed_inputs;
-	int l1_features = 3;
+	//int l1_features = 3;
 
 	/*for (int i = 0; i < PointCloudClassification::num_points; i++) {
 		float* current_sample = samples[i];
@@ -104,6 +104,6 @@ int main(int argc, char* argv[]) {
 	
 
 	// Train 
-	int number_of_batches = ceil(num_points / batch_size);
+	int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);
 
 }

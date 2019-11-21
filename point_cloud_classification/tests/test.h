@@ -10,6 +10,7 @@
 
 using namespace std;
 using namespace PointCloudClassification;
+//using namespace Parameters;
 
 namespace Tests {
 	void testMatrixTranspose() {
@@ -71,17 +72,17 @@ namespace Tests {
 
 
 	void testFCLayer() {
-		PointCloudClassification::NetworkCPU gcn(num_points * l1_features, num_classes, batch_size);
-		PointCloudClassification::FullyConnectedLayerCPU fc1(num_points * l1_features, 1000, batch_size, false);
+		PointCloudClassification::NetworkCPU gcn(Parameters::num_points * Parameters::l1_features, Parameters::num_classes, Parameters::batch_size);
+		PointCloudClassification::FullyConnectedLayerCPU fc1(Parameters::num_points * Parameters::l1_features, 1000, Parameters::batch_size, false);
 		gcn.addLayer(&fc1);
-		PointCloudClassification::FullyConnectedLayerCPU fc2(1000, 300, batch_size, false);
+		PointCloudClassification::FullyConnectedLayerCPU fc2(1000, 300, Parameters::batch_size, false);
 		gcn.addLayer(&fc2);
 
 		vector<float*> samples; //Data from file will be stored here
-		int number_of_random_examples = batch_size;
+		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
-			float* temp = (float*)malloc(num_points * l1_features * sizeof(float));
-			Utilities::genArray(num_points * l1_features, temp);
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::l1_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::l1_features, temp);
 			samples.push_back(temp);
 		}
 
@@ -101,16 +102,16 @@ namespace Tests {
 	}
 
 	void testRELULayer() {
-		PointCloudClassification::NetworkCPU gcn(num_points * l1_features, num_classes, batch_size);
+		PointCloudClassification::NetworkCPU gcn(Parameters::num_points * Parameters::l1_features, Parameters::num_classes, Parameters::batch_size);
 
-		PointCloudClassification::RELUActivationLayerCPU relu1(num_points * l1_features, batch_size, false);
+		PointCloudClassification::RELUActivationLayerCPU relu1(Parameters::num_points * Parameters::l1_features, Parameters::batch_size, false);
 		gcn.addLayer(&relu1);
 
 		vector<float*> samples; //Data from file will be stored here
-		int number_of_random_examples = batch_size;
+		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
-			float* temp = (float*)malloc(num_points * l1_features * sizeof(float));
-			Utilities::genArray(num_points * l1_features, temp);
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::l1_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::l1_features, temp);
 			samples.push_back(temp);
 		}
 
@@ -130,16 +131,16 @@ namespace Tests {
 	}
 
 	void testSigmoidLayer() {
-		PointCloudClassification::NetworkCPU gcn(3, num_classes, batch_size);
+		PointCloudClassification::NetworkCPU gcn(3, Parameters::num_classes, Parameters::batch_size);
 
-		PointCloudClassification::sigmoidActivationLayerCPU sigmoid1(3, batch_size, false);
+		PointCloudClassification::sigmoidActivationLayerCPU sigmoid1(3, Parameters::batch_size, false);
 		gcn.addLayer(&sigmoid1);
 
 		vector<float*> samples; //Data from file will be stored here
-		int number_of_random_examples = batch_size;
+		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
-			float* temp = (float*)malloc(num_points * l1_features * sizeof(float));
-			Utilities::genArray(num_points * l1_features, temp);
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::l1_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::l1_features, temp);
 			samples.push_back(temp);
 		}
 
@@ -159,16 +160,16 @@ namespace Tests {
 	}
 
 	void testSoftmaxLayer() {
-		PointCloudClassification::NetworkCPU gcn(3, num_classes, batch_size);
+		PointCloudClassification::NetworkCPU gcn(3, Parameters::num_classes, Parameters::batch_size);
 
-		PointCloudClassification::softmaxActivationLayerCPU softmax1 (3, batch_size, false);
+		PointCloudClassification::softmaxActivationLayerCPU softmax1 (3, Parameters::batch_size, false);
 		gcn.addLayer(&softmax1);
 
 		vector<float*> samples; //Data from file will be stored here
-		int number_of_random_examples = batch_size;
+		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
-			float* temp = (float*)malloc(num_points * l1_features * sizeof(float));
-			Utilities::genArray(num_points * l1_features, temp);
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::l1_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::l1_features, temp);
 			samples.push_back(temp);
 		}
 
@@ -188,17 +189,17 @@ namespace Tests {
 	}
 
 	void testCrossEntropyLoss() {
-		PointCloudClassification::NetworkCPU gcn(3, num_classes, batch_size);
+		PointCloudClassification::NetworkCPU gcn(3, Parameters::num_classes, Parameters::batch_size);
 
-		PointCloudClassification::FullyConnectedLayerCPU fc1(3, 3, batch_size, false);
+		PointCloudClassification::FullyConnectedLayerCPU fc1(3, 3, Parameters::batch_size, false);
 		gcn.addLayer(&fc1);
-		PointCloudClassification::CrossEntropyLossCPU celoss(batch_size, 3);
+		PointCloudClassification::CrossEntropyLossCPU celoss(Parameters::batch_size, 3);
 		gcn.setLoss(&celoss);
 
 		vector<float*> samples; //Data from file will be stored here
 		vector<float*> trueLabels;
 		float temp_true[3 * 3] = { 0, 1, 0, 1, 0, 0, 0, 0, 1 };
-		int number_of_random_examples = batch_size;
+		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
 			float* temp = (float*)malloc(3 * sizeof(float));
 			
@@ -235,25 +236,25 @@ namespace Tests {
 	}
 
 	void testAllBackward() {
-		PointCloudClassification::NetworkCPU gcn(num_points * l1_features, num_classes, batch_size);
-		PointCloudClassification::FullyConnectedLayerCPU fc1(num_points * l1_features, 100, batch_size, false);
+		PointCloudClassification::NetworkCPU gcn(Parameters::num_points * Parameters::l1_features, Parameters::num_classes, Parameters::batch_size);
+		PointCloudClassification::FullyConnectedLayerCPU fc1(Parameters::num_points * Parameters::l1_features, 100, Parameters::batch_size, false);
 		gcn.addLayer(&fc1);
-		PointCloudClassification::RELUActivationLayerCPU relu1(100, batch_size, false);
+		PointCloudClassification::RELUActivationLayerCPU relu1(100, Parameters::batch_size, false);
 		gcn.addLayer(&relu1);
-		PointCloudClassification::FullyConnectedLayerCPU fc2(100, 3, batch_size, false);
+		PointCloudClassification::FullyConnectedLayerCPU fc2(100, 3, Parameters::batch_size, false);
 		gcn.addLayer(&fc2);
 		
-		PointCloudClassification::CrossEntropyLossCPU celoss(batch_size, 3);
+		PointCloudClassification::CrossEntropyLossCPU celoss(Parameters::batch_size, 3);
 		gcn.setLoss(&celoss);
 
 		vector<float*> samples; //Data from file will be stored here
 		vector<float*> trueLabels;
 		float temp_true[3 * 3] = { 0, 1, 0, 1, 0, 0, 0, 0, 1 };
-		int number_of_random_examples = batch_size;
+		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
-			float* temp = (float*)malloc(num_points * l1_features * sizeof(float));
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::l1_features * sizeof(float));
 
-			Utilities::genArray(num_points * l1_features, temp);
+			Utilities::genArray(Parameters::num_points * Parameters::l1_features, temp);
 			samples.push_back(temp);
 
 			trueLabels.push_back(temp_true + (i * 3));

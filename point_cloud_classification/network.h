@@ -16,6 +16,7 @@ namespace PointCloudClassification {
 		int batchSize;
 		int numClasses;
 		int inputFeatures; //Number of elements in every element of the vector (of batches)
+		Layer* softmaxFunction;
 
 	public :
 		NetworkCPU(int inputFeatures, int numClasses, int batchSize);
@@ -25,6 +26,8 @@ namespace PointCloudClassification {
 		std::vector<float*> forward(std::vector<float*> input, bool test);
 		float calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel);
 		void backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate);
+		void train(std::vector<float*> input, std::vector<float*> label, int n);
+		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float*> classification);
 	};
 
 	class GraphConvolutionNetworkGPU {
