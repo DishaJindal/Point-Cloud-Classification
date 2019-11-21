@@ -16,6 +16,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <filesystem>
+#include <iomanip>
 #include <glm/glm.hpp>
 #include "cudaMat4.hpp"
 
@@ -42,6 +44,7 @@ extern std::istream& safeGetline(std::istream& is, std::string& t); //Thanks to 
 extern std::vector<glm::vec3> readPointCloud(std::string filename);
 extern std::vector<glm::vec3> farthestSample(std::vector<glm::vec3> &points, int numOfSamplePoints);
 extern float* convertFromVectorToFloatPtr(std::vector<glm::vec3> &points);
+extern std::vector<std::string> get_filenames(std::experimental::filesystem::path path);
 
 //-----------------------------
 //-------GLM Printers----------
