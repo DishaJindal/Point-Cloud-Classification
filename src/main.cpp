@@ -55,6 +55,17 @@ int main(int argc, char* argv[]) {
 	}*/
 
 	// Tests
+	tests();
+	
+	//Build the network
+	
+
+	// Train 
+	int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);
+
+}
+
+void tests() {
 	cout << "********************************************************" << endl;
 	cout << "Testing Matrix Transpose ..." << endl;
 	Tests::testMatrixTranspose();
@@ -94,16 +105,9 @@ int main(int argc, char* argv[]) {
 	cout << "Testing Cross Entropy Layer ..." << endl;
 	Tests::testCrossEntropyLoss();
 	cout << "********************************************************" << endl;
-	
+
 	cout << "********************************************************" << endl;
 	cout << "Testing All Backward..." << endl;
 	Tests::testAllBackward();
 	cout << "********************************************************" << endl;
-
-	//Build the network
-	
-
-	// Train 
-	int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);
-
 }
