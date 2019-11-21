@@ -164,6 +164,13 @@ void utilityCore::printVec3(const glm::vec3 &m) {
 
 
 std::vector<glm::vec3> utilityCore::readPointCloud(std::string filename) {
+	glm::mat4 centerTransform;
+	glm::vec3 t(0.0f, 0.0f, 0.0f);
+	glm::vec3 r(3.0f, 0.0f, 1.0f);
+	glm::vec3 s(0.01f, 0.001f, 0.001f);
+	centerTransform = utilityCore::buildTransformationMatrix(t, r, s);
+
+
 	std::ifstream fp_in;
 	std::vector<glm::vec3> points;
 	char* fname = (char*)filename.c_str();
@@ -197,6 +204,7 @@ std::vector<glm::vec3> utilityCore::readPointCloud(std::string filename) {
 			replace(line.begin(), line.end(), ',', ' ');
 			std::vector<std::string> tokens = tokenizeString(line);
 			glm::vec3 pt(atof(tokens[0].c_str()), atof(tokens[1].c_str()), atof(tokens[2].c_str()));
+			pt = glm::vec3(centerTransform * glm::vec4(pt, 1));
 			points.push_back(pt);
 			numOfPoints--;
 		}
@@ -208,13 +216,14 @@ std::vector<glm::vec3> utilityCore::farthestSample(std::vector<glm::vec3> &point
 	std::vector<glm::vec3> sampledPoints;
 	sampledPoints.push_back(points[0]);
 	for (int i = 1; i < numOfSamplePoints; i++) {
-		glm::vec3 farthestPoint = sampledPoints[0];
-		float maxDistance = 0;
+		glm::vec3 farthestPoint;
+		double maxDistance = 0;
 		int index = 0;
+		bool foundPoint = false;
 		for (int j = 0; j < points.size(); j++) {
-			float minDistance = INT_MAX;
+			double minDistance = INT_MAX;
 			for (int k = 0; k < sampledPoints.size(); k++) {
-				float dist = glm::distance(sampledPoints[k], points[j]);
+				double dist = glm::distance(glm::dvec3(sampledPoints[k]), glm::dvec3(points[j]));
 				if (dist < minDistance) {
 					minDistance = dist;
 				}
@@ -226,8 +235,10 @@ std::vector<glm::vec3> utilityCore::farthestSample(std::vector<glm::vec3> &point
 				maxDistance = minDistance;
 				farthestPoint = points[j];
 				index = j;
+				foundPoint = true;
 			}
 		}
+		if (maxDistance == 0) break;
 		points.erase(points.begin() + index);
 		sampledPoints.push_back(farthestPoint);
 	}
@@ -246,3 +257,15 @@ float* utilityCore::convertFromVectorToFloatPtr(std::vector<glm::vec3> &points) 
 	return convertedPoints;
 }
 
+
+std::vector<std::string> utilityCore::get_filenames(std::experimental::filesystem::path path)
+{
+	namespace stdfs = std::experimental::filesystem;
+
+	std::vector<std::string> filenames;
+	using recursive_directory_iterator = std::experimental::filesystem::recursive_directory_iterator;
+	for (const auto& dirEntry : recursive_directory_iterator("../data_set/ModelNet10/"))
+		filenames.push_back(dirEntry.path().string());
+
+	return filenames;
+}
