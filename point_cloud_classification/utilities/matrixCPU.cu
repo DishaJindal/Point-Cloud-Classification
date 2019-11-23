@@ -76,6 +76,17 @@ void MatrixCPU::subtract(float* A, float* B, int m, int n, float* output) {
 /*
 	A -> m x n
 	B -> m x n
+	output = A - B
+*/
+void MatrixCPU::subtractIdentity(float* A, int m) {
+	for (int i = 0; i < m; i++) {
+		A[i * m + i] = A[i * m + i] - 1;
+	}
+}
+
+/*
+	A -> m x n
+	B -> m x n
 	output = A - alpha * B
 */
 void MatrixCPU::subtractWithFactor(float* A, float* B, float alpha, int m, int n, float* output) {

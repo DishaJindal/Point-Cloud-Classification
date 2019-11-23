@@ -17,6 +17,7 @@ public:
 	virtual void add(float* A, float* B, int m, int n, float* output) = 0;
 	virtual void subtract(float* A, float* B, int m, int n, float* output) = 0;
 	virtual void printMatrix(float* A, int m, int n) = 0;
+	virtual void subtractIdentity(float* A, int m) = 0;
 };
 
 class MatrixCPU : public Matrix {
@@ -28,6 +29,7 @@ public:
 	void add(float* A, float* B, int m, int n, float* output);
 	void subtract(float* A, float* B, int m, int n, float* output);
 	void printMatrix(float* A, int m, int n);
+	void subtractIdentity(float* A, int m);
 };
 
 class MatrixGPU : public Matrix {

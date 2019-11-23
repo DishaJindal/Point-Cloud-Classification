@@ -11,25 +11,11 @@ namespace PointCloudClassification {
 			/* 
 				Weight matrix
 			*/
-			float *W = NULL;
+			std::vector<float*> theta;
 			/* 
 				Derivative w.r.t. weight matrix
 			*/
-			float *dW = NULL;
-
-			/* 
-				Input
-			*/
-			float *A = NULL;
-			/* 
-				Derivative w.r.t. input
-			*/
-			float *dA = NULL;
-			/* 
-				Output of this layer
-			*/
-			float *Z = NULL;
-			
+			std::vector<float*> dtheta;
 
 			int inputDim;
 			int outputDim;
