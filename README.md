@@ -17,17 +17,23 @@
 
 # Tasks
 
-| Task                | Saket  | Disha | &#x2654; Kushagra &#x2654;            |
+| Task                | &#x265a;Saket&#x265a;  | 	&#x265b; Disha 	&#x265b; | &#x2654; Kushagra &#x2654;            |
 | ---                 | ---    | ---        | ---                  |
-| Markdown for ticks and crosses                 | &#x2611; Completed    | &#x2612; Not Doing      |&#x25CB; Currently Working on            |
-| Graph Convolution CPU Forward    | &#x263a;   | &#x263a;   | &#x263a;             |
-| Graph Convolution CPU Backward    | &#x263a;   | &#x263a;        | &#x263a;              |
-| Droput CPU Forward    | &#x263a;  | &#x263a;     | &#x263a;            |
-| Dropout CPU Backward    | &#x263a;   | &#x263a;        | &#x263a;              |
-| Global Pool CPU Forward    | &#x263a;   | &#x263a;       | &#x263a;              |
-| Global Pool CPU Backward    | &#x263a;   | &#x263a;        | &#x263a;              |
-| Eigen Math Library    | &#x263a;  | &#x263a;       | &#x263a;              |
-| Data Sampling    | &#x263a;   | &#x263a;         | &#x263a;              |
-| Data Loading    | &#x263a;   | &#x263a;       | &#x263a;              |
-| Label Loading    | &#x263a;   | &#x263a;        | &#x263a;              |
-| All Layers GPU (To Be expanded)    | &#x263a;   | &#x263a;        | &#x263a;              |
+| Graph Convolution CPU Forward    | &#x25CB;   |  |            |
+| Graph Convolution CPU Backward    | &#x25CB;   |        |            |
+| Droput CPU Forward    | | &#x25CB;     |           |
+| Dropout CPU Backward    |  | &#x25CB;        |            |
+| Global Pool CPU Forward    |   | &#x25CB;       |            |
+| Global Pool CPU Backward    |  | &#x25CB;        |             |
+| Eigen Math Library    | &#x25CB;  |    |           |
+| Data Sampling    | |   | &#x25CB;              |
+| Data Loading    | |   | &#x25CB;              |
+| Label Loading    |  |    | &#x25CB;              |
+| All Layers GPU (To Be expanded)    | &#x263a;   | &#x263a;        | &#x263a;              |  
+
+
+
+
+|Markdown Icon Legend                 | &#x2611; Completed    | &#x2612; Not Doing      |&#x25CB; Currently Working on            |  
+| ---                 | ---    | ---        | ---                  |
+
