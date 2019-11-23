@@ -19,7 +19,7 @@
 
 | Task                | &#x265a;Saket&#x265a;  | 	&#x265b; Disha 	&#x265b; | &#x2654; Kushagra &#x2654;            |
 | ---                 | ---    | ---        | ---                  |
-| Graph Convolution CPU Forward    | &#x25CB;   |  |            |
+| Graph Convolution CPU Forward    | &#x2611;   |  |            |
 | Graph Convolution CPU Backward    | &#x25CB;   |        |            |
 | Droput CPU Forward    | | &#x25CB;     |           |
 | Dropout CPU Backward    |  | &#x25CB;        |            |
