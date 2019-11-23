@@ -55,7 +55,6 @@ include_directories(${GLM_INCLUDE_DIRS})
 cuda_add_executable(${CMAKE_PROJECT_NAME}
     "src/main.cpp"
     "src/testing_helpers.hpp"
-    "src/parameters.hpp"
     "src/utilityCore.hpp"
     "src/utilityCore.cpp"
     )

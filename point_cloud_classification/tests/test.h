@@ -1,7 +1,7 @@
 #pragma once
 #include "../common.h"
 #include "../network.h"
-#include "../utilities/parameters.cpp"
+#include "../utilities/parameters.h"
 #include "../hidden_layers/fullyConnectedLayerCPU.cu"
 #include "../hidden_layers/RELUActivationLayerCPU.cu"
 #include "../hidden_layers/softmaxActivationLayerCPU.cu"

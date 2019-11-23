@@ -13,7 +13,7 @@
 #include "point_cloud_classification/graph/graph.h"
 #include "point_cloud_classification/utilities/matrix.h"
 #include "point_cloud_classification/utilities/utils.h"
-#include "point_cloud_classification/utilities/parameters.cpp"
+#include "point_cloud_classification/utilities/parameters.h"
 #include "point_cloud_classification/hidden_layers/fullyConnectedLayerCPU.cu"
 
 #include "point_cloud_classification/tests/test.h"

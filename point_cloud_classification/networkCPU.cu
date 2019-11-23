@@ -4,7 +4,7 @@
 #include "hidden_layers/loss.h"
 #include "hidden_layers/fullyConnectedLayerCPU.cu"
 #include "hidden_layers/softmaxActivationLayerCPU.cu"
-#include "utilities/parameters.cpp"
+#include "utilities/parameters.h"
 #include "utilities/utils.h"
 #include <fstream>
 #include <string>
