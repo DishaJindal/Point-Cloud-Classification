@@ -74,9 +74,8 @@ void MatrixCPU::subtract(float* A, float* B, int m, int n, float* output) {
 }
 
 /*
-	A -> m x n
-	B -> m x n
-	output = A - B
+	A -> m x m
+	output = A - I
 */
 void MatrixCPU::subtractIdentity(float* A, int m) {
 	for (int i = 0; i < m; i++) {
@@ -98,6 +97,19 @@ void MatrixCPU::subtractWithFactor(float* A, float* B, float alpha, int m, int n
 }
 
 /*
+	A -> m x n
+	B -> m x n
+	output = alpha * A + beta * B
+*/
+void MatrixCPU::linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output) {
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			output[i * n + j] = (alpha * A[i * n + j]) + (beta * B[i * n + j]);
+		}
+	}
+}
+
+/*
 	Prints matrix A
 */
 void MatrixCPU::printMatrix(float* A, int m, int n) {
@@ -108,3 +120,20 @@ void MatrixCPU::printMatrix(float* A, int m, int n) {
 		printf("\n");
 	}
 }
+
+/*
+	returns Identity matrix of given dimension
+*/
+void MatrixCPU::getIdentityMatrix(int m, float* A) {
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < m; j++) {
+			if (i == j){
+				A[i * m + j] = 1;
+			}else{
+				A[i * m + j] = 0;
+			}
+		}
+	}
+}
+
+

@@ -18,6 +18,8 @@ public:
 	virtual void subtract(float* A, float* B, int m, int n, float* output) = 0;
 	virtual void printMatrix(float* A, int m, int n) = 0;
 	virtual void subtractIdentity(float* A, int m) = 0;
+	virtual void getIdentityMatrix(int m, float* A) = 0;
+	virtual void linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output) = 0;
 };
 
 class MatrixCPU : public Matrix {
@@ -30,6 +32,8 @@ public:
 	void subtract(float* A, float* B, int m, int n, float* output);
 	void printMatrix(float* A, int m, int n);
 	void subtractIdentity(float* A, int m);
+	void getIdentityMatrix(int m, float* A);
+	void linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output);
 };
 
 class MatrixGPU : public Matrix {

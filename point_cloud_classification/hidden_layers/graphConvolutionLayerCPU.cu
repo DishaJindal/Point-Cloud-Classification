@@ -18,30 +18,13 @@ namespace PointCloudClassification {
 	class GraphConvolutionLayerCPU : public GraphConvolutionLayer {
 		GraphConvolutionLayerCPU() {};
 	private:
-		float* get_chebeshev_polynomial(float* L, int k) {
-			if (k == 0) {
-				return nullptr;
-			}else if (k == 1) {
-				return L;
-			}
-			else {
-				MatrixCPU* m = new MatrixCPU();
-				float* Tk1 = get_chebeshev_polynomial(L, k - 1);
-				float* Tk2 = get_chebeshev_polynomial(L, k - 2);
-				float* t = (float*)malloc(numPoints * numPoints * sizeof(float));
-				m->multiply(L, Tk1, numPoints, numPoints, numPoints, t);
-				if (Tk2) {
-					float* Tk = (float*)malloc(numPoints * numPoints * sizeof(float));
-					m->subtract(t, Tk2, numPoints, numPoints, Tk);
-					return Tk;
-				}
-				else {
-					//float* Tk = (float*)malloc(numPoints * numPoints * sizeof(float));
-					m->subtractIdentity(t, numPoints);
-					return t;
-				}
-
-			}
+		float* get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L) {
+			float* t = (float*)malloc(numPoints * numPoints * sizeof(float));
+			m->multiply(L, Tk1, numPoints, numPoints, numPoints, t);
+			
+			float* Tk = (float*)malloc(numPoints * numPoints * sizeof(float));
+			m->linearCombination(t, Tk2, 2, -1, numPoints, numPoints, Tk);
+			return Tk;
 		}
 	public:
 		GraphConvolutionLayerCPU(int numPoints, int inputDim, int outputDim, int batchDim, int numFilters, bool lastLayer) : GraphConvolutionLayer(numPoints, inputDim, outputDim, batchDim, numFilters, lastLayer) {
@@ -50,15 +33,31 @@ namespace PointCloudClassification {
 
 		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
 			std::vector<float*> output;
-
 			MatrixCPU* m = new MatrixCPU();
+
+			float* Tk_minus_2 = (float*) malloc(numPoints * numPoints * sizeof(float));
+			float* Tk_minus_1 = (float*) malloc(numPoints * numPoints * sizeof(float));
+			float* Tk;
+
+			m->getIdentityMatrix(numPoints, Tk_minus_2);
+
 			for (int i = 0; i < batchDim; i++) {
 				float* current_input = inputArg[i];
 				float* current_L = inputArg[i + batchDim];
+				Tk_minus_1 = current_L;
+
 				float* current_output = (float*)malloc(numPoints * outputDim * sizeof(float));
-				//memset(current_output, 0, numPoints * outputDim * sizeof(float));
+				
 				for (int k = 0; k < numFilters; k++) {
-					float* Tk = get_chebeshev_polynomial(current_L, k);
+					if(k == 0){
+						Tk = Tk_minus_2;
+					}else if(k == 1){
+						Tk = Tk_minus_1;
+					}else{
+						Tk = get_chebeshev_polynomial(Tk_minus_1, Tk_minus_2, current_L);
+						Tk_minus_2 = Tk_minus_1;
+						Tk_minus_1 = Tk;
+					}
 					float* temp = (float*)malloc(numPoints * inputDim * sizeof(float));
 					m->multiply(Tk, current_input, numPoints, numPoints, inputDim, temp);
 					if (k == 0) {
