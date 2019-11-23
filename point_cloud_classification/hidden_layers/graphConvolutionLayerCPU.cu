@@ -22,11 +22,11 @@ namespace PointCloudClassification {
 		float* get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L) {
 			MatrixCPU* m = new MatrixCPU();
 
-			float* t = (float*)malloc(numPoints * numPoints * sizeof(float));
-			m->multiply(L, Tk1, numPoints, numPoints, numPoints, t);
+			float* t = (float*)malloc(numPoints * inputDim * sizeof(float));
+			m->multiply(L, Tk1, numPoints, numPoints, inputDim, t);
 			
-			float* Tk = (float*)malloc(numPoints * numPoints * sizeof(float));
-			m->linearCombination(t, Tk2, 2, -1, numPoints, numPoints, Tk);
+			float* Tk = (float*)malloc(numPoints * inputDim * sizeof(float));
+			m->linearCombination(t, Tk2, 2, -1, numPoints, inputDim, Tk);
 			return Tk;
 		}
 
@@ -48,19 +48,23 @@ namespace PointCloudClassification {
 			std::vector<float*> output;
 			MatrixCPU* m = new MatrixCPU();
 
-			float* Tk_minus_2 = (float*) malloc(numPoints * numPoints * sizeof(float));
-			float* Tk_minus_1 = (float*) malloc(numPoints * numPoints * sizeof(float));
+			float* Tk_minus_2 = (float*) malloc(numPoints * inputDim * sizeof(float));
+			float* Tk_minus_1 = (float*) malloc(numPoints * inputDim * sizeof(float));
 			float* Tk;
 
-			timer().startCpuTimer();
+		/*	timer().startCpuTimer();
 			m->getIdentityMatrix(numPoints, Tk_minus_2);
 			timer().endCpuTimer();
 			printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Generate Identity Matrix)");
-
+*/
 			for (int i = 0; i < batchDim; i++) {
 				float* current_input = inputArg[i];
 				float* current_L = inputArg[i + batchDim];
-				Tk_minus_1 = current_L;
+				
+				Tk_minus_2 = current_input;
+				m->multiply(current_L, current_input, numPoints, numPoints, inputDim, Tk_minus_1);
+
+				//Tk_minus_1 = current_L;
 
 				float* current_output = (float*)malloc(numPoints * outputDim * sizeof(float));
 				
@@ -82,14 +86,14 @@ namespace PointCloudClassification {
 					printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Generate Chebeshev Polynomial)");
 
 					timer().startCpuTimer();
-					float* temp = (float*)malloc(numPoints * inputDim * sizeof(float));
-					m->multiply(Tk, current_input, numPoints, numPoints, inputDim, temp);
+					/*float* temp = (float*)malloc(numPoints * inputDim * sizeof(float));
+					m->multiply(Tk, current_input, numPoints, numPoints, inputDim, temp);*/
 					if (k == 0) {
-						m->multiply(temp, theta[k], numPoints, inputDim, outputDim, current_output);
+						m->multiply(Tk, theta[k], numPoints, inputDim, outputDim, current_output);
 					}
 					else {
 						float* temp_out = (float*)malloc(numPoints * outputDim * sizeof(float));
-						m->multiply(temp, theta[k], numPoints, inputDim, outputDim, temp_out);
+						m->multiply(Tk, theta[k], numPoints, inputDim, outputDim, temp_out);
 						m->add(current_output, temp_out, numPoints, outputDim, current_output);
 					}
 					timer().endCpuTimer();
