@@ -20,6 +20,7 @@ namespace PointCloudClassification {
 	private:
 		float* get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L) {
 			float* t = (float*)malloc(numPoints * numPoints * sizeof(float));
+			MatrixCPU* m = new MatrixCPU();
 			m->multiply(L, Tk1, numPoints, numPoints, numPoints, t);
 			
 			float* Tk = (float*)malloc(numPoints * numPoints * sizeof(float));
