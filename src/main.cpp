@@ -120,7 +120,43 @@ int main(int argc, char* argv[]) {
 	//utilityCore::load_data("S:\CIS 565\Final Project\Point-Cloud-Classification\data_set\ModelNet10", XTest, YTest, "test", 2);
 	
 	//Build the network
+	PointCloudClassification::NetworkCPU gcn(Parameters::num_points * Parameters::l1_features, Parameters::num_classes, Parameters::batch_size);
+
+	// GCN Layer 1
 	
+
+	// Dropout 1
+	
+
+	// Global Pooling 1
+	
+
+	// GCN Layer 2
+	
+
+	// Dropout 2
+	
+
+	// Global Pooling 2
+
+
+	// Concatenate GCN Layer 1 and GCN Layer 2
+
+
+	// Dropout 3
+
+
+	// Fully Connected Layer 1
+
+
+	// ReLU 1
+
+
+	// Dropout 4
+
+	// Fully Connected Layer 2
+
+	// Softmax 1
 
 	// Train 
 	//int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);

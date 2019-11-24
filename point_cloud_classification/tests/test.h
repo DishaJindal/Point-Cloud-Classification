@@ -13,7 +13,6 @@
 
 using namespace std;
 using namespace PointCloudClassification;
-//using namespace Parameters;
 
 namespace Tests {
 	void testMatrixTranspose() {
