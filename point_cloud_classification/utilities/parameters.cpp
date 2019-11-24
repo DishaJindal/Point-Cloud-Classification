@@ -13,5 +13,7 @@ namespace PointCloudClassification {
 		 float learning_rate = 12e-4;
 
 		 int l1_features = 3;
+
+		 float keep_prob = 0.5;
 	}
 }

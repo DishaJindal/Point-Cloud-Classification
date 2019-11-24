@@ -80,6 +80,11 @@ void tests() {
 	cout << "Testing Global Pooling Layer ..." << endl;
 	Tests::testGlobalPoolingLayer();
 	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Dropout Layer ..." << endl;
+	Tests::testDropoutLayer();
+	cout << "********************************************************" << endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -112,7 +117,7 @@ int main(int argc, char* argv[]) {
 
 	std::vector<float*> XTest;
 	std::vector<int> YTest;
-	utilityCore::load_data("S:\CIS 565\Final Project\Point-Cloud-Classification\data_set\ModelNet10", XTest, YTest, "test", 2);
+	//utilityCore::load_data("S:\CIS 565\Final Project\Point-Cloud-Classification\data_set\ModelNet10", XTest, YTest, "test", 2);
 	
 	//Build the network
 	

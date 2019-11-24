@@ -27,8 +27,8 @@
 |  sigmoidActivationLayerGPU   |   |       |              |
 |  softmaxActivationLayerGPU   |   |       |              |
 | Graph Convolution CPU Forward    | &#x2611;   |  |            |
-| Droput CPU Forward    | | &#x25CB;     |           |
-| Dropout CPU Backward    |  | &#x25CB;        |            |
+| Droput CPU Forward    | | &#x2611;     |           |
+| Dropout CPU Backward    |  | &#x2611;        |            |
 | Global Pool CPU Forward    |   | &#x2611;       |            |
 | Global Pool CPU Backward    |  | &#x2611;        |             |
 | Eigen Math Library    | &#x25CB;  |    |           |

@@ -9,6 +9,7 @@
 #include "../hidden_layers/softmaxActivationLayerCPU.cu"
 #include "../hidden_layers/sigmoidActivationLayerCPU.cu"
 #include "../hidden_layers/CrossEntropyLossCPU.cu"
+#include "../hidden_layers/dropoutLayerCPU.cu"
 
 using namespace std;
 using namespace PointCloudClassification;
@@ -103,7 +104,6 @@ namespace Tests {
 		std::cout << std::endl;
 	}
 
-
 	void testGlobalPoolingLayer() {
 		int pts = 5;
 		PointCloudClassification::GlobalPoolingLayerCPU gp_layer(pts, Parameters::l1_features, Parameters::batch_size, false);
@@ -142,6 +142,45 @@ namespace Tests {
 		std::cout << std::endl;
 	}
 
+	void testDropoutLayer() {
+		int pts = 5;
+		PointCloudClassification::DropoutLayerCPU dropout_layer(pts, Parameters::l1_features, Parameters::batch_size, false);
+
+		vector<float*> samples; //Data from file will be stored here
+		int number_of_random_examples = Parameters::batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float temp[15] = { 1.0f,2.0f,3.0f,4.0f,5.0f,6.0f,7.0f,8.0f,9.0f,10.0f,11.0f,12.0f,13.0f,14.0f,15.0f };
+			samples.push_back(temp);
+		}
+
+		std::cout << "SAMPLE: " << std::endl;
+		std::cout << samples[0][0] << " " << samples[0][1] << " " << samples[0][2] << std::endl;
+		std::cout << samples[0][3] << " " << samples[0][4] << " " << samples[0][5] << std::endl;
+		std::cout << samples[0][6] << " " << samples[0][7] << " " << samples[0][8] << std::endl;
+		std::cout << samples[0][9] << " " << samples[0][10] << " " << samples[0][11] << std::endl;
+		std::cout << samples[0][12] << " " << samples[0][13] << " " << samples[0][14] << std::endl;
+		std::cout << std::endl;
+
+		std::vector<float*> op = dropout_layer.forward(samples, false);
+
+		std::cout << "OUTPUT: " << std::endl;
+		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
+		std::cout << op[0][3] << " " << op[0][4] << " " << op[0][5] << std::endl;
+		std::cout << op[0][6] << " " << op[0][7] << " " << op[0][8] << std::endl;
+		std::cout << op[0][9] << " " << op[0][10] << " " << op[0][11] << std::endl;
+		std::cout << op[0][12] << " " << op[0][13] << " " << op[0][14] << std::endl;
+		std::cout << std::endl;
+
+		std::vector<float*> outGradient = dropout_layer.backward(op, 1);
+
+		std::cout << "GRADIENT: " << std::endl;
+		std::cout << outGradient[0][0] << " " << outGradient[0][1] << " " << outGradient[0][2] << std::endl; // -43.2 -43.2 -43.2
+		std::cout << outGradient[0][3] << " " << outGradient[0][4] << " " << outGradient[0][5] << std::endl; //	-21.6 -21.6 -21.6
+		std::cout << outGradient[0][6] << " " << outGradient[0][7] << " " << outGradient[0][8] << std::endl; //	0 0 0
+		std::cout << outGradient[0][9] << " " << outGradient[0][10] << " " << outGradient[0][11] << std::endl; // 21.6 21.6 21.6
+		std::cout << outGradient[0][12] << " " << outGradient[0][13] << " " << outGradient[0][14] << std::endl; // 56.2 57.2 58.2
+		std::cout << std::endl;
+	}
 	void testRELULayer() {
 		PointCloudClassification::NetworkCPU gcn(Parameters::num_points * Parameters::l1_features, Parameters::num_classes, Parameters::batch_size);
 

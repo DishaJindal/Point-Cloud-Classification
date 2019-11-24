@@ -8,6 +8,7 @@ set(SOURCE_FILES
 	"sigmoidActivationLayer.h"
 	"softmaxActivationLayer.h"
 	"crossEntropyLoss.h"
+	"dropoutLayer.h"
         "fullyConnectedLayerCPU.cu"
 	"fullyConnectedLayerGPU.cu"
 	"globalPoolingCPU.cu"
@@ -22,6 +23,7 @@ set(SOURCE_FILES
 	"softmaxActivationLayerGPU.cu"
 	"crossEntropyLossCPU.cu"
 	"crossEntropyLossGPU.cu"
+	"dropoutLayerCPU.cu"
 )
 
 cuda_add_library(hidden_layers

@@ -12,5 +12,6 @@ namespace PointCloudClassification {
 		extern float learning_rate;
 
 		extern int l1_features;
+		extern float keep_prob;
 	}
 }
