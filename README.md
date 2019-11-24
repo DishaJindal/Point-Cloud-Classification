@@ -19,17 +19,22 @@
 
 | Task                | &#x265a;Saket&#x265a;  | 	&#x265b; Disha 	&#x265b; | &#x2654; Kushagra &#x2654;            |
 | ---                 | ---    | ---        | ---                  |
+|  RELUActivationLayerGPU    |   |       |              |  
+|  crossEntropyLossGPU   |   |       |              |
+|  fullyConnectedLayerGPU   |   |       |              |
+|  globalPoolingGPU   |   |       |              |
+|  graphConvolutionLayerGPU   |   |       |              |
+|  sigmoidActivationLayerGPU   |   |       |              |
+|  softmaxActivationLayerGPU   |   |       |              |
 | Graph Convolution CPU Forward    | &#x2611;   |  |            |
-| Graph Convolution CPU Backward    | &#x25CB;   |        |            |
 | Droput CPU Forward    | | &#x25CB;     |           |
 | Dropout CPU Backward    |  | &#x25CB;        |            |
 | Global Pool CPU Forward    |   | &#x2611;       |            |
 | Global Pool CPU Backward    |  | &#x2611;        |             |
 | Eigen Math Library    | &#x25CB;  |    |           |
-| Data Sampling    | |   | &#x25CB;              |
-| Data Loading    | |   | &#x25CB;              |
-| Label Loading    |  |    | &#x25CB;              |
-| All Layers GPU (To Be expanded)    | &#x263a;   | &#x263a;        | &#x263a;              |  
+| Data Sampling    | |   | &#x2611;              |
+| Data Loading    | |   | &#x2611;              |
+| Label Loading    |  |    |  &#x2611;              |
 
 
 
