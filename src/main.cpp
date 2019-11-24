@@ -30,7 +30,7 @@ using namespace std;
 using namespace PointCloudClassification;
 
 void tests() {
-	/*cout << "********************************************************" << endl;
+	cout << "********************************************************" << endl;
 	cout << "Testing Matrix Transpose ..." << endl;
 	Tests::testMatrixTranspose();
 	cout << "********************************************************" << endl;
@@ -73,11 +73,11 @@ void tests() {
 	cout << "********************************************************" << endl;
 	cout << "Testing All Backward..." << endl;
 	Tests::testAllBackward();
-	cout << "********************************************************" << endl;*/
+	cout << "********************************************************" << endl;
 
 	cout << "********************************************************" << endl;
-	cout << "Testing Graph Convolution Layer..." << endl;
-	Tests::testGraphConvolutionLayer();
+	cout << "Testing Global Pooling Layer ..." << endl;
+	Tests::testGlobalPoolingLayer();
 	cout << "********************************************************" << endl;
 }
 

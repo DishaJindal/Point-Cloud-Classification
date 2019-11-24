@@ -23,8 +23,8 @@
 | Graph Convolution CPU Backward    | &#x25CB;   |        |            |
 | Droput CPU Forward    | | &#x25CB;     |           |
 | Dropout CPU Backward    |  | &#x25CB;        |            |
-| Global Pool CPU Forward    |   | &#x25CB;       |            |
-| Global Pool CPU Backward    |  | &#x25CB;        |             |
+| Global Pool CPU Forward    |   | &#x2611;       |            |
+| Global Pool CPU Backward    |  | &#x2611;        |             |
 | Eigen Math Library    | &#x25CB;  |    |           |
 | Data Sampling    | |   | &#x25CB;              |
 | Data Loading    | |   | &#x25CB;              |

@@ -110,6 +110,51 @@ void MatrixCPU::linearCombination(float* A, float* B, float alpha, float beta, i
 }
 
 /*
+	A -> m x n
+	output = n
+*/
+void MatrixCPU::maxAcrossDim1(float* A, int m, int n, int* argmaxOutput, float* output) {
+	for (int i = 0; i < n; i++) {
+		output[i] = FLT_MIN;
+		for (int j = 0; j < m; j++) {
+			if (A[n*j + i] > output[i]) {
+				output[i] = A[n*j + i];
+				argmaxOutput[i] = j;
+			}
+		}
+	}
+}
+
+/*
+	A -> m x n
+	output = n
+*/
+void MatrixCPU::meanAcrossDim1(float* A, int m, int n, float* output) {
+	for (int i = 0; i < n; i++) {
+		output[i] = 0;
+		for (int j = 0; j < m; j++) {
+			output[i] += A[n*j + i];
+		}
+		output[i] /= m;
+	}
+}
+
+/*
+	A -> m x n
+	output = n
+*/
+void MatrixCPU::varianceAcrossDim1(float* A, int m, int n, float* output, float* mean) {
+
+	for (int i = 0; i < n; i++) {
+		output[i] = 0;
+		for (int j = 0; j < m; j++) {
+			output[i] += std::pow((A[n*j + i] - mean[i]), 2);
+		}
+		output[i] /= m;
+	}
+}
+
+/*
 	Prints matrix A
 */
 void MatrixCPU::printMatrix(float* A, int m, int n) {
