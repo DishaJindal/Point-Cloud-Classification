@@ -1,11 +1,11 @@
 #include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/utils.h"
+#include "../utilities/matrix.h"
 #include "layer.h"
 #include "globalPoolingLayer.h"
 #include <fstream>
 #include <string>
-#include "../utilities/matrix.h"
 #ifndef imax
 #define imax(a,b) (((a)>(b))?(a):(b))
 #endif
@@ -15,18 +15,18 @@
 namespace PointCloudClassification {
 
 	class GlobalPoolingLayerCPU : public GlobalPoolingLayer {
+		MatrixCPU* m;
 		GlobalPoolingLayerCPU() {};
 
 	public: 
 		GlobalPoolingLayerCPU(int numPoints, int inputDim, int batchDim, bool lastLayer) : GlobalPoolingLayer(numPoints, inputDim, batchDim, lastLayer) {
-
 			// Allocate space to save mean required for back propagataion
 			for (int i = 0; i < batchDim; i++)
-				this->mean[i] = (float*)malloc(inputDim * sizeof(float));
-
+				this->mean.push_back((float*)malloc(inputDim * sizeof(float)));
 			// Allocate space to save argmax required for back propagataion
 			for (int i = 0; i < batchDim; i++)
-				this->argMax[i] = (int*)malloc(inputDim * sizeof(int));
+				this->argMax.push_back((int*)malloc(inputDim * sizeof(int)));
+			this->m = new MatrixCPU();
 		}
 
 		/*
@@ -36,7 +36,7 @@ namespace PointCloudClassification {
 		*/
 		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
 			// Save X for back prop
-			*Z = inputArg;
+			this->Z = inputArg;
 
 			// Calculate Output
 			std::vector<float*> output;
@@ -44,11 +44,11 @@ namespace PointCloudClassification {
 				float* current_output = (float*)malloc(inputDim * 2 * sizeof(float));
 				
 				// Max Pooling and Save Argmax for back prop
-				m->maxAcrossDim1(inputArg[b], numPoints, inputDim, argMax[b], current_output);
+				m->maxAcrossDim1(inputArg[b], numPoints, inputDim, this->argMax[b], current_output);
 
 				// Calculate mean and Save it for back prop
 				m->meanAcrossDim1(inputArg[b], numPoints, inputDim, this->mean[b]);
-
+				
 				// Variance Pooling
 				m->varianceAcrossDim1(inputArg[b], numPoints, inputDim, current_output + inputDim, this->mean[b]);
 				output.push_back(current_output);
@@ -75,11 +75,11 @@ namespace PointCloudClassification {
 					// Update gradient of the max point
 					oneOutgoingGradient[this->inputDim * this->argMax[b][d] + d] = incomingGradient[b][d];
 				}
-
+				
 				// Consume Gradient coming from variance pooling
 				for (int d = 0; d < this->inputDim; d++) {
 					for (int n = 0; n < this->numPoints; n++) {
-						float del_yj_by_xij = (2 * (Z[b][n* inputDim + d] - this->mean[b][d])) / numPoints;
+						float del_yj_by_xij = (2 * ((Z[b][n* inputDim + d]) - this->mean[b][d])) / numPoints;
 						oneOutgoingGradient[this->inputDim * n + d] += incomingGradient[b][this->inputDim + d] * del_yj_by_xij;
 					}
 				}
@@ -87,5 +87,6 @@ namespace PointCloudClassification {
 			}
 			return outgoingGradient;
 		}
+
 	};
 }

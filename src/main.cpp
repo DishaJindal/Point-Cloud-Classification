@@ -74,6 +74,11 @@ void tests() {
 	cout << "Testing All Backward..." << endl;
 	Tests::testAllBackward();
 	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Global Pooling Layer ..." << endl;
+	Tests::testGlobalPoolingLayer();
+	cout << "********************************************************" << endl;
 }
 
 int main(int argc, char* argv[]) {

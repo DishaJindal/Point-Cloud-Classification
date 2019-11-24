@@ -2,6 +2,7 @@
 
 #include "../common.h"
 #include "layer.h"
+
 #include <vector>
 #include <math.h>
 
@@ -11,7 +12,7 @@ namespace PointCloudClassification {
 			/* 
 				Input
 			*/
-			std::vector<float*> *Z = NULL;
+			std::vector<float*> Z;
 			/* 
 				Derivative w.r.t. input
 			*/
@@ -28,7 +29,7 @@ namespace PointCloudClassification {
 
 			std::vector<float*> mean;
 			std::vector<int*> argMax;
-			MatrixCPU* m;
+			
 
 	public:
 		GlobalPoolingLayer() {};
@@ -37,7 +38,7 @@ namespace PointCloudClassification {
 			this->inputDim = inputDim;
 			this->batchDim = batchDim;
 			this->lastLayer = lastLayer;
-			this->m = new MatrixCPU();
+			
 		}
 
 		int getInputDim() {
