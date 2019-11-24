@@ -35,7 +35,10 @@
 | Data Sampling    | |   | &#x2611;              |
 | Data Loading    | |   | &#x2611;              |
 | Label Loading    |  |    |  &#x2611;              |
-
+| Architecture     |  |  &#x25CB;  |                |
+| Train on CPU     |  |  &#x25CB;  |               |
+| GPU kernels for Utils   |   |                | &#x25CB; |
+| Layers on GPU   |    |                |    |
 
 
 
