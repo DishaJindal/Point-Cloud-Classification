@@ -266,6 +266,92 @@ std::vector<std::string> utilityCore::get_filenames(std::experimental::filesyste
 	using recursive_directory_iterator = std::experimental::filesystem::recursive_directory_iterator;
 	for (const auto& dirEntry : recursive_directory_iterator("../data_set/ModelNet10/"))
 		filenames.push_back(dirEntry.path().string());
-
 	return filenames;
+}
+
+
+
+void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std::vector<int> &Y, std::string subFolder, int numToRead) {
+	int count = 0;
+	std::string previousLabel = "begin";
+	for (const auto& name : get_filenames(folderName)) {
+		int len = name.length();
+		if (name[len - 1] == 'f') {
+			std::string altName = name;
+			replace(altName.begin(), altName.end(), '\\', ' ');
+			std::vector<std::string> tokens = tokenizeString(altName);
+			std::string subFolderName = tokens[tokens.size() - 2];
+			std::string label = tokens[tokens.size() - 3];
+			if (label != previousLabel) {
+				previousLabel = label;
+				count = 0;
+			}
+			if ((subFolderName == subFolder || subFolder == "all") && (count < numToRead || numToRead == -1)) {
+				std::vector<glm::vec3> points = readPointCloud(name);
+				float *X_i = convertFromVectorToFloatPtr(points);
+				X.push_back(X_i);
+				if (label == "chair") { // 678
+					Y.push_back(2);
+				}
+				else {
+
+					if (label == "sofa") { // 453
+						Y.push_back(7);
+					}
+					else {
+
+						if (label == "bed") { // 327
+							Y.push_back(1);
+						}
+						else {
+
+							if (label == "toilet") { // 321
+								Y.push_back(9);
+							}
+							else {
+
+								if (label == "monitor") { // 191
+									Y.push_back(5);
+								}
+								else {
+
+									if (label == "table") { // 165
+										Y.push_back(8);
+									}
+									else {
+
+										if (label == "dresser") { // 115
+											Y.push_back(4);
+										}
+										else {
+
+											if (label == "desk") { // 109
+												Y.push_back(3);
+											}
+											else {
+
+												if (label == "bathtub") { // 87
+													Y.push_back(0);
+												}
+												else {
+
+													if (label == "night_stand") { //84
+														Y.push_back(6);
+													}
+													else {
+														Y.push_back(-1);
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				++count;
+			}
+		}
+	}
 }

@@ -10,6 +10,7 @@
 #include <point_cloud_classification/network.h>
 #include <point_cloud_classification/common.h>
 #include "testing_helpers.hpp"
+#include "utilityCore.hpp"
 #include "point_cloud_classification/graph/graph.h"
 #include "point_cloud_classification/utilities/matrix.h"
 #include "point_cloud_classification/utilities/utils.h"
@@ -108,12 +109,16 @@ int main(int argc, char* argv[]) {
 
 	// Tests
 	tests();
+
+	std::vector<float*> XTest;
+	std::vector<int> YTest;
+	utilityCore::load_data("S:\CIS 565\Final Project\Point-Cloud-Classification\data_set\ModelNet10", XTest, YTest, "test", 2);
 	
 	//Build the network
 	
 
 	// Train 
-	int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);
+	//int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);
 }
 
 
