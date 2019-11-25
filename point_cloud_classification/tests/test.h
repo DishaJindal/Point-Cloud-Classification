@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace PointCloudClassification;
+//using namespace Parameters;
 
 namespace Tests {
 	Common::PerformanceTimer& timer()
@@ -104,6 +105,26 @@ namespace Tests {
 
 		std::cout << "C = A X B : " << endl;
 		m->printMatrix(C, 3, 5);
+		std::cout << std::endl;
+		std::cout << std::endl;
+	}
+
+	void testKroneckerProduct() {
+		MatrixCPU* m = new MatrixCPU();
+		float A[3 * 2] = { 1,2,3,4,1,0 };
+		float B[2 * 3] = { 0, 5, 2, 6, 7, 3 };
+		float* C = (float*)malloc(6 * 6 * sizeof(float));
+		m->kroneckerProduct(A, B, 3, 2, 2, 3, C);
+		std::cout << "A: " << endl;
+		m->printMatrix(A, 3, 2);
+		std::cout << std::endl;
+
+		std::cout << "B: " << endl;
+		m->printMatrix(B, 2, 3);
+		std::cout << std::endl;
+
+		std::cout << "C = A (x) B : " << endl;
+		m->printMatrix(C, 6, 6);
 		std::cout << std::endl;
 		std::cout << std::endl;
 	}
@@ -437,6 +458,66 @@ namespace Tests {
 		op = gcn.forward(samples, false);
 
 		std::cout << "NEW OUTPUT: " << std::endl;
+		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
+		std::cout << op[1][0] << " " << op[1][1] << " " << op[1][2] << std::endl;
+		std::cout << op[2][0] << " " << op[2][1] << " " << op[2][2] << std::endl;
+		std::cout << std::endl;
+
+		l = gcn.calculateLoss(op, trueLabels);
+		std::cout << "*****NEW LOSS: " << l << std::endl;
+	}
+
+	void testGraphConvolutionLayer() {
+		PointCloudClassification::NetworkCPU gcn(Parameters::num_points * Parameters::l1_features, Parameters::num_classes, Parameters::batch_size);
+		PointCloudClassification::GraphConvolutionLayerCPU gc1(Parameters::num_points, Parameters::l1_features, 3, Parameters::batch_size, 3, false);
+		gcn.addLayer(&gc1);
+		PointCloudClassification::GlobalPoolingLayerCPU gp_layer(Parameters::num_points, 3, Parameters::batch_size, false);
+		gcn.addLayer(&gp_layer);
+
+		PointCloudClassification::CrossEntropyLossCPU celoss(Parameters::batch_size, 3);
+		gcn.setLoss(&celoss);
+
+		vector<float*> samples; //Data from file will be stored here
+		vector<float*> trueLabels;
+		float temp_true[3 * 3] = { 0, 1, 0, 1, 0, 0, 0, 0, 1 };
+		int number_of_random_examples = Parameters::batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::l1_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::l1_features, temp);
+			samples.push_back(temp);
+
+			trueLabels.push_back(temp_true + (i * 3));
+		}
+
+		// Append Laplacian of all samples to end of this vector
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::num_points * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::num_points, temp);
+			samples.push_back(temp);
+		}
+
+		std::cout << "SAMPLE: " << std::endl;
+		std::cout << samples[0][0] << " " << samples[0][1] << " " << samples[0][2] << std::endl;
+		std::cout << samples[1][0] << " " << samples[1][1] << " " << samples[1][2] << std::endl;
+		std::cout << samples[2][0] << " " << samples[2][1] << " " << samples[2][2] << std::endl;
+		std::cout << std::endl;
+
+		std::vector<float*> op = gcn.forward(samples, false);
+
+		std::cout << "OUTPUT: " << std::endl;
+		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
+		std::cout << op[1][0] << " " << op[1][1] << " " << op[1][2] << std::endl;
+		std::cout << op[2][0] << " " << op[2][1] << " " << op[2][2] << std::endl;
+		std::cout << std::endl;
+
+		float l = gcn.calculateLoss(op, trueLabels);
+		std::cout << "*****LOSS: " << l << std::endl;
+
+		gcn.backward(op, trueLabels, 0.01);
+
+		op = gcn.forward(samples, false);
+
+		std::cout << "OUTPUT: " << std::endl;
 		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
 		std::cout << op[1][0] << " " << op[1][1] << " " << op[1][2] << std::endl;
 		std::cout << op[2][0] << " " << op[2][1] << " " << op[2][2] << std::endl;

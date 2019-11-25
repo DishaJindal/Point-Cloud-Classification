@@ -17,6 +17,9 @@ namespace PointCloudClassification {
 			*/
 			std::vector<float*> dtheta;
 
+			std::vector<float*> X;
+			std::vector<float*> L;
+
 			int inputDim;
 			int outputDim;
 

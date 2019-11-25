@@ -53,21 +53,21 @@ namespace PointCloudClassification {
 		int number_of_layers = this->layers.size();
 		std::vector<float*> incomingGradient(dloss);
 		
-		/*std::cout << "LOSS GRAD: " << std::endl;
+		std::cout << "LOSS GRAD: " << std::endl;
 		std::cout << incomingGradient[0][0] << " " << incomingGradient[0][1] << " " << incomingGradient[0][2] << std::endl;
 		std::cout << incomingGradient[1][0] << " " << incomingGradient[1][1] << " " << incomingGradient[1][2] << std::endl;
 		std::cout << incomingGradient[2][0] << " " << incomingGradient[2][1] << " " << incomingGradient[2][2] << std::endl;
-		std::cout << std::endl;*/
+		std::cout << std::endl;
 
 		for (int i = number_of_layers - 1; i >= 0; i--) {
 			Layer* layer = this->layers[i];
 			incomingGradient = layer->backward(incomingGradient, learningRate);
 
-			/*std::cout << "INCOMING GRAD: " << std::endl;
+			std::cout << "INCOMING GRAD: " << std::endl;
 			std::cout << incomingGradient[0][0] << " " << incomingGradient[0][1] << " " << incomingGradient[0][2] << std::endl;
 			std::cout << incomingGradient[1][0] << " " << incomingGradient[1][1] << " " << incomingGradient[1][2] << std::endl;
 			std::cout << incomingGradient[2][0] << " " << incomingGradient[2][1] << " " << incomingGradient[2][2] << std::endl;
-			std::cout << std::endl;*/
+			std::cout << std::endl;
 
 		}
 	}

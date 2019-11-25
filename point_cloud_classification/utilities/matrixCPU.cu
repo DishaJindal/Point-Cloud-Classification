@@ -36,6 +36,33 @@ void MatrixCPU::multiplyTranspose(float* A, float* B, int m, int n, int p, float
 
 /*
 	A -> m x n
+	B -> p x q
+	output = A (x) B (mp x nq)
+*/
+void MatrixCPU::kroneckerProduct(float* A, float* B, int m, int n, int p, int q, float* C) {
+	/*for (int i = 0; i < (m * p); i++) {
+		for (int j = 0; j < (n * q); j++) {
+
+		}
+	}*/
+	std::cout << "I" << std::endl;
+	for (int i = 0; i < m; i++) {
+		for (int k = 0; k < p; k++) {
+			for (int j = 0; j < n; j++) {
+				for (int l = 0; l < q; l++) {
+					
+					int index = (i * n * p * q) + (k * n * q) + (j * q) + l;
+					std::cout << i <<" "<< k <<" " << j <<" " << l <<" "<< std::endl;
+					std::cout << A[i * n + j] << " " << B[k * q + l] <<" "<<index<< std::endl;
+					C[index] = A[i * n + j] * B[k * q + l];
+				}
+			}
+		}
+	}
+}
+
+/*
+	A -> m x n
 	output = A.T 
 */
 void MatrixCPU::transpose(float* A, int m, int n, float* output){

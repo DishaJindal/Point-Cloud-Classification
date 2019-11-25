@@ -19,6 +19,10 @@
 
 #include "point_cloud_classification/tests/test.h"
 
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+#include <unsupported/Eigen/KroneckerProduct>
+
 #include <fstream>
 #include <string>
 #include <Windows.h>
@@ -29,9 +33,10 @@
 
 using namespace std;
 using namespace PointCloudClassification;
+using Eigen::MatrixXf;
 
 void tests() {
-	cout << "********************************************************" << endl;
+	/*cout << "********************************************************" << endl;
 	cout << "Testing Matrix Transpose ..." << endl;
 	Tests::testMatrixTranspose();
 	cout << "********************************************************" << endl;
@@ -76,14 +81,21 @@ void tests() {
 	Tests::testAllBackward();
 	cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Global Pooling Layer ..." << endl;
-	Tests::testGlobalPoolingLayer();
-	cout << "********************************************************" << endl;
+	
 
 	cout << "********************************************************" << endl;
 	cout << "Testing Dropout Layer ..." << endl;
 	Tests::testDropoutLayer();
+	cout << "********************************************************" << endl;*/
+
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Global Pooling Layer ..." << endl;
+	//Tests::testGlobalPoolingLayer();
+	//cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Graph Convolution Layer ..." << endl;
+	Tests::testGraphConvolutionLayer();
 	cout << "********************************************************" << endl;
 }
 
@@ -115,8 +127,8 @@ int main(int argc, char* argv[]) {
 	// Tests
 	tests();
 
-	std::vector<float*> XTest;
-	std::vector<int> YTest;
+	//std::vector<float*> XTest;
+	//std::vector<int> YTest;
 	//utilityCore::load_data("S:\CIS 565\Final Project\Point-Cloud-Classification\data_set\ModelNet10", XTest, YTest, "test", 2);
 	
 	//Build the network
