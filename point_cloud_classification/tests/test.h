@@ -72,7 +72,6 @@ namespace Tests {
 		std::cout << std::endl;
 	}
 
-
 	void testFCLayer() {
 		PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
 		PointCloudClassification::FullyConnectedLayerCPU fc1(Parameters::num_points * Parameters::input_features, 1000, Parameters::batch_size, false);

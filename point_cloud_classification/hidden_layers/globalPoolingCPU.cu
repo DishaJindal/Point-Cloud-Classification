@@ -83,7 +83,7 @@ namespace PointCloudClassification {
 				for (int d = 0; d < this->inputDim; d++) {
 					for (int n = 0; n < this->numPoints; n++) {
 						float del_yj_by_xij = (2 * ((Z[b][n* inputDim + d]) - this->mean[b][d])) / numPoints;
-						oneOutgoingGradient[this->inputDim * n + d] += incomingGradient[b][this->inputDim + d] * del_yj_by_xij;
+						oneOutgoingGradient[this->inputDim * n + d] += incomingGradient[b][d] * del_yj_by_xij;
 					}
 				}
 				outgoingGradient.push_back(oneOutgoingGradient);

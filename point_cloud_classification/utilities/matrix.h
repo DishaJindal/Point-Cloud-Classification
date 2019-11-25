@@ -7,6 +7,8 @@
 #include <sstream>
 #include <iostream>
 #include <math.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 class Matrix{
 public:
@@ -20,6 +22,7 @@ public:
 	virtual void subtractIdentity(float* A, int m) = 0;
 	virtual void getIdentityMatrix(int m, float* A) = 0;
 	virtual void linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output) = 0;
+	virtual void kroneckerProduct(float* A, float* B, int m, int n, int p, int q, float* C) = 0;
 };
 
 class MatrixCPU : public Matrix {
@@ -34,6 +37,7 @@ public:
 	void subtractIdentity(float* A, int m);
 	void getIdentityMatrix(int m, float* A);
 	void linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output);
+	void kroneckerProduct(float* A, float* B, int m, int n, int p, int q, float* C);
 	void maxAcrossDim1(float* A, int  n, int m, int* argmaxOutput, float* output);
 	void meanAcrossDim1(float * A, int m, int n, float * output);
 	void varianceAcrossDim1(float * A, int m, int n, float * output, float* mean);
@@ -48,6 +52,12 @@ public:
 	void add(float* A, float* B, int m, int n, float* output);
 	void subtract(float* A, float* B, int m, int n, float* output);
 	void printMatrix(float* A, int m, int n);
+	void subtractIdentity(float* A, int m);
+	void getIdentityMatrix(int m, float* A);
+	void linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output);
+	void maxAcrossDim1(float* A, int  n, int m, int* argmaxOutput, float* output);
+	void meanAcrossDim1(float * A, int m, int n, float * output);
+	void varianceAcrossDim1(float * A, int m, int n, float * output, float* mean);
 };
 
 
