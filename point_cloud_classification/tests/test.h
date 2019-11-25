@@ -10,15 +10,71 @@
 #include "../hidden_layers/sigmoidActivationLayerCPU.cu"
 #include "../hidden_layers/CrossEntropyLossCPU.cu"
 #include "../hidden_layers/dropoutLayerCPU.cu"
+#include "../utilities/matrix.h"
 
 using namespace std;
 using namespace PointCloudClassification;
 
 namespace Tests {
+	Common::PerformanceTimer& timer()
+	{
+		static Common::PerformanceTimer timer;
+		return timer;
+	}
+	void testMatrixGPUMean() {
+		MatrixGPU* mg = new MatrixGPU();
+		MatrixCPU* mc = new MatrixCPU();
+
+		int m = 1024;
+		int n = 1000;
+		int size = m * n;
+
+		float* A = (float*)malloc(size * sizeof(float));
+		float* CPU_B = (float*)malloc(size * sizeof(float));
+		float* GPU_B = (float*)malloc(size * sizeof(float));
+		Utilities::genArray(size, A);
+
+
+		float* dev_A;
+		cudaMalloc(&dev_A, size * sizeof(float));
+		cudaMemcpy(dev_A, A, size * sizeof(float), cudaMemcpyHostToDevice);
+		float* dev_B;
+		cudaMalloc(&dev_B, size * sizeof(float));
+
+		//cout << "Running GPU" << std::endl;
+		//timer().startCpuTimer();
+		mg->meanAcrossDim1(dev_A, m, n, dev_B);
+		//timer().endCpuTimer();
+		//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Mean on GPU)");
+		cudaMemcpy(GPU_B, dev_B, size * sizeof(float), cudaMemcpyDeviceToHost);
+
+
+		//cout << "Running CPU" << std::endl;
+		//timer().startCpuTimer();
+		mc->meanAcrossDim1(A, m, n, CPU_B);
+		//timer().endCpuTimer();
+		//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Mean on CPU)");
+
+		
+
+		double difference = 0;
+
+		for (int i = 0; i < n; ++i) {
+			difference += (CPU_B[i] - GPU_B[i]) * (CPU_B[i] - GPU_B[i]) / n;
+		}
+
+		std::cout << "Difference between CPU implementation and GPU implementation : " << difference << std::endl;
+	}
+
+
+
+
+
+
 	void testMatrixTranspose() {
 		MatrixCPU* m = new MatrixCPU();
 		float A[3 * 2] = { 1,2,3,4,5,6 };
-		
+
 		std::cout << "A: " << endl;
 		m->printMatrix(A, 3, 2);
 		std::cout << std::endl;
