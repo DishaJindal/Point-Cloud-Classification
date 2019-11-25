@@ -2,7 +2,7 @@
 **Team**: Saket Karve, Kushagra Goel, Disha Jindal
 
 [Proposal](https://github.com/DishaJindal/Point-Cloud-Classification/blob/master/Proposal.pdf)
-
+[Data](https://drive.google.com/file/d/1c2gZ2URDaMdimGsyt1sK17F6H6byQCMq/view?usp=sharing)
 # References
 
 [A Graph-CNN for 3D Point Cloud Classification](https://arxiv.org/pdf/1812.01711.pdf)
