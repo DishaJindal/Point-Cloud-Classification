@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <point_cloud_classification/network.h>
 #include <point_cloud_classification/common.h>
-#include "testing_helpers.hpp"
 #include "utilityCore.hpp"
 #include "point_cloud_classification/graph/graph.h"
 #include "point_cloud_classification/utilities/matrix.h"
@@ -46,10 +45,10 @@ void tests() {
 	Tests::testMatrixMultiplicationTranspose();
 	cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Fully Connected Layer ..." << endl;
-	Tests::testFCLayer();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Fully Connected Layer ..." << endl;
+	//Tests::testFCLayer();
+	//cout << "********************************************************" << endl;
 
 	cout << "********************************************************" << endl;
 	cout << "Testing RELU Activation Layer ..." << endl;
@@ -89,74 +88,39 @@ void tests() {
 
 int main(int argc, char* argv[]) {
 
+	// Tests
+	//tests();
+
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
-	
-	//vector<float*> samples; //Data from file will be stored here
+
+	int per_class = 2;
+	std::vector<float*> x_train;
+	std::vector<float*> y_train;
+	utilityCore::load_data("S:\CIS 565\Final Project\Point-Cloud-Classification\data_set\ModelNet10", x_train, y_train, "train", per_class);
 
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
-	vector<float*> transformed_inputs;
-	//int l1_features = 3;
 
-	/*for (int i = 0; i < PointCloudClassification::num_points; i++) {
-		float* current_sample = samples[i];
-		Graph::Graph g (current_sample, num_points, l1_features, num_neighbours);
+	for (int i = 0; i < x_train.size(); i++) {
+		float* current_sample = x_train[i];
+		Graph::Graph g (current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
 
-		float* A = g.get_A();
-		MatrixCPU* m = new MatrixCPU();
-		float* AX = (float*)malloc(num_points * l1_features * sizeof(float));
-		m->multiply(A, current_sample, num_points, num_points, l1_features, AX);
-		transformed_inputs.push_back(AX);
+		//float* A = g.get_A();
+		//MatrixCPU* m = new MatrixCPU();
+		//float* AX = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
+		//m->multiply(A, current_sample, Parameters::num_points, Parameters::num_points, Parameters::input_features, AX);
 
 		float* L = g.get_Lnorm();
 		laplacians.push_back(L);
-	}*/
+	}
 
-	// Tests
-	tests();
-
-	std::vector<float*> XTest;
-	std::vector<int> YTest;
-	//utilityCore::load_data("S:\CIS 565\Final Project\Point-Cloud-Classification\data_set\ModelNet10", XTest, YTest, "test", 2);
 	
 	//Build the network
-	PointCloudClassification::NetworkCPU gcn(Parameters::num_points * Parameters::l1_features, Parameters::num_classes, Parameters::batch_size);
+	PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
+	gcn.buildArchitecture();
 
-	// GCN Layer 1
-	
-
-	// Dropout 1
-	
-
-	// Global Pooling 1
-	
-
-	// GCN Layer 2
-	
-
-	// Dropout 2
-	
-
-	// Global Pooling 2
-
-
-	// Concatenate GCN Layer 1 and GCN Layer 2
-
-
-	// Dropout 3
-
-
-	// Fully Connected Layer 1
-
-
-	// ReLU 1
-
-
-	// Dropout 4
-
-	// Fully Connected Layer 2
-
-	// Softmax 1
+	//:train(std::vector<float*> input, std::vector<float*> label, int n)
+	gcn.train(x_train, laplacians, y_train, x_train.size());
 
 	// Train 
 	//int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);

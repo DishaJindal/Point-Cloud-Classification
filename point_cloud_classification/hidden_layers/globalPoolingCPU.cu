@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/utils.h"
@@ -16,9 +18,10 @@ namespace PointCloudClassification {
 
 	class GlobalPoolingLayerCPU : public GlobalPoolingLayer {
 		MatrixCPU* m;
+		
+	public:
 		GlobalPoolingLayerCPU() {};
 
-	public: 
 		GlobalPoolingLayerCPU(int numPoints, int inputDim, int batchDim, bool lastLayer) : GlobalPoolingLayer(numPoints, inputDim, batchDim, lastLayer) {
 			// Allocate space to save mean required for back propagataion
 			for (int i = 0; i < batchDim; i++)

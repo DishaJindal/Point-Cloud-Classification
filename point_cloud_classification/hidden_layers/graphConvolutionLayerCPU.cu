@@ -1,8 +1,9 @@
+#pragma once
+
 #include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/utils.h"
 #include "../utilities/matrix.h"
-#include "../src/testing_helpers.hpp"
 #include "layer.h"
 #include "graphConvolutionLayer.h"
 #include <fstream>
@@ -17,6 +18,7 @@
 namespace PointCloudClassification {
 
 	class GraphConvolutionLayerCPU : public GraphConvolutionLayer {
+	public:
 		GraphConvolutionLayerCPU() {};
 	private:
 		float* get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L) {
@@ -83,7 +85,7 @@ namespace PointCloudClassification {
 						Tk_minus_1 = Tk;
 					}
 					timer().endCpuTimer();
-					printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Generate Chebeshev Polynomial)");
+					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Generate Chebeshev Polynomial)");
 
 					timer().startCpuTimer();
 					/*float* temp = (float*)malloc(numPoints * inputDim * sizeof(float));
@@ -97,7 +99,7 @@ namespace PointCloudClassification {
 						m->add(current_output, temp_out, numPoints, outputDim, current_output);
 					}
 					timer().endCpuTimer();
-					printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Calculating output)");
+					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Calculating output)");
 				}
 				
 

@@ -271,7 +271,7 @@ std::vector<std::string> utilityCore::get_filenames(std::experimental::filesyste
 
 
 
-void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std::vector<int> &Y, std::string subFolder, int numToRead) {
+void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std::vector<float*> &Y, std::string subFolder, int numToRead) {
 	int count = 0;
 	std::string previousLabel = "begin";
 	for (const auto& name : get_filenames(folderName)) {
@@ -291,55 +291,66 @@ void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std:
 				float *X_i = convertFromVectorToFloatPtr(points);
 				X.push_back(X_i);
 				if (label == "chair") { // 678
-					Y.push_back(2);
+					float lab[10] = {0,0,1,0,0,0,0,0,0,0};
+					Y.push_back(lab);
 				}
 				else {
 
 					if (label == "sofa") { // 453
-						Y.push_back(7);
+						float lab[10] = { 0,0,0,0,0,0,0,1,0,0 };
+						Y.push_back(lab);
 					}
 					else {
 
 						if (label == "bed") { // 327
-							Y.push_back(1);
+							float lab[10] = { 0,1,0,0,0,0,0,0,0,0 };
+							Y.push_back(lab);
 						}
 						else {
 
 							if (label == "toilet") { // 321
-								Y.push_back(9);
+								float lab[10] = { 0,0,0,0,0,0,0,0,0,1 }; 
+								Y.push_back(lab);
 							}
 							else {
 
 								if (label == "monitor") { // 191
-									Y.push_back(5);
+									float lab[10] = { 0,0,0,0,0,1,0,0,0,0 };
+									Y.push_back(lab);
 								}
 								else {
 
 									if (label == "table") { // 165
-										Y.push_back(8);
+										float lab[10] = { 0,0,0,0,0,0,0,0,1,0 };
+										Y.push_back(lab);
 									}
 									else {
 
 										if (label == "dresser") { // 115
-											Y.push_back(4);
+											float lab[10] = { 0,0,0,0,1,0,0,0,0,0 };
+											Y.push_back(lab);
 										}
 										else {
 
 											if (label == "desk") { // 109
-												Y.push_back(3);
+												float lab[10] = { 0,0,0,1,0,0,0,0,0,0 };
+												Y.push_back(lab);
 											}
 											else {
 
 												if (label == "bathtub") { // 87
-													Y.push_back(0);
+													float lab[10] = { 1,0,0,0,0,0,0,0,0,0 };
+													Y.push_back(lab);
 												}
 												else {
 
 													if (label == "night_stand") { //84
-														Y.push_back(6);
+														float lab[10] = { 0,0,0,0,0,0,1,0,0,0 };
+														Y.push_back(lab);
 													}
 													else {
-														Y.push_back(-1);
+														float lab[10] = { 0,0,0,0,0,0,0,0,0,0 };
+														Y.push_back(lab);
 													}
 												}
 											}

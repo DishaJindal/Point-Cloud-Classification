@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/matrix.h"
