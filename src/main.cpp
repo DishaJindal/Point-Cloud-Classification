@@ -96,7 +96,8 @@ int main(int argc, char* argv[]) {
 	int per_class = 2;
 	std::vector<float*> x_train;
 	std::vector<float*> y_train;
-	utilityCore::load_data("S:\CIS 565\Final Project\Point-Cloud-Classification\data_set\ModelNet10", x_train, y_train, "train", per_class);
+	utilityCore::load_data("bullshit", x_train, y_train, "train", per_class);
+	std::cout << "Loaded Data: " << x_train.size() << std::endl;
 
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
@@ -104,7 +105,7 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < x_train.size(); i++) {
 		float* current_sample = x_train[i];
 		Graph::Graph g (current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
-
+		std::cout << "Constructed graph for " << i << std::endl;
 		//float* A = g.get_A();
 		//MatrixCPU* m = new MatrixCPU();
 		//float* AX = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
@@ -118,6 +119,7 @@ int main(int argc, char* argv[]) {
 	//Build the network
 	PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
 	gcn.buildArchitecture();
+	std::cout << "Built Architecture!" << std::endl;
 
 	//:train(std::vector<float*> input, std::vector<float*> label, int n)
 	gcn.train(x_train, laplacians, y_train, x_train.size());

@@ -275,6 +275,7 @@ void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std:
 	int count = 0;
 	std::string previousLabel = "begin";
 	for (const auto& name : get_filenames(folderName)) {
+		
 		int len = name.length();
 		if (name[len - 1] == 'f') {
 			std::string altName = name;
@@ -287,6 +288,7 @@ void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std:
 				count = 0;
 			}
 			if ((subFolderName == subFolder || subFolder == "all") && (count < numToRead || numToRead == -1)) {
+				std::cout << "Reading " << name << std::endl;
 				std::vector<glm::vec3> points = readPointCloud(name);
 				float *X_i = convertFromVectorToFloatPtr(points);
 				X.push_back(X_i);
