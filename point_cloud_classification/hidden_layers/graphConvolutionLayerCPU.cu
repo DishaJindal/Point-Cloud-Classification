@@ -183,7 +183,7 @@ namespace PointCloudClassification {
 						m->add(current_outgoing_gradient, temp, numPoints, inputDim, current_outgoing_gradient);
 					}
 				}
-				std::cout << "OUTGOING GRAD: " << std::endl;
+				std::cout << "GCN OUTGOING GRAD: " << std::endl;
 				std::cout << current_outgoing_gradient[(0 * inputDim) + 0] << " " << current_outgoing_gradient[(0 * inputDim) + 1] << " " << current_outgoing_gradient[(0 * inputDim) + 2] << std::endl;
 				std::cout << current_outgoing_gradient[(1 * inputDim) + 0] << " " << current_outgoing_gradient[(1 * inputDim) + 1] << " " << current_outgoing_gradient[(1 * inputDim) + 2] << std::endl;
 				std::cout << current_outgoing_gradient[(2 * inputDim) + 0] << " " << current_outgoing_gradient[(2 * inputDim) + 1] << " " << current_outgoing_gradient[(2 * inputDim) + 2] << std::endl;

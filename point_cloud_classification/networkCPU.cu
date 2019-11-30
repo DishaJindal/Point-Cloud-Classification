@@ -159,7 +159,7 @@ namespace PointCloudClassification {
 
 		float* perEpochLoss = (float*)malloc(Parameters::num_epochs * sizeof(float));
 		float epochLoss = 0;
-		std::vector<float*> classification(this->batchSize);// = (std::vector<float*>)malloc(this->batchSize * sizeof(float));
+		std::vector<float*> classification;// = (std::vector<float*>)malloc(this->batchSize * sizeof(float));
 		int num_batches = n / this->batchSize;
 
 		// Iterate for as many epochs..
@@ -176,7 +176,6 @@ namespace PointCloudClassification {
 				batch.reserve(batch_in.size() + batch_lap.size()); // preallocate memory
 				batch.insert(batch.end(), batch_in.begin(), batch_in.end());
 				batch.insert(batch.end(), batch_lap.begin(), batch_lap.end());
-
 				std::vector<float*> trueLabel = std::vector < float* >(label.begin() + b * this->batchSize, label.begin() + (b + 1) * this->batchSize);
 				
 				// Forward Pass
@@ -189,9 +188,8 @@ namespace PointCloudClassification {
 				// Check Prediction: Can comment this in training later on..
 				getClassification(prediction, this->numClasses, classification);
 				std::cout << "True Label: ";
-				Utilities::printVector(trueLabel, this->batchSize);
+				Utilities::printVectorOfFloats(trueLabel, Parameters::num_classes);
 				std::cout << std::endl;
-				std::cout << "Prediction: ";
 				//Utilities::printVector(classification, this->batchSize);
 				std::cout << std::endl;
 				// Backward Pass
@@ -208,6 +206,8 @@ namespace PointCloudClassification {
 
 	// Returns classification between [0, classes-1] for each instance
 	void NetworkCPU::getClassification(const std::vector<float*> prediction, const int classes, std::vector<float*> classification) {
+		std::cout << "Actual Prediction: ";
+		Utilities::printVectorOfFloats(prediction, Parameters::num_classes);
 		int n = prediction.size();
 		PointCloudClassification::softmaxActivationLayerCPU softmaxLayer(numClasses, Parameters::batch_size, false);
 		std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
@@ -222,5 +222,7 @@ namespace PointCloudClassification {
 			}
 			classification.push_back(&clazz);
 		}
+		std::cout << "Prediction: ";
+		Utilities::printVectorOfFloats(classification, 1);
 	}
 }

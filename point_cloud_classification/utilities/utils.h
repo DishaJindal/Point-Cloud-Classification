@@ -16,10 +16,12 @@ namespace Utilities {
 		}
 	}
 
-	inline void printVector(std::vector<float*> arr, int n) {
-		for (int i = 0; i < n; i++) {
-			std::cout << arr[i][0] << " ";
+	inline void printVectorOfFloats(std::vector<float*> arr, int n) {
+		for (int i = 0; i < arr.size(); i++) {
+			for (int j = 0; j < n; j++) {
+				std::cout << arr[i][j] << " ";
+			}
+			std::cout << std::endl;
 		}
-		std::cout << std::endl;
 	}
 }

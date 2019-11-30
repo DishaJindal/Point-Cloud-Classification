@@ -11,6 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include "utilityCore.hpp"
+#include "../point_cloud_classification/utilities/utils.h"
 
 float utilityCore::clamp(float f, float min, float max) {
     if (f < min) {
@@ -245,16 +246,16 @@ std::vector<glm::vec3> utilityCore::farthestSample(std::vector<glm::vec3> &point
 	return sampledPoints;
 }
 
-float* utilityCore::convertFromVectorToFloatPtr(std::vector<glm::vec3> &points) {
-	float *convertedPoints;
+void utilityCore::convertFromVectorToFloatPtr(std::vector<glm::vec3> &points, float *convertedPoints) {
+	//float *convertedPoints;
 	int numPoints = points.size();
-	convertedPoints = new float[numPoints * 3];
+	//convertedPoints = new float[numPoints * 3];
 	for (int i = 0; i < numPoints; i++) {
 		for (int j = 0; j < 3; j++) {
 			convertedPoints[i * 3 + j] = points[i][j];
 		}
 	}
-	return convertedPoints;
+	//return convertedPoints;
 }
 
 
@@ -273,6 +274,7 @@ std::vector<std::string> utilityCore::get_filenames(std::experimental::filesyste
 
 void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std::vector<float*> &Y, std::string subFolder, int numToRead) {
 	int count = 0;
+	int main_counter = 0;
 	std::string previousLabel = "begin";
 	for (const auto& name : get_filenames(folderName)) {
 		
@@ -285,75 +287,83 @@ void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std:
 			std::string label = tokens[tokens.size() - 3];
 			if (label != previousLabel) {
 				previousLabel = label;
-				count = 0;
+				main_counter = 0;
 			}
-			if ((subFolderName == subFolder || subFolder == "all") && (count < numToRead || numToRead == -1)) {
+			if ((subFolderName == subFolder || subFolder == "all") && (main_counter < numToRead || numToRead == -1)) {
 				std::cout << "Reading " << name << std::endl;
 				std::vector<glm::vec3> points = readPointCloud(name);
-				float *X_i = convertFromVectorToFloatPtr(points);
-				X.push_back(X_i);
+				convertFromVectorToFloatPtr(points, X[count]);
 				if (label == "chair") { // 678
-					float lab[10] = {0,0,1,0,0,0,0,0,0,0};
-					Y.push_back(lab);
+					Y[count][2] = 1.0f;
+					//float lab[10] = {0,0,1,0,0,0,0,0,0,0};
+					//Y.push_back(lab);
 				}
 				else {
 
 					if (label == "sofa") { // 453
-						float lab[10] = { 0,0,0,0,0,0,0,1,0,0 };
-						Y.push_back(lab);
+						Y[count][7] = 1.0f;
+						//float lab[10] = { 0,0,0,0,0,0,0,1,0,0 };
+						//Y.push_back(lab);
 					}
 					else {
 
 						if (label == "bed") { // 327
-							float lab[10] = { 0,1,0,0,0,0,0,0,0,0 };
-							Y.push_back(lab);
+							Y[count][1] = 1.0f;
+							//float lab[10] = { 0,1,0,0,0,0,0,0,0,0 };
+							//Y.push_back(lab);
 						}
 						else {
 
 							if (label == "toilet") { // 321
-								float lab[10] = { 0,0,0,0,0,0,0,0,0,1 }; 
-								Y.push_back(lab);
+								Y[count][9] = 1.0f;
+								//float lab[10] = { 0,0,0,0,0,0,0,0,0,1 }; 
+								//Y.push_back(lab);
 							}
 							else {
 
 								if (label == "monitor") { // 191
-									float lab[10] = { 0,0,0,0,0,1,0,0,0,0 };
-									Y.push_back(lab);
+									Y[count][5] = 1.0f;
+									//float lab[10] = { 0,0,0,0,0,1,0,0,0,0 };
+									//Y.push_back(lab);
 								}
 								else {
 
 									if (label == "table") { // 165
-										float lab[10] = { 0,0,0,0,0,0,0,0,1,0 };
-										Y.push_back(lab);
+										Y[count][8] = 1.0f;
+										//float lab[10] = { 0,0,0,0,0,0,0,0,1,0 };
+										//Y.push_back(lab);
 									}
 									else {
 
 										if (label == "dresser") { // 115
-											float lab[10] = { 0,0,0,0,1,0,0,0,0,0 };
-											Y.push_back(lab);
+											Y[count][4] = 1.0f;
+											//float lab[10] = { 0,0,0,0,1,0,0,0,0,0 };
+											//Y.push_back(lab);
 										}
 										else {
-
 											if (label == "desk") { // 109
-												float lab[10] = { 0,0,0,1,0,0,0,0,0,0 };
-												Y.push_back(lab);
+												Y[count][3] = 1.0f;
+												//float lab[10] = { 0,0,0,1,0,0,0,0,0,0 };
+												//Y.push_back(lab);
 											}
 											else {
 
 												if (label == "bathtub") { // 87
-													float lab[10] = { 1,0,0,0,0,0,0,0,0,0 };
-													Y.push_back(lab);
+													Y[count][0] = 1.0f;
+													//float lab[10] = { 1,0,0,0,0,0,0,0,0,0 };
+													//Y.push_back(lab);
 												}
 												else {
 
 													if (label == "night_stand") { //84
-														float lab[10] = { 0,0,0,0,0,0,1,0,0,0 };
-														Y.push_back(lab);
+														Y[count][6] = 1.0f;
+														//float lab[10] = { 0,0,0,0,0,0,1,0,0,0 };
+														//Y.push_back(lab);
 													}
-													else {
-														float lab[10] = { 0,0,0,0,0,0,0,0,0,0 };
-														Y.push_back(lab);
-													}
+													//else {
+													//	float lab[10] = { 0,0,0,0,0,0,0,0,0,0 };
+													//	Y.push_back(lab);
+													//}
 												}
 											}
 										}
@@ -363,7 +373,8 @@ void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std:
 						}
 					}
 				}
-				++count;
+				main_counter++;
+				count++;
 			}
 		}
 	}

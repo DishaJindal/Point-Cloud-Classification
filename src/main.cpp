@@ -96,7 +96,16 @@ int main(int argc, char* argv[]) {
 	int per_class = 1;
 	std::vector<float*> x_train;
 	std::vector<float*> y_train;
+
+	for (int i = 0; i < per_class * Parameters::num_classes; i++) {
+		float* x_temp = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
+		x_train.push_back(x_temp);
+		float* y_temp = (float*)malloc(Parameters::num_classes * sizeof(float));
+		memset(y_temp, 0.0f, Parameters::num_classes * sizeof(float));
+		y_train.push_back(y_temp);
+	}
 	utilityCore::load_data("bullshit", x_train, y_train, "train", per_class);
+	//Utilities::printVectorOfFloats(y_train, Parameters::num_classes);
 	std::cout << "Loaded Data: " << x_train.size() << std::endl;
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
