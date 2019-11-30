@@ -6,19 +6,11 @@
 #include "common.h"
 #include "graph.h"
 #include "device_launch_parameters.h"
+#include <iostream>
 
-#include <Eigen/Dense>
-#include <Eigen/Core>
-
-//#include <eigen-eigen-323c052e1731/Eigen>
-//#include <eigen3/Eigen/Core>
-
-
-//#include <eigen3/Eigen/Eigenvalues>
-//#include "eigen.h"
-//#include <Eigen/Eigenvalues> 
-
-using namespace Eigen;
+//#include <Eigen/Dense>
+//#include <Eigen/Core>
+//using namespace Eigen;
 
 namespace Graph {
 	using std::vector;
@@ -116,13 +108,13 @@ namespace Graph {
 		return L;
 	};
 
-	void Graph::fill_normalized_laplacian(const float* L, const int n) {
+	void Graph::fill_normalized_laplacian(float* L, const int n) {
 		Lnorm = new float[n * n];
 
-		// Trying to incorporate eigen
-		MatrixXf eigenX = Map<MatrixXf>(Lnorm, n, n);
-		VectorXcf eivals = eigenX.eigenvalues();
-
+		//std::cout << "Calculating Eigen" << std::endl;
+		//MatrixXf eigenX = Map<MatrixXf>(L, n, n);
+		//VectorXcf eivals = eigenX.eigenvalues();
+		//std::cout << "Eigen: " << eivals;
 		float max_eigen = 2;
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
