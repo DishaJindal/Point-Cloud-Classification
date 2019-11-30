@@ -125,11 +125,28 @@ namespace PointCloudClassification {
 		std::vector<float*> dloss = this->loss->dcost(prediction, trueLabel);
 		std::vector<float*> incomingGradient(dloss);
 
+		std::cout << "Loss "<<std::endl;
+		Utilities::printVectorOfFloats(incomingGradient, 5);
+
 		incomingGradient = fc_layer2.backward(incomingGradient, learningRate);
+		std::cout << "FC2 " << std::endl;
+		Utilities::printVectorOfFloats(incomingGradient, 5);
+
 		incomingGradient = dropout_layer4.backward(incomingGradient, learningRate);
+		std::cout << "Dropout 4 " << std::endl;
+		Utilities::printVectorOfFloats(incomingGradient, 5);
+
 		incomingGradient = relu1.backward(incomingGradient, learningRate);
+		std::cout << "RELU 1 " << std::endl;
+		Utilities::printVectorOfFloats(incomingGradient, 5);
+
 		incomingGradient = fc_layer1.backward(incomingGradient, learningRate);
+		std::cout << "FC1 " << std::endl;
+		Utilities::printVectorOfFloats(incomingGradient, 5);
+
 		incomingGradient = dropout_layer3.backward(incomingGradient, learningRate);
+		std::cout << "Dropout 3 " << std::endl;
+		Utilities::printVectorOfFloats(incomingGradient, 5);
 
 		// Split
 		std::vector<float*> gp1, gp2;
@@ -137,13 +154,29 @@ namespace PointCloudClassification {
 			gp1.push_back(incomingGradient[i]);
 			gp2.push_back(incomingGradient[i] + Parameters::gcn1_out_features * 2);
 		}
+		//std::cout << "Split " << std::endl;
+		//Utilities::printVectorOfFloats(incomingGradient, 5);
 
 		gp1 = gp_layer2.backward(gp1, learningRate);
+		std::cout << "GP 2 " << std::endl;
+		Utilities::printVectorOfFloats(gp1, 5);
+
 		gp1 = dropout_layer2.backward(gp1, learningRate);
+		std::cout << "Dropout 2 " << std::endl;
+		Utilities::printVectorOfFloats(gp1, 5);
+
 		gp1 = gcn_layer2.backward(gp1, learningRate);
+		std::cout << "GCN 2 " << std::endl;
+		Utilities::printVectorOfFloats(gp1, 5);
+
 
 		gp2 = gp_layer1.backward(gp2, learningRate);
+		std::cout << "GP 1 " << std::endl;
+		Utilities::printVectorOfFloats(gp2, 5);
+
 		gp2 = dropout_layer1.backward(gp2, learningRate);
+		std::cout << "Dropout 1 " << std::endl;
+		Utilities::printVectorOfFloats(gp2, 5);
 
 		// Add
 		for (int i = 0; i < Parameters::batch_size; i++) {
@@ -151,8 +184,12 @@ namespace PointCloudClassification {
 				gp2[i][j] += gp1[i][j];
 			}
 		}
+		std::cout << "Add " << std::endl;
+		Utilities::printVectorOfFloats(gp2, 5);
 
 		gp1 = gcn_layer1.backward(gp2, learningRate);
+		std::cout << "GCN 1 " << std::endl;
+		Utilities::printVectorOfFloats(gp1, 5);
 	}
 
 	void NetworkCPU::train(std::vector<float*> input, std::vector<float*> laplacians, std::vector<float*> label, int n) {
