@@ -46,11 +46,11 @@ namespace PointCloudClassification {
 				}
 			}
 
-			std::cout << "OUTPUT: " << std::endl;
+			/*std::cout << "OUTPUT: " << std::endl;
 			std::cout << softmaxOutput[0][0] << " " << softmaxOutput[0][1] << " " << softmaxOutput[0][2] << std::endl;
 			std::cout << softmaxOutput[1][0] << " " << softmaxOutput[1][1] << " " << softmaxOutput[1][2] << std::endl;
 			std::cout << softmaxOutput[2][0] << " " << softmaxOutput[2][1] << " " << softmaxOutput[2][2] << std::endl;
-			std::cout << std::endl;
+			std::cout << std::endl;*/
 			
 			float sum = 0;
 			for (int i = 0; i < batchDim; i++) {

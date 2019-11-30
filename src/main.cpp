@@ -100,8 +100,8 @@ int main(int argc, char* argv[]) {
 	std::cout << "Loaded Data: " << x_train.size() << std::endl;
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
-
-	for (int i = 0; i < x_train.size(); i++) {
+	int ex = 2;
+	for (int i = 0; i < ex; i++) {
 		float* current_sample = x_train[i];
 		utilityCore::normalize_data(current_sample, Parameters::num_points);
 		Graph::Graph g (current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
@@ -119,10 +119,12 @@ int main(int argc, char* argv[]) {
 	//Build the network
 	PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
 	gcn.buildArchitecture();
+	PointCloudClassification::CrossEntropyLossCPU celoss(Parameters::batch_size, Parameters::num_classes);
+	gcn.setLoss(&celoss);
 	std::cout << "Built Architecture!" << std::endl;
 
 	//:train(std::vector<float*> input, std::vector<float*> label, int n)
-	gcn.train(x_train, laplacians, y_train, x_train.size());
+	gcn.train(x_train, laplacians, y_train, ex);
 
 	// Train 
 	//int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);

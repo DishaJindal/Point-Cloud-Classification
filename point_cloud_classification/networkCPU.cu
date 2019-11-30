@@ -89,12 +89,18 @@ namespace PointCloudClassification {
 		output = dropout_layer1.forward(output, false);
 		temp1 = gp_layer1.forward(output, false);
 
-		temp2 = gcn_layer2.forward(output, false);
+		std::vector<float*> batch_L = std::vector<float*>(input.begin() + Parameters::batch_size, input.end());
+		std::vector<float*> output_with_L;
+		output_with_L.reserve(output.size() + batch_L.size()); // preallocate memory
+		output_with_L.insert(output_with_L.end(), output.begin(), output.end());
+		output_with_L.insert(output_with_L.end(), batch_L.begin(), batch_L.end());
+
+		temp2 = gcn_layer2.forward(output_with_L, false);
 		temp2 = dropout_layer2.forward(temp2, false);
 		temp2 = gp_layer2.forward(temp2, false);
 
 		// Concatenate
-		std::vector<float*> cat_vec(Parameters::batch_size);
+		std::vector<float*> cat_vec;
 		for (int i = 0; i < Parameters::batch_size; i++) {
 			float* cat = (float*)malloc((Parameters::gcn1_out_features + Parameters::gcn2_out_features) * 2 *sizeof(float));
 			std::copy(temp1[i], temp1[i] + Parameters::gcn1_out_features * 2, cat);
@@ -184,9 +190,10 @@ namespace PointCloudClassification {
 				getClassification(prediction, this->numClasses, classification);
 				std::cout << "True Label: ";
 				Utilities::printVector(trueLabel, this->batchSize);
+				std::cout << std::endl;
 				std::cout << "Prediction: ";
-				Utilities::printVector(classification, this->batchSize);
-
+				//Utilities::printVector(classification, this->batchSize);
+				std::cout << std::endl;
 				// Backward Pass
 				backward(prediction, trueLabel, Parameters::learning_rate);
 			}
@@ -202,17 +209,18 @@ namespace PointCloudClassification {
 	// Returns classification between [0, classes-1] for each instance
 	void NetworkCPU::getClassification(const std::vector<float*> prediction, const int classes, std::vector<float*> classification) {
 		int n = prediction.size();
-		std::vector<float*> pprob = softmaxFunction->forward(prediction, false);
+		PointCloudClassification::softmaxActivationLayerCPU softmaxLayer(numClasses, Parameters::batch_size, false);
+		std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
 		for (int i = 0; i < n; i++) {
 			float maxProb = 0;
-			int clazz = 0;
+			float clazz = 0;
 			for (int j = 0; j < classes; j++) {
 				if (pprob[i][j] > maxProb) {
 					clazz = j;
 					maxProb = pprob[i][j];
 				}
 			}
-			classification[i][0] = clazz;
+			classification.push_back(&clazz);
 		}
 	}
 }

@@ -86,7 +86,7 @@ namespace PointCloudClassification {
 				
 				
 				for (int k = 0; k < numFilters; k++) {
-					std::cout << "k = " << k << " ==> ";
+					//std::cout << "k = " << k << " ==> ";
 
 					timer().startCpuTimer();
 					if(k == 0){

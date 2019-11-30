@@ -9,19 +9,19 @@ namespace PointCloudClassification {
 
 		// Network Parameters
 		 int batch_size = 2;
-		 int num_epochs = 260;
+		 int num_epochs = 3;//260
 		 float learning_rate = 12e-4;
 		 float keep_prob = 0.5;
 		 
 		 // Architecture 
 		 int input_features = 3;
-		 int gcn1_out_features = 1000;
-		 int gcn2_out_features = 1000;
+		 int gcn1_out_features = 100;
+		 int gcn2_out_features = 100;
 		 int fc1_out_features = 600;
 
 		 // Pooling Layer Specific
-		 int chebyshev1_order = 4;
-		 int chebyshev2_order = 3;
+		 int chebyshev1_order = 2;
+		 int chebyshev2_order = 2;
 
 		 // Dropout Probability
 		 float keep_drop_prob1 = 0.5;

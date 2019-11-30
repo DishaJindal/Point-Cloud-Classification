@@ -18,7 +18,8 @@ namespace Utilities {
 
 	inline void printVector(std::vector<float*> arr, int n) {
 		for (int i = 0; i < n; i++) {
-			std::cout << arr[i][0];
+			std::cout << arr[i][0] << " ";
 		}
+		std::cout << std::endl;
 	}
 }
