@@ -25,7 +25,7 @@
 #include <sstream>
 #include <iostream>
 #include <math.h>
-
+#include <Eigen/Dense>
 using namespace std;
 using namespace PointCloudClassification;
 
@@ -92,7 +92,6 @@ int main(int argc, char* argv[]) {
 	//tests();
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
-
 	int per_class = 1;
 	std::vector<float*> x_train;
 	std::vector<float*> y_train;
