@@ -34,6 +34,6 @@ namespace Graph {
 			/* 
 				Lnorm = 2L/λmax − I
 			*/
-			void fill_normalized_laplacian(const float* L, const int n);
+			void fill_normalized_laplacian(float* L, const int n);
 	};
 }
