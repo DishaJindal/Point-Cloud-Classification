@@ -368,3 +368,38 @@ void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std:
 		}
 	}
 }
+
+void utilityCore::normalize_data(float* X, int n) {
+	// Mean
+	float mean[3] = { 0 };
+	for (int i = 0; i < n; i++) {
+		mean[0] += X[i * 3];
+		mean[1] += X[i * 3 + 1];
+		mean[2] += X[i * 3 + 2];
+	}
+	mean[0] = mean[0] / n;
+	mean[1] = mean[1] / n;
+	mean[2] = mean[2] / n;
+	// Mean center
+	for (int i = 0; i < n; i++) {
+		X[i * 3] -= mean[0];
+		X[i * 3 + 1] -= mean[1];
+		X[i * 3 + 2] -= mean[2];
+	}
+	// Furthest distance
+	float furthest_dist = 0;
+	for (int i = 0; i < n; i++) {
+		float dist = 0;
+		dist = (X[i * 3] * X[i * 3]) + (X[i * 3 + 1] * X[i * 3 + 1]) + (X[i * 3 + 2] * X[i * 3 + 2]);
+		dist = std::sqrt(dist);
+		if (dist > furthest_dist) {
+			furthest_dist = dist;
+		}
+	}
+	// Divide by furthest distance
+	for (int i = 0; i < n; i++) {
+		X[i * 3] /= furthest_dist;
+		X[i * 3 + 1] /= furthest_dist;
+		X[i * 3 + 2] /= furthest_dist;
+	}
+}

@@ -46,7 +46,7 @@ extern std::vector<glm::vec3> farthestSample(std::vector<glm::vec3> &points, int
 extern float* convertFromVectorToFloatPtr(std::vector<glm::vec3> &points);
 extern std::vector<std::string> get_filenames(std::experimental::filesystem::path path);
 extern void load_data(std::string folderName, std::vector<float*> &X, std::vector<float*> &Y, std::string subFolder = "all", int numToRead = -1);
-
+extern void normalize_data(float* X, int n);
 //-----------------------------
 //-------GLM Printers----------
 //-----------------------------
