@@ -89,7 +89,6 @@ namespace PointCloudClassification {
 
 			//Update weight matrix
 			m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
-
 			std::vector<float*> outgoingGradient;
 			for (int i = 0; i < batchDim; i++) {
 				outgoingGradient.push_back(flattenedOutput + (i * inputDim));

@@ -69,13 +69,17 @@ namespace PointCloudClassification {
 			timer().endCpuTimer();
 			printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Generate Identity Matrix)");
 		*/
+
+			this->X = std::vector < float* >(inputArg.begin(), inputArg.begin() + batchDim);
+			this->L = std::vector < float* >(inputArg.begin() + batchDim, inputArg.end());
+
 			for (int i = 0; i < batchDim; i++) {
 				float* current_input = inputArg[i];
 				float* current_L = inputArg[i + batchDim];
 
 				// Store data required for backward pass
-				X.push_back(current_input);
-				L.push_back(current_L);
+				//X.push_back(current_input);
+				//L.push_back(current_L);
 				
 				Tk_minus_2 = current_input;
 				m->multiply(current_L, current_input, numPoints, numPoints, inputDim, Tk_minus_1);
@@ -84,7 +88,8 @@ namespace PointCloudClassification {
 
 				float* current_output = (float*)malloc(numPoints * outputDim * sizeof(float));
 				
-				
+				//std::cout << "Printing GCN Weights: " << std::endl;
+				//Utilities::printVectorOfFloats(theta, 50);
 				for (int k = 0; k < numFilters; k++) {
 					//std::cout << "k = " << k << " ==> ";
 
@@ -116,9 +121,10 @@ namespace PointCloudClassification {
 					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Calculating output)");
 				}
 				
-
+				m->linearCombination(current_output, current_output, (1.0f/numFilters), 0, numPoints, outputDim, current_output);
 				output.push_back(current_output);
 			}
+
 			return output;
 		}
 
@@ -136,10 +142,11 @@ namespace PointCloudClassification {
 			float* Tk;
 
 			float* TG = (float*)malloc(numPoints * outputDim * sizeof(float));
-			float* current_outgoing_gradient = (float*)malloc(numPoints * inputDim * sizeof(float));
+			
 			float* temp = (float*)malloc(numPoints * inputDim * sizeof(float));
 			float* thetaT = (float*)malloc(outputDim * inputDim * sizeof(float));
 			
+
 			int number_of_samples = incomingGradient.size();
 			for (int i = 0; i < number_of_samples; i++) {
 				float* current_L = L[i];
@@ -147,6 +154,7 @@ namespace PointCloudClassification {
 				float* current_gradient = incomingGradient[i];
 
 				Tk_minus_1 = current_L;
+				float* current_outgoing_gradient = (float*)malloc(numPoints * inputDim * sizeof(float));
 
 				for (int k = 0; k < numFilters; k++) {
 					if (k == 0) {
@@ -170,7 +178,7 @@ namespace PointCloudClassification {
 
 					m->multiply(TXT, current_gradient, inputDim, numPoints, outputDim, dtheta);
 					
-					m->linearCombination(theta[k], dtheta, 1, -learningRate, inputDim, outputDim, theta[k]);
+					m->linearCombination(theta[k], dtheta, 1, (-1.0f *learningRate)/numFilters, inputDim, outputDim, theta[k]);
 
 					// Calculate outgoing gradient
 					m->multiply(Tk, current_gradient, numPoints, numPoints, outputDim, TG);
@@ -188,72 +196,9 @@ namespace PointCloudClassification {
 				std::cout << current_outgoing_gradient[(1 * inputDim) + 0] << " " << current_outgoing_gradient[(1 * inputDim) + 1] << " " << current_outgoing_gradient[(1 * inputDim) + 2] << std::endl;
 				std::cout << current_outgoing_gradient[(2 * inputDim) + 0] << " " << current_outgoing_gradient[(2 * inputDim) + 1] << " " << current_outgoing_gradient[(2 * inputDim) + 2] << std::endl;
 				std::cout << std::endl;*/
+				m->linearCombination(current_outgoing_gradient, current_outgoing_gradient, (1.0f / numFilters), 0, numPoints, inputDim, current_outgoing_gradient);
 				outgoingGradient.push_back(current_outgoing_gradient);
 			}
-
-			//float* Tk_minus_2 = (float*)malloc(numPoints * numPoints * sizeof(float));
-			//m->getIdentityMatrix(numPoints, Tk_minus_2);
-			//float* Tk_minus_1 = (float*)malloc(numPoints * numPoints * sizeof(float));
-			//float* Tk;
-
-			//float* TX = (float*)malloc(numPoints * inputDim * sizeof(float));
-			//float* dYTheta = (float*)malloc(numPoints * outputDim * outputDim * inputDim * sizeof(float));
-			//float* dtheta = (float*)malloc(inputDim * outputDim * sizeof(float));
-
-			//float* thetaTranspose = (float*)malloc(inputDim * outputDim * sizeof(float));
-			//float* temp_sum1 = (float*)malloc(numPoints * outputDim * inputDim * numPoints * sizeof(float));
-			//float* temp_sum2 = (float*)malloc(numPoints * outputDim * inputDim * numPoints * sizeof(float));
-
-			//float* Identity = (float*)malloc(outputDim * outputDim * sizeof(float));
-			//m->getIdentityMatrix(outputDim, Identity);
-
-			//int number_of_samples = incomingGradient.size();
-			//for (int i = 0; i < number_of_samples; i++) {
-			//	float* current_L = L[i];
-			//	float* current_input = X[i];
-			//	float* current_gradient = incomingGradient[i];
-
-			//	std::cout << "Here" << std::endl;
-
-			//	Tk_minus_1 = current_L;
-
-			//	float* current_outgoing_gradient = (float*) malloc(numPoints * inputDim * sizeof(float));
-			//	for (int k = 0; k < numFilters; k++) {
-			//		if (k == 0) {
-			//			Tk = Tk_minus_2;
-			//		}
-			//		else if (k == 1) {
-			//			Tk = Tk_minus_1;
-			//		}
-			//		else {
-			//			Tk = get_chebeshev_polynomial(Tk_minus_1, Tk_minus_2, current_L, false);
-			//			Tk_minus_2 = Tk_minus_1;
-			//			Tk_minus_1 = Tk;
-			//		}
-			//		
-			//		// For dtheta
-			//		std::cout << "hh" << std::endl;
-			//		m->multiply(Tk, current_input, numPoints, numPoints, inputDim, TX);
-			//		std::cout << "hh" << std::endl;
-			//		m->kroneckerProduct(Identity, TX, outputDim, outputDim, numPoints, inputDim, dYTheta);
-			//		std::cout << "hh" << std::endl;
-			//		m->multiply(current_gradient, dYTheta, 1, numPoints * outputDim, outputDim * inputDim, dtheta);
-			//		std::cout << "hh" << std::endl;
-			//		m->linearCombination(theta[k], dtheta, 1, -learningRate, inputDim, outputDim, current_gradient);
-			//		std::cout << "hh" << std::endl;
-			//		// For dInput
-			//		m->transpose(theta[k], inputDim, outputDim, thetaTranspose);
-			//		if (k == 0) {
-			//			m->kroneckerProduct(thetaTranspose, Tk, outputDim, inputDim, numPoints, numPoints, temp_sum2);
-			//		}
-			//		else {
-			//			m->kroneckerProduct(thetaTranspose, Tk, outputDim, inputDim, numPoints, numPoints, temp_sum1);
-			//			m->add(temp_sum2, temp_sum1, outputDim * inputDim , numPoints * numPoints, temp_sum2);
-			//		}
-			//	}
-			//	m->multiply(current_gradient, temp_sum2, 1, numPoints * outputDim, inputDim * numPoints, current_outgoing_gradient);
-			//	outgoingGradient.push_back(current_outgoing_gradient);
-			//}
 			return outgoingGradient;
 		}
 	};

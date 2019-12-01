@@ -15,7 +15,6 @@ namespace PointCloudClassification {
 			/* 
 				Derivative w.r.t. weight matrix
 			*/
-			std::vector<float*> dtheta;
 
 			std::vector<float*> X;
 			std::vector<float*> L;

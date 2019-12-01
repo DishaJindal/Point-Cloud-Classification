@@ -45,7 +45,7 @@ namespace PointCloudClassification {
 		float calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel);
 		void backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate);
 		void train(std::vector<float*> input, std::vector<float*> laplacians, std::vector<float*> label, int n);
-		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float*> classification);
+		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float> classification);
 	};
 
 	class GraphConvolutionNetworkGPU {
