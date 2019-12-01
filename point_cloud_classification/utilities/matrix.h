@@ -57,6 +57,7 @@ public:
 	void meanAcrossDim1(float * A, int m, int n, float * output);
 	void sumAcrossDim1(float * A, int m, int n, float * output);
 	void varianceAcrossDim1(float * A, int m, int n, float * output, float* mean);
+	void ReluForward(float* A, int m, int n, float* output);
 };
 
 

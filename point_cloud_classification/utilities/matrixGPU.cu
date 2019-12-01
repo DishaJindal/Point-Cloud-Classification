@@ -50,7 +50,7 @@ __global__ void kernMultiplyMatricesTranspose(float *input, float *weight, float
 
 	if (col < k && row < m) {
 		for (int i = 0; i < n; i++) {
-			sum += input[row * n + i] * weight[i + col * k];
+			sum += input[row * n + i] * weight[i + col * n];
 		}
 		output[row*k + col] = sum;
 	}
@@ -159,7 +159,7 @@ __global__ void kernLCMatrices(float *input1, float *input2, float *output, int 
 }
 void MatrixGPU::subtractWithFactor(float* A, float* B, float alpha, int m, int n, float* output) {
 	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
-	kernLCMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, 1, alpha);
+	kernLCMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, 1, (-1.0f * alpha));
 }
 
 /*
@@ -171,6 +171,20 @@ void MatrixGPU::subtractWithFactor(float* A, float* B, float alpha, int m, int n
 void MatrixGPU::linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output) {
 	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
 	kernLCMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, alpha, beta);
+}
+
+__global__ void kernReluForward(float *input, float *output, int m, int n) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (index < m * n) {
+		output[index] = imax(input[index], 0);
+	}
+}
+
+void MatrixGPU::ReluForward(float* A, int m, int n, float* output) {
+	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernReluForward << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, output, m, n);
+
 }
 
 unsigned int nextPow2(unsigned int x)

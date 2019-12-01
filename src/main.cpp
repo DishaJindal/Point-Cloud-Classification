@@ -27,7 +27,7 @@
 #include <math.h>
 using namespace std;
 using namespace PointCloudClassification;
-#define GPU false
+#define GPU true
 
 void tests() {
 	cout << "********************************************************" << endl;
@@ -95,6 +95,20 @@ int main(int argc, char* argv[]) {
 
 	// Tests
 	//tests();
+	cout << "********************************************************" << endl;
+	cout << "Testing Fully Connected Layer CPU ..." << endl;
+	Tests::testFCLayer();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Fully Connected Layer GPU..." << endl;
+	Tests::testFCLayerGPU();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Fully Connected Layer backward GPU..." << endl;
+	Tests::testFCLayerBackwardGPU();
+	cout << "********************************************************" << endl;
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
 	int per_class = 1;
@@ -139,6 +153,7 @@ int main(int argc, char* argv[]) {
 
 	//:train(std::vector<float*> input, std::vector<float*> label, int n)
 	gcn.train(x_train, laplacians, y_train, ex);
+
 
 	// Train 
 	//int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);

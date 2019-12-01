@@ -5,6 +5,7 @@
 #include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/utils.h"
+#include "../utilities/matrix.h"
 #include "layer.h"
 #include "fullyConnectedLayer.h"
 #include <fstream>
@@ -29,120 +30,70 @@ namespace PointCloudClassification {
 			Utilities::genArray(inputDim * outputDim, weightRand);
 			cudaMemcpy(W, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 			cudaMalloc((void**)&A, inputDim * batchDim * sizeof(float));
+			cudaMalloc((void**)&dW, inputDim * outputDim * sizeof(float));
 		}
 
 
-		void forward(float *inputArg, float *outputArg, bool test) {
-			cudaMemcpy(A, inputArg, batchDim * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
-			int gridRows = (batchDim*outputDim + blockSize - 1) / blockSize;
-
-			Utilities::kernMultiplyMatrices<<<gridRows, blockSize >>>(inputArg, W, outputArg, batchDim, inputDim, outputDim);
-			checkCUDAError("kernMultiplyMatrices");
-
-			dim3 fullBlocksPerGrid((outputDim*batchDim + blockSize - 1) / blockSize);
-			if (!lastLayer) {
-				Utilities::kernActivateReLU << <fullBlocksPerGrid, blockSize >> > (outputArg, outputDim*batchDim);
+		std::vector<float*> FullyConnectedLayer::forward(std::vector<float*> inputArg, bool test) {
+			float* flattenedInput;
+			cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
+			int i = 0;
+			for (auto current : inputArg) {
+				cudaMemcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+				i++;
 			}
-			else {
-				float *output = new float[outputDim * batchDim];
-				cudaMemcpy(output, outputArg, batchDim * outputDim * sizeof(float), cudaMemcpyDeviceToHost);
-				float *softmaxDenominator = new float[batchDim];
-				memset(softmaxDenominator, 0, batchDim * sizeof(float));
-				for (int j = 0; j < batchDim; j++) {
-					for (int i = 0; i < outputDim; i++) {
-						softmaxDenominator[j] += exp(output[j * outputDim + i]);
-					}
-				}
+			float* flattenedOutput;
+			cudaMalloc((void**)&flattenedOutput, batchDim * outputDim * sizeof(float));
 
-				float *devSoftmaxDenominator;
-				cudaMalloc((void **)&devSoftmaxDenominator, batchDim * sizeof(float));
-				cudaMemcpy(devSoftmaxDenominator, softmaxDenominator, batchDim * sizeof(float), cudaMemcpyHostToDevice);
-				Utilities::kernActivateSoftmax << <fullBlocksPerGrid, blockSize >> > (outputArg, batchDim * outputDim, outputDim, devSoftmaxDenominator);
-				checkCUDAError("kernActivateSoftmax");
+			MatrixGPU* m = new MatrixGPU();
+			m->multiply(flattenedInput, W, batchDim, inputDim, outputDim, flattenedOutput);
+			//free(flattenedInput);
 
-				delete(output);
+			// Store input and output of this layer
+			cudaMemcpy(A, flattenedInput, batchDim * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 
-				cudaFree(devSoftmaxDenominator);
-				checkCUDAError("cudaFree");
+			std::vector<float*> outputArg;
+			for (int i = 0; i < batchDim; i++) {
+				outputArg.push_back(flattenedOutput + (i * outputDim));
 			}
+			//free(flattenedOutput);
 
-			if (test) {
-				printf("\n\n\tWeights : ");
-				float *tempWeight = new float[inputDim * outputDim];
-				cudaMemcpy(tempWeight, W, inputDim * outputDim * sizeof(float), cudaMemcpyDeviceToHost);
-				for (int i = 0; i < inputDim * outputDim; i++) {
-					if (i % outputDim == 0) {
-						printf("\n\t\t");
-					}
-					printf("%f ", tempWeight[i]);
-				}
-				delete(tempWeight);
-			}
+			return outputArg;
 		}
 
-		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
+			float* flattenedInput;
+			cudaMalloc((void**)&flattenedInput, batchDim * outputDim * sizeof(float));
+			int i = 0;
+			for (auto current : incomingGradient) {
+				cudaMemcpy(flattenedInput + (i * outputDim), current, outputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+				i++;
+			}
+			float* flattenedOutput;
+			cudaMalloc((void**)&flattenedOutput, batchDim * inputDim * sizeof(float));
 
-			float *weightTranspose;
-			cudaMalloc((void**)&weightTranspose, inputDim * outputDim * sizeof(float));
-			checkCUDAError("cudaMalloc");
+			MatrixGPU* m = new MatrixGPU();
 
-			int gridRows = (inputDim*outputDim + blockSize - 1) / blockSize;
-			Utilities::kernTransposeMatrices << <gridRows, blockSize >> > (W, weightTranspose, inputDim, outputDim);
-			checkCUDAError("kernTransposeMatrices");
+			// Compute gradient w.r.t weights
+			float *ATranspose;
+			cudaMalloc((void**)&ATranspose, inputDim * batchDim * sizeof(float));
+			m->transpose(A, batchDim, inputDim, ATranspose);
+			m->multiply(ATranspose, flattenedInput, inputDim, batchDim, outputDim, dW);
 
-			float *outgoingGradientLocal;
-			cudaMalloc((void**)&outgoingGradientLocal, inputDim*batchDim * sizeof(float));
-			checkCUDAError("cudaMalloc");
+			// Compute outgoingGradient (w.r.t. input)
+			m->multiplyTranspose(flattenedInput, W, batchDim, outputDim, inputDim, flattenedOutput);
 
+			//Update weight matrix
+			m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
+			
+			std::vector<float*> outgoingGradient;
+			for (int i = 0; i < batchDim; i++) {
+				outgoingGradient.push_back(flattenedOutput + (i * inputDim));
+			}
+			//free(flattenedOutput);
 
-			gridRows = (inputDim*batchDim + blockSize - 1) / blockSize;
-			Utilities::kernMultiplyMatrices << <gridRows, blockSize >> > (incomingGradient, weightTranspose, outgoingGradientLocal, batchDim, outputDim, inputDim);
-			checkCUDAError("kernMultiplyMatrices");
+			return outgoingGradient;
 
-			cudaFree(weightTranspose);
-			checkCUDAError("cudaFree");
-
-			float *inputDerivatived;
-			cudaMalloc((void**)&inputDerivatived, batchDim * inputDim * sizeof(float));
-			dim3 fullBlocksPerGrid((inputDim * batchDim + blockSize - 1) / blockSize);
-			Utilities::kernActivateReLUDerivative << <fullBlocksPerGrid, blockSize >> > (A, inputDerivatived, inputDim * batchDim);
-			checkCUDAError("kernActivateReLUDerivative");
-
-
-			gridRows = (inputDim*batchDim + blockSize - 1) / blockSize;
-			Utilities::kernMultMatricesHammard << <gridRows, blockSize >> > (outgoingGradientLocal, inputDerivatived, outgoingGradient, batchDim, inputDim);
-			checkCUDAError("kernMultMatricesHammard");
-
-			cudaFree(inputDerivatived);
-			checkCUDAError("cudaFree");
-
-
-			float *inputTranspose;
-			cudaMalloc((void**)&inputTranspose, inputDim * batchDim * sizeof(float));
-
-			gridRows = (inputDim*batchDim + blockSize - 1) / blockSize;
-			Utilities::kernTransposeMatrices << <gridRows, blockSize >> > (A, inputTranspose, batchDim, inputDim);
-			checkCUDAError("kernTransposeMatrices");
-
-			float *gradient;
-			cudaMalloc((void**)&gradient, inputDim * outputDim * sizeof(float));
-			gridRows = (inputDim*outputDim + blockSize - 1) / blockSize;
-			Utilities::kernMultiplyMatrices << <gridRows, blockSize >> > (inputTranspose, incomingGradient, gradient, inputDim, batchDim, outputDim);
-			checkCUDAError("kernMultiplyMatrices");
-
-			cudaFree(inputTranspose);
-			checkCUDAError("cudaFree");
-
-
-			Utilities::kernMultMatricesWithScalar << <gridRows, blockSize >> > (gradient, gradient, inputDim, outputDim, learningRate);
-			checkCUDAError("kernMultMatricesWithScalar");
-
-
-			Utilities::kernSubtractMatrices << <gridRows, blockSize >> > (W, gradient, W, inputDim, outputDim);
-			checkCUDAError("kernSubtractMatrices");
-
-			cudaFree(gradient);
-			checkCUDAError("cudaFree");
 		}
 	};
 }

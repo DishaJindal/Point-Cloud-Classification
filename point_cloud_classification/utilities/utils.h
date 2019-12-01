@@ -10,6 +10,8 @@ namespace Utilities {
 		}
 	}
 
+
+
 	inline void printArray(float* arr, int n) {
 		for (int i = 0; i < n; i++) {
 			std::cout << arr[i];
@@ -27,6 +29,17 @@ namespace Utilities {
 		for (int i = 0; i < arr.size(); i++) {
 			for (int j = 0; j < n; j++) {
 				std::cout << arr[i][j] << " ";
+			}
+			std::cout << std::endl;
+		}
+	}
+
+	inline void printVectorOfFloatsGPU(std::vector<float*> arr, int n) {
+		float* temp_cpu = (float*)malloc(n * sizeof(float));
+		for (int i = 0; i < arr.size(); i++) {
+			cudaMemcpy(temp_cpu, arr[i], n * sizeof(float), cudaMemcpyDeviceToHost);
+			for (int j = 0; j < n; j++) {
+				std::cout << temp_cpu[j] << " ";
 			}
 			std::cout << std::endl;
 		}
