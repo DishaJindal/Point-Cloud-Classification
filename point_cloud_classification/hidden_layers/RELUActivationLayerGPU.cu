@@ -1,3 +1,4 @@
+#pragma once 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include "../common.h"
@@ -16,6 +17,7 @@
 
 #define blockSize 128
 
+
 __global__ void reluBackward(float* input, float* Z, int n, float* output) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -25,14 +27,12 @@ __global__ void reluBackward(float* input, float* Z, int n, float* output) {
 }
 
 namespace PointCloudClassification {
-	class RELUActivationLayerGPU : public RELUActivationLayer {
-		RELUActivationLayerGPU() {};
 
-		RELUActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, outputDim, batchDim, lastLayer) {
 
-		}
 
-		std::vector<float*> RELUActivationLayer::forward(std::vector<float*> inputArg, bool test) {
+	//class RELUActivationLayerGPU : public RELUActivationLayer {
+		//public:
+		std::vector<float*> RELUActivationLayerGPU::forward(std::vector<float*> inputArg, bool test) {
 			float* flattenedInput;
 			cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
 			int i = 0;
@@ -56,7 +56,7 @@ namespace PointCloudClassification {
 			return outputArg;
 		}
 
-		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
+		std::vector<float*> RELUActivationLayerGPU::backward(std::vector<float*> incomingGradient, float learningRate) {
 			std::vector<float*> outgoingGradient;
 			for (int i = 0; i < batchDim; i++) {
 				float* temp;
@@ -65,6 +65,7 @@ namespace PointCloudClassification {
 				reluBackward << <fullBlocksPerGrid, blockSize >> > (incomingGradient[i], Z[i], inputDim, temp);
 				outgoingGradient.push_back(temp);
 			}
+			return outgoingGradient;
 		}
 	};
-}
+

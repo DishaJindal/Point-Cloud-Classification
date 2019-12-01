@@ -15,7 +15,7 @@
 namespace Graph {
 	using std::vector;
 
-	Graph::Graph(float *points, int n, int f_in, int k) {
+	GraphCPU::GraphCPU(float *points, int n, int f_in, int k) {
 		fill_adj(points, n, f_in, k);
 		float* Anorm = normalize_adj(A, n);
 		float* L = find_laplacian(Anorm, n);
@@ -32,15 +32,15 @@ namespace Graph {
 		return idx;
 	}
 
-	float* Graph::get_A() {
+	float* GraphCPU::get_A() {
 		return A;
 	};
 
-	float* Graph::get_Lnorm() {
+	float* GraphCPU::get_Lnorm() {
 		return Lnorm;
 	};
 
-	void Graph::fill_adj(float *points, int n, int f_in, int k) {
+	void GraphCPU::fill_adj(float *points, int n, int f_in, int k) {
 		A = new float[n * n];
 		for (int i = 0; i < n; i++) {
 
@@ -67,7 +67,7 @@ namespace Graph {
 		}
 	};
 	
-	float* Graph::normalize_adj(const float* A, int n) {
+	float* GraphCPU::normalize_adj(const float* A, int n) {
 		float* Anorm = new float[n * n];
 		vector<float> d(n, 0);
 		for (int i = 0; i < n; i++) {
@@ -95,7 +95,7 @@ namespace Graph {
 		return Anorm;
 	};
 
-	float* Graph::find_laplacian(const float* Anorm, int n) {
+	float* GraphCPU::find_laplacian(const float* Anorm, int n) {
 		float* L = new float[n * n];
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
@@ -108,7 +108,7 @@ namespace Graph {
 		return L;
 	};
 
-	void Graph::fill_normalized_laplacian(float* L, const int n) {
+	void GraphCPU::fill_normalized_laplacian(float* L, const int n) {
 		Lnorm = new float[n * n];
 
 		//std::cout << "Calculating Eigen" << std::endl;

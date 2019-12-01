@@ -7,44 +7,65 @@
 
 namespace PointCloudClassification {
 	class RELUActivationLayer : public Layer {
-		protected : 
-			/* 
-				Input
-			*/
-			std::vector<float *> Z;
-			/* 
-				Derivative w.r.t. input
-			*/
-			float *dZ = NULL;
-			/* 
-				Output of this layer
-			*/
-			float *A = NULL;
-			
+	protected:
+		/*
+			Input
+		*/
+		std::vector<float *> Z;
+		/*
+			Derivative w.r.t. input
+		*/
+		float *dZ = NULL;
+		/*
+			Output of this layer
+		*/
+		float *A = NULL;
 
-			int inputDim;
-			int batchDim;
-			int outputDim;
-			bool lastLayer;
 
-		public:
-			RELUActivationLayer() {};
-			RELUActivationLayer(int inputDim, int outputDim, int batchDim, bool lastLayer) {
-				this->inputDim = inputDim;
-				this->outputDim = outputDim;
-				this->batchDim = batchDim;
-				this->lastLayer = lastLayer;
-			}
+		int inputDim;
+		int batchDim;
+		int outputDim;
+		bool lastLayer;
 
-			int getInputDim() {
-				return inputDim;
-			}
+	public:
+		RELUActivationLayer() {};
+		RELUActivationLayer(int inputDim, int outputDim ,int batchDim, bool lastLayer) {
+			this->inputDim = inputDim;
+			this->outputDim = outputDim;
+			this->batchDim = batchDim;
+			this->lastLayer = lastLayer;
+		}
 
-			int getOutputDim() {
-				return outputDim;
-			}
-			
-			std::vector<float*> forward(std::vector<float*> input, bool test = false) = 0;
-			std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) = 0;
-		};
+		int getInputDim() {
+			return inputDim;
+		}
+
+		int getOutputDim() {
+			return outputDim;
+		}
+
+		std::vector<float*> forward(std::vector<float*> input, bool test = false) = 0;
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) = 0;
+	};
+
+
+
+	class RELUActivationLayerCPU : public RELUActivationLayer {
+	public:
+		RELUActivationLayerCPU() {}
+		RELUActivationLayerCPU(int inputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
+		}
+		std::vector<float*> forward(std::vector<float*> input, bool test = false);
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
+	};
+
+	class RELUActivationLayerGPU : public RELUActivationLayer {
+	public:
+		RELUActivationLayerGPU() {}
+		RELUActivationLayerGPU(int inputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
+		}
+		std::vector<float*> forward(std::vector<float*> input, bool test = false);
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
+	};
+
 }

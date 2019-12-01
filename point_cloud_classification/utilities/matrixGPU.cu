@@ -652,6 +652,10 @@ void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output) {
 	reduce_mean(A, m, n, output, m);
 }
 
+void MatrixGPU::sumAcrossDim1(float* A, int m, int n, float* output) {
+	reduce_mean(A, m, n, output, 1);
+}
+
 __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *output, int m, int n) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int row = index / n;

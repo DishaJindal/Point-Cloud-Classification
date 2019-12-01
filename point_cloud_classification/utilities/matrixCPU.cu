@@ -36,6 +36,8 @@ void MatrixCPU::multiplyTranspose(float* A, float* B, int m, int n, int p, float
 
 /*
 	A -> m x n
+<<<<<<< HEAD
+=======
 	B -> p x q
 	output = A (x) B (mp x nq)
 */
@@ -63,6 +65,7 @@ void MatrixCPU::multiplyTranspose(float* A, float* B, int m, int n, int p, float
 
 /*
 	A -> m x n
+>>>>>>> f523647946221c73c6f4d126e4957865b51c11fc
 	output = A.T 
 */
 void MatrixCPU::transpose(float* A, int m, int n, float* output){

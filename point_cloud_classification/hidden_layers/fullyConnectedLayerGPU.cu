@@ -21,7 +21,6 @@
 namespace PointCloudClassification {
 
 	class FullyConnectedLayerGPU : public FullyConnectedLayer {
-		FullyConnectedLayerGPU() {};
 
 		float* flattenedInputForward;
 		float* flattenedOutputForward;
@@ -30,6 +29,7 @@ namespace PointCloudClassification {
 		float* flattenedOutputBackward;
 		
 	public:
+		FullyConnectedLayerGPU() {};
 		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer)  {
 			cudaMalloc((void **)&W, inputDim * outputDim * sizeof(float));
 			float *weightRand = new float[inputDim * outputDim];

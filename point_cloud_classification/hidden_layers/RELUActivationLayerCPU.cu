@@ -16,19 +16,19 @@
 
 namespace PointCloudClassification {
 
-	class RELUActivationLayerCPU : public RELUActivationLayer {
+	/*class RELUActivationLayerCPU : public RELUActivationLayer {
 	public:
 		RELUActivationLayerCPU() {};
 
 		RELUActivationLayerCPU(int inputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
 		
-		}
+		}*/
 
 		/*
 			inputArg -> batchDim x inputDim
 			outputArg -> batchDim x inputDim
 		*/
-		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
+		std::vector<float*> RELUActivationLayerCPU::forward(std::vector<float*> inputArg, bool test) {
 			float* flattenedInput = (float*)malloc(batchDim * inputDim * sizeof(float));
 			int i = 0;
 			for (auto current : inputArg) {
@@ -54,7 +54,7 @@ namespace PointCloudClassification {
 			 return outputArg;
 		}
 
-		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
+		std::vector<float*> RELUActivationLayerCPU::backward(std::vector<float*> incomingGradient, float learningRate) {
 			std::vector<float*> outgoingGradient;
 			for(int i = 0; i < batchDim; i++){
 				float* temp = (float*)malloc(inputDim * sizeof(float));
@@ -66,4 +66,3 @@ namespace PointCloudClassification {
 			return outgoingGradient;
 		}
 	};
-}

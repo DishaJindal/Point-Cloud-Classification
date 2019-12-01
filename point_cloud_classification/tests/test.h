@@ -5,6 +5,7 @@
 #include "../hidden_layers/fullyConnectedLayerCPU.cu"
 #include "../hidden_layers/fullyConnectedLayerGPU.cu"
 #include "../hidden_layers/globalPoolingCPU.cu"
+#include "../hidden_layers/globalPoolingGPU.cu"
 #include "../hidden_layers/graphConvolutionLayerCPU.cu"
 #include "../hidden_layers/graphConvolutionLayerGPU.cu"
 #include "../hidden_layers/RELUActivationLayerCPU.cu"

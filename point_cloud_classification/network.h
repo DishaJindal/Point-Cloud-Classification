@@ -10,7 +10,13 @@
 #include "hidden_layers/graphConvolutionLayerCPU.cu"
 #include "hidden_layers/dropoutLayerCPU.cu"
 #include "hidden_layers/globalPoolingCPU.cu"
-#include "hidden_layers/RELUActivationLayerCPU.cu"
+//#include "hidden_layers/RELUActivationLayerCPU.cu"
+#include "hidden_layers/fullyConnectedLayerGPU.cu"
+#include "hidden_layers/softmaxActivationLayerGPU.cu"
+#include "hidden_layers/graphConvolutionLayerGPU.cu"
+#include "hidden_layers/dropoutLayerGPU.cu"
+#include "hidden_layers/globalPoolingGPU.cu"
+#include "hidden_layers/RELUActivationLayer.h"
 
 namespace PointCloudClassification {
     Common::PerformanceTimer& timer();
@@ -48,14 +54,35 @@ namespace PointCloudClassification {
 		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float> classification);
 	};
 
-	class GraphConvolutionNetworkGPU {
+	class NetworkGPU {
 
 		std::vector<Layer*> layers;
-		int batchDim;
+		Loss *loss;
+		int batchSize;
+		int numClasses;
+		Layer* softmaxFunction;
+
+		// Architecture Layers
+		PointCloudClassification::GraphConvolutionLayerGPU gcn_layer1;
+		PointCloudClassification::DropoutLayerGPU dropout_layer1;
+		PointCloudClassification::GlobalPoolingLayerGPU gp_layer1;
+		PointCloudClassification::GraphConvolutionLayerGPU gcn_layer2;
+		PointCloudClassification::DropoutLayerGPU dropout_layer2;
+		PointCloudClassification::GlobalPoolingLayerGPU gp_layer2;
+		PointCloudClassification::DropoutLayerGPU dropout_layer3;
+		PointCloudClassification::FullyConnectedLayerGPU fc_layer1;
+		PointCloudClassification::RELUActivationLayerGPU relu1;
+		PointCloudClassification::DropoutLayerGPU dropout_layer4;
+		PointCloudClassification::FullyConnectedLayerGPU fc_layer2;
 	public:
-		GraphConvolutionNetworkGPU(int inputDim, int numHiddenLayers, int *hiddenDim, int outputDim, int batchDim);
-		void forward(float *input, float *output, bool test = false);
-		void backward(float *output, float *predicted, float learningRate);
-		float loss(float *label, float *predicted);
+		NetworkGPU(int numClasses, int batchSize);
+		void addLayer(Layer* layer);
+		void setLoss(Loss* loss);
+		void buildArchitecture();
+		std::vector<float*> forward(std::vector<float*> input, bool test);
+		float calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel);
+		void backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate);
+		void train(std::vector<float*> input, std::vector<float*> laplacians, std::vector<float*> label, int n);
+		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float> classification);
 	};
 }

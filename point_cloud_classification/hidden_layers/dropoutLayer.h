@@ -5,6 +5,8 @@
 #include <vector>
 #include <math.h>
 #include <random>
+#include <thrust/random/linear_congruential_engine.h>
+#include <thrust/random/uniform_real_distribution.h>
 
 namespace PointCloudClassification {
 	class DropoutLayer : public Layer {
@@ -42,4 +44,5 @@ namespace PointCloudClassification {
 		std::vector<float*> forward(std::vector<float*> input, bool test = false) = 0;
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) = 0;
 	};
+
 }

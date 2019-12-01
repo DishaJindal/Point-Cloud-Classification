@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include "../common.h"
@@ -19,7 +21,6 @@
 namespace PointCloudClassification {
 
 	class GraphConvolutionLayerGPU : public GraphConvolutionLayer {
-		GraphConvolutionLayerGPU() {};
 	private:
 		float* get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float mul = false) {
 			MatrixGPU* m = new MatrixGPU();
@@ -45,6 +46,7 @@ namespace PointCloudClassification {
 		}
 
 	public:
+		GraphConvolutionLayerGPU() {};
 		GraphConvolutionLayerGPU(int numPoints, int inputDim, int outputDim, int batchDim, int numFilters, bool lastLayer) : GraphConvolutionLayer(numPoints, inputDim, outputDim, batchDim, numFilters, lastLayer) {
 			for (int i = 0; i < numFilters; i++) {
 				float* temp;
