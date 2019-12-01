@@ -26,12 +26,12 @@ __global__ void reluBackward(float* input, float* Z, int n, float* output) {
 
 namespace PointCloudClassification {
 	class RELUActivationLayerGPU : public RELUActivationLayer {
+		public:
 		RELUActivationLayerGPU() {};
 
-		RELUActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, outputDim, batchDim, lastLayer) {
+		RELUActivationLayerGPU(int inputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
 
 		}
-
 		std::vector<float*> RELUActivationLayer::forward(std::vector<float*> inputArg, bool test) {
 			float* flattenedInput;
 			cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
