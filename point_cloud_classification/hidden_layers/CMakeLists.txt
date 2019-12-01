@@ -24,6 +24,7 @@ set(SOURCE_FILES
 	"crossEntropyLossCPU.cu"
 	"crossEntropyLossGPU.cu"
 	"dropoutLayerCPU.cu"
+	"dropoutLayerGPU.cu"
 )
 
 cuda_add_library(hidden_layers

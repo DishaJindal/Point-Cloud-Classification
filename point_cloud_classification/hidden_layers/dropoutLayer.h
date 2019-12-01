@@ -5,6 +5,8 @@
 #include <vector>
 #include <math.h>
 #include <random>
+#include <thrust/random/linear_congruential_engine.h>
+#include <thrust/random/uniform_real_distribution.h>
 
 namespace PointCloudClassification {
 	class DropoutLayer : public Layer {
