@@ -21,8 +21,6 @@ namespace PointCloudClassification {
 	NetworkCPU::NetworkCPU(int numClasses, int batchSize) {
 		this->numClasses = numClasses;
 		this->batchSize = batchSize;
-		PointCloudClassification::softmaxActivationLayerCPU softmaxLayer(numClasses, Parameters::batch_size, false);
-		this->softmaxFunction = &softmaxLayer;
 	}
 
 	void NetworkCPU::addLayer(Layer* layer){

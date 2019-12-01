@@ -3,6 +3,7 @@
 #include "../network.h"
 #include "../utilities/parameters.h"
 #include "../hidden_layers/fullyConnectedLayerCPU.cu"
+#include "../hidden_layers/fullyConnectedLayerGPU.cu"
 #include "../hidden_layers/globalPoolingCPU.cu"
 #include "../hidden_layers/graphConvolutionLayerCPU.cu"
 #include "../hidden_layers/RELUActivationLayerCPU.cu"
@@ -73,11 +74,7 @@ namespace Tests {
 	}
 
 	void testFCLayer() {
-		PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
 		PointCloudClassification::FullyConnectedLayerCPU fc1(Parameters::num_points * Parameters::input_features, 1000, Parameters::batch_size, false);
-		gcn.addLayer(&fc1);
-		PointCloudClassification::FullyConnectedLayerCPU fc2(1000, 300, Parameters::batch_size, false);
-		gcn.addLayer(&fc2);
 
 		vector<float*> samples; //Data from file will be stored here
 		int number_of_random_examples = Parameters::batch_size;
@@ -88,17 +85,83 @@ namespace Tests {
 		}
 
 		std::cout << "SAMPLE: " << std::endl;
-		std::cout << samples[0][0] << " " << samples[0][1] << " " << samples[0][2] << std::endl;
-		std::cout << samples[1][0] << " " << samples[1][1] << " " << samples[1][2] << std::endl;
-		std::cout << samples[2][0] << " " << samples[2][1] << " " << samples[2][2] << std::endl;
+		Utilities::printVectorOfFloats(samples, 5);
 		std::cout << std::endl;
 
-		std::vector<float*> op = gcn.forward(samples, false);
+		std::vector<float*> op = fc1.forward(samples, false);
 
 		std::cout << "OUTPUT: " << std::endl;
-		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
-		std::cout << op[1][0] << " " << op[1][1] << " " << op[1][2] << std::endl;
-		std::cout << op[2][0] << " " << op[2][1] << " " << op[2][2] << std::endl;
+		Utilities::printVectorOfFloats(op, 5);
+		std::cout << std::endl;
+	}
+
+	void testFCLayerGPU() {
+		PointCloudClassification::FullyConnectedLayerGPU fc1(Parameters::num_points * Parameters::input_features, 1000, Parameters::batch_size, false);
+
+		vector<float*> samples; //Data from file will be stored here
+		int number_of_random_examples = Parameters::batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::input_features, temp);
+			float* temp_gpu;
+			cudaMalloc((void**)&temp_gpu, Parameters::num_points * Parameters::input_features * sizeof(float));
+			cudaMemcpy(temp_gpu, temp, Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
+			samples.push_back(temp_gpu);
+		}
+
+		//std::cout << "SAMPLE: " << std::endl;
+		//std::cout << samples[0][0] << " " << samples[0][1] << " " << samples[0][2] << std::endl;
+		//std::cout << samples[1][0] << " " << samples[1][1] << " " << samples[1][2] << std::endl;
+		//std::cout << samples[2][0] << " " << samples[2][1] << " " << samples[2][2] << std::endl;
+		//std::cout << std::endl;
+
+		std::cout << "INPUT: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(samples, 5);
+		std::cout << std::endl;
+
+		std::vector<float*> op = fc1.forward(samples, false);
+
+		std::cout << "OUTPUT: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(op, 5);
+		std::cout << std::endl;
+	}
+
+	void testFCLayerBackwardGPU() {
+		PointCloudClassification::FullyConnectedLayerGPU fc1(Parameters::num_points * Parameters::input_features, 1000, Parameters::batch_size, false);
+
+		vector<float*> samples; //Data from file will be stored here
+		int number_of_random_examples = Parameters::batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::input_features, temp);
+			float* temp_gpu;
+			cudaMalloc((void**)&temp_gpu, Parameters::num_points * Parameters::input_features * sizeof(float));
+			cudaMemcpy(temp_gpu, temp, Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
+			samples.push_back(temp_gpu);
+		}
+
+		//std::cout << "SAMPLE: " << std::endl;
+		//std::cout << samples[0][0] << " " << samples[0][1] << " " << samples[0][2] << std::endl;
+		//std::cout << samples[1][0] << " " << samples[1][1] << " " << samples[1][2] << std::endl;
+		//std::cout << samples[2][0] << " " << samples[2][1] << " " << samples[2][2] << std::endl;
+		//std::cout << std::endl;
+
+		std::cout << "INPUT: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(samples, 5);
+		std::cout << std::endl;
+
+		std::vector<float*> op = fc1.forward(samples, false);
+
+		std::cout << "OUTPUT: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(op, 5);
+		std::cout << std::endl;
+
+		std::vector<float*> og = fc1.backward(op, 0.01);
+
+		
+
+		std::cout << "OG: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(og, 5);
 		std::cout << std::endl;
 	}
 
