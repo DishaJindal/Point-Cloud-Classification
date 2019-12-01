@@ -15,7 +15,7 @@
 #include "point_cloud_classification/utilities/matrix.h"
 #include "point_cloud_classification/utilities/utils.h"
 #include "point_cloud_classification/utilities/parameters.h"
-#include "point_cloud_classification/hidden_layers/fullyConnectedLayerCPU.cu"
+#include "point_cloud_classification/hidden_layers/fullyConnectedLayer.h"
 
 #include "point_cloud_classification/tests/test.h"
 
