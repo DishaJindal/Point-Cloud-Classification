@@ -689,19 +689,25 @@ void MatrixGPU::printMatrix(float* A, int m, int n) {
 		printf("\n");
 	}
 }
+__global__ void kernGetIdentity(float *input, int m) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	int row = index / m;
+	int col = index % m;
+	
+	if (index < m * m) {
+		if (row == col) {
+			input[index] = 1;
+		}
+		else {
+			input[index] = 0;
+		}
+	}
+}
 
 /*
 	returns Identity matrix of given dimension
 */
 void MatrixGPU::getIdentityMatrix(int m, float* A) {
-	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < m; j++) {
-			if (i == j) {
-				A[i * m + j] = 1;
-			}
-			else {
-				A[i * m + j] = 0;
-			}
-		}
-	}
+	dim3 fullBlocksPerGrid((m * m + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernGetIdentity << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, m);
 }

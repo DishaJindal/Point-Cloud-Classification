@@ -126,6 +126,21 @@ int main(int argc, char* argv[]) {
 	Tests::testSoftmaxLayer();
 	cout << "********************************************************" << endl;
 
+	/*cout << "********************************************************" << endl;
+	cout << "Testing Softmax Layer forward GPU..." << endl;
+	Tests::testSoftmaxLayerGPU();
+	cout << "********************************************************" << endl;*/
+
+	cout << "********************************************************" << endl;
+	cout << "Testing RELU Layer forward CPU..." << endl;
+	Tests::testRELULayer();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing RELU Layer forward GPU..." << endl;
+	Tests::testRELULayerGPU();
+	cout << "********************************************************" << endl;
+
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
 	int per_class = 1;
 	std::vector<float*> x_train;
