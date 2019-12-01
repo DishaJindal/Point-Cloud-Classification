@@ -8,12 +8,12 @@
 #include "../hidden_layers/globalPoolingGPU.cu"
 #include "../hidden_layers/graphConvolutionLayerCPU.cu"
 #include "../hidden_layers/graphConvolutionLayerGPU.cu"
-#include "../hidden_layers/RELUActivationLayerCPU.cu"
+#include "../hidden_layers/RELUActivationLayer.h"
 #include "../hidden_layers/softmaxActivationLayerCPU.cu"
 #include "../hidden_layers/softmaxActivationLayerGPU.cu"
 #include "../hidden_layers/sigmoidActivationLayerCPU.cu"
 #include "../hidden_layers/CrossEntropyLossCPU.cu"
-#include "../hidden_layers/dropoutLayerCPU.cu"
+#include "../hidden_layers/dropoutLayer.h"
 
 using namespace std;
 using namespace PointCloudClassification;

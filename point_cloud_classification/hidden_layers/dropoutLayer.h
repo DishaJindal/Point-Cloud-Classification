@@ -45,4 +45,34 @@ namespace PointCloudClassification {
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) = 0;
 	};
 
+
+	class DropoutLayerCPU : public DropoutLayer {
+	public:
+		DropoutLayerCPU() {}
+		DropoutLayerCPU(int numPoints, int inputDim, int batchDim, bool lastLayer, float k_prob) : DropoutLayer(numPoints, inputDim, batchDim, lastLayer) {
+			// Allocate space to save which nodes were kept required for back propagataion
+			for (int i = 0; i < batchDim; i++)
+				this->nodesKeep.push_back((float*)malloc(inputDim * numPoints * sizeof(float)));
+			std::default_random_engine generator;
+			std::bernoulli_distribution distribution(k_prob);
+			this->rand_generator = generator;
+			this->disturb = distribution;
+		}
+		std::vector<float*> forward(std::vector<float*> input, bool test = false);
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
+	};
+
+	class DropoutLayerGPU : public DropoutLayer {
+	public:
+		DropoutLayerGPU() {}
+		DropoutLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer, float k_prob) : DropoutLayer(numPoints, inputDim, batchDim, lastLayer) {
+			// Allocate space to save which nodes were kept required for back propagataion
+			for (int i = 0; i < batchDim; i++)
+				this->nodesKeep.push_back((float*)malloc(inputDim * numPoints * sizeof(float)));
+			std::default_random_engine generator;
+			this->rand_generator = generator;
+		}
+		std::vector<float*> forward(std::vector<float*> input, bool test = false);
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
+	};
 }

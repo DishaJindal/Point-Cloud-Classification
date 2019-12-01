@@ -5,6 +5,7 @@
  * @date      2019
  * @copyright University of Pennsylvania
  */
+#pragma once
 
 #include <cstdio>
 #include <point_cloud_classification/network.h>

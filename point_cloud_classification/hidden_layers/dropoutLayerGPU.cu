@@ -1,5 +1,8 @@
 #pragma once
 
+
+#include <cuda.h>
+#include <cuda_runtime.h>
 #include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/matrix.h"
@@ -10,6 +13,7 @@
 #include <fstream>
 #include <string>
 #include <random>
+#include "device_launch_parameters.h"
 
 #ifndef imax
 #define imax(a,b) (((a)>(b))?(a):(b))
@@ -48,23 +52,23 @@ __global__ void dropoutBackward(float* input, float* ZDropBackward, float *outpu
 
 namespace PointCloudClassification {
 
-	class DropoutLayerGPU : public DropoutLayer {
-	public:
-		DropoutLayerGPU() {};
+	//class DropoutLayerGPU : public DropoutLayer {
+	//public:
+	//	DropoutLayerGPU() {};
 
-		DropoutLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer, float k_prob) : DropoutLayer(numPoints, inputDim, batchDim, lastLayer) {
-			// Allocate space to save which nodes were kept required for back propagataion
-			for (int i = 0; i < batchDim; i++)
-				this->nodesKeep.push_back((float*)malloc(inputDim * numPoints * sizeof(float)));
-			std::default_random_engine generator;
-			this->rand_generator = generator;
-		}
+	//	DropoutLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer, float k_prob) : DropoutLayer(numPoints, inputDim, batchDim, lastLayer) {
+	//		// Allocate space to save which nodes were kept required for back propagataion
+	//		for (int i = 0; i < batchDim; i++)
+	//			this->nodesKeep.push_back((float*)malloc(inputDim * numPoints * sizeof(float)));
+	//		std::default_random_engine generator;
+	//		this->rand_generator = generator;
+	//	}
 
 		/*
 			inputArg -> batchDim x inputDim
 			outputArg -> batchDim x inputDim
 		*/
-		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
+		std::vector<float*> DropoutLayerGPU::forward(std::vector<float*> inputArg, bool test) {
 			std::vector<float*> output;
 			for (int b = 0; b < batchDim; b++) {
 				float* flattened_current_output;
@@ -79,7 +83,7 @@ namespace PointCloudClassification {
 			return output;
 		}
 
-		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
+		std::vector<float*> DropoutLayerGPU::backward(std::vector<float*> incomingGradient, float learningRate) {
 			std::vector<float*> outgoingGradient;
 			for (int b = 0; b < batchDim; b++) {
 				float* flattened_outgoing_gradient;
@@ -91,4 +95,3 @@ namespace PointCloudClassification {
 			return outgoingGradient;
 		}
 	};
-}
