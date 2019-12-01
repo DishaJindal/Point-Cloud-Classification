@@ -173,6 +173,33 @@ void MatrixGPU::linearCombination(float* A, float* B, float alpha, float beta, i
 	kernLCMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, alpha, beta);
 }
 
+/*
+	A -> m x n
+	B -> p x q
+	output = A (x) B (mp x nq)
+*/
+void MatrixGPU::kroneckerProduct(float* A, float* B, int m, int n, int p, int q, float* C) {
+	/*for (int i = 0; i < (m * p); i++) {
+		for (int j = 0; j < (n * q); j++) {
+
+		}
+	}*/
+	std::cout << "I" << std::endl;
+	for (int i = 0; i < m; i++) {
+		for (int k = 0; k < p; k++) {
+			for (int j = 0; j < n; j++) {
+				for (int l = 0; l < q; l++) {
+
+					int index = (i * n * p * q) + (k * n * q) + (j * q) + l;
+					std::cout << i << " " << k << " " << j << " " << l << " " << std::endl;
+					std::cout << A[i * n + j] << " " << B[k * q + l] << " " << index << std::endl;
+					C[index] = A[i * n + j] * B[k * q + l];
+				}
+			}
+		}
+	}
+}
+
 unsigned int nextPow2(unsigned int x)
 {
 	--x;
@@ -492,7 +519,7 @@ __global__ void kern_reduce_mean(float *g_idata, float *g_odata, unsigned int m,
 	}
 }
 
-void reduce_mean(float* dev_A, int m, int n, float* dev_B) {
+void reduce_mean(float* dev_A, int m, int n, float* dev_B, int denominator) {
 
 	int numFeaturesConsidered = 12;
 	int s = m;
@@ -511,52 +538,53 @@ void reduce_mean(float* dev_A, int m, int n, float* dev_B) {
 		switch (threads)
 		{
 		case 1024:
-			kern_reduce_mean<1024> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<1024> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case 512:
-			kern_reduce_mean<512> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<512> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case 256:
-			kern_reduce_mean<256> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<256> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case 128:
-			kern_reduce_mean<128> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<128> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case 64:
-			kern_reduce_mean<64> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<64> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case 32:
-			kern_reduce_mean<32> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<32> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case 16:
-			kern_reduce_mean<16> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<16> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case  8:
-			kern_reduce_mean<8> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<8> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case  4:
-			kern_reduce_mean<4> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<4> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case  2:
-			kern_reduce_mean<2> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<2> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 
 		case  1:
-			kern_reduce_mean<1> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, m);
+			kern_reduce_mean<1> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
 			break;
 		}
 		cudaDeviceSynchronize();
 	}
 	s = blocks;
+
 	while (s > 1) {
 		float *dev_temp;
 
@@ -634,7 +662,7 @@ void reduce_mean(float* dev_A, int m, int n, float* dev_B) {
 	output = n
 */
 void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output) {
-	reduce_mean(A, m, n, output);
+	reduce_mean(A, m, n, output, m);
 }
 
 __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *output, int m, int n) {
@@ -656,7 +684,7 @@ __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *o
 void MatrixGPU::varianceAcrossDim1(float* A, int m, int n, float* output, float* mean) {
 	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
 	kernMatrixSubVectorSquare << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, mean, A, m, n);
-	reduce_mean(A, m, n, output);
+	reduce_mean(A, m, n, output, m);
 }
 
 /*

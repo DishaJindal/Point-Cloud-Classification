@@ -14,11 +14,73 @@
 using namespace std;
 using namespace PointCloudClassification;
 
+
 namespace Tests {
+
+	unsigned int nextPow2(unsigned int x)
+	{
+		--x;
+		x |= x >> 1;
+		x |= x >> 2;
+		x |= x >> 4;
+		x |= x >> 8;
+		x |= x >> 16;
+		return ++x;
+	}
+
+	void testMatrixGPUReduction() {
+
+
+		MatrixCPU* mc = new MatrixCPU();
+		MatrixGPU* mg = new MatrixGPU();
+
+
+
+
+		int m = 1024;
+		int n = 1000;
+		int size = n * m;
+		float * a;
+		a = (float*)malloc(size * sizeof(float));
+		Utilities::genArray(size, a);
+
+		float *dev_a;
+		cudaMalloc((void **)&dev_a, size * sizeof(float));
+		cudaMemcpy(dev_a, a, size * sizeof(float), cudaMemcpyHostToDevice);
+
+		float * b;
+		b = (float*)malloc(size * sizeof(float));
+		float * bGPU;
+		bGPU = (float*)malloc(size * sizeof(float));
+
+		int	threads = (m < 1024 * 2) ? nextPow2((m + 1) / 2) : 1024;
+		int	blocks = (m + (threads * 2 - 1)) / (threads * 2);
+
+
+		float *dev_b;
+		cudaMalloc((void **)&dev_b, blocks * n * sizeof(float));
+
+		mc->meanAcrossDim1(a, m, n, b);
+		mg->meanAcrossDim1(dev_a, m, n, dev_b);
+
+		cudaMemcpy(bGPU, dev_b, n * sizeof(float), cudaMemcpyDeviceToHost);
+
+
+		float difference = 0;
+		for (int i = 0; i < n; i++) {
+			difference += ((bGPU[i] - b[i])*(bGPU[i] - b[i]))/n;
+		}
+
+		std::cout << "Difference between the CPU and the GPU implementation is " << difference << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
+			   		 
+	}
+
 	void testMatrixTranspose() {
 		MatrixCPU* m = new MatrixCPU();
 		float A[3 * 2] = { 1,2,3,4,5,6 };
-		
+
 		std::cout << "A: " << endl;
 		m->printMatrix(A, 3, 2);
 		std::cout << std::endl;

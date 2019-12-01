@@ -30,6 +30,11 @@ using namespace PointCloudClassification;
 
 void tests() {
 	cout << "********************************************************" << endl;
+	cout << "Testing GPU Matrix Reduction ..." << endl;
+	Tests::testMatrixGPUReduction();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
 	cout << "Testing Matrix Transpose ..." << endl;
 	Tests::testMatrixTranspose();
 	cout << "********************************************************" << endl;
