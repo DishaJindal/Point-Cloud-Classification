@@ -22,6 +22,12 @@ namespace PointCloudClassification {
 
 	class FullyConnectedLayerGPU : public FullyConnectedLayer {
 		FullyConnectedLayerGPU() {};
+
+		float* flattenedInputForward;
+		float* flattenedOutputForward;
+
+		float* flattenedInputBackward;
+		float* flattenedOutputBackward;
 		
 	public:
 		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer)  {
@@ -31,30 +37,31 @@ namespace PointCloudClassification {
 			cudaMemcpy(W, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 			cudaMalloc((void**)&A, inputDim * batchDim * sizeof(float));
 			cudaMalloc((void**)&dW, inputDim * outputDim * sizeof(float));
+
+			
+			cudaMalloc((void**)&flattenedInputForward, batchDim * inputDim * sizeof(float));
+			cudaMalloc((void**)&flattenedOutputForward, batchDim * outputDim * sizeof(float));
+			cudaMalloc((void**)&flattenedInputBackward, batchDim * outputDim * sizeof(float));
+			cudaMalloc((void**)&flattenedOutputBackward, batchDim * inputDim * sizeof(float));
 		}
 
 
 		std::vector<float*> FullyConnectedLayer::forward(std::vector<float*> inputArg, bool test) {
-			float* flattenedInput;
-			cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
 			int i = 0;
 			for (auto current : inputArg) {
-				cudaMemcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+				cudaMemcpy(flattenedInputForward + (i * inputDim), current, inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 				i++;
 			}
-			float* flattenedOutput;
-			cudaMalloc((void**)&flattenedOutput, batchDim * outputDim * sizeof(float));
-
 			MatrixGPU* m = new MatrixGPU();
-			m->multiply(flattenedInput, W, batchDim, inputDim, outputDim, flattenedOutput);
+			m->multiply(flattenedInputForward, W, batchDim, inputDim, outputDim, flattenedOutputForward);
 			//free(flattenedInput);
 
 			// Store input and output of this layer
-			cudaMemcpy(A, flattenedInput, batchDim * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+			cudaMemcpy(A, flattenedInputForward, batchDim * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 
 			std::vector<float*> outputArg;
 			for (int i = 0; i < batchDim; i++) {
-				outputArg.push_back(flattenedOutput + (i * outputDim));
+				outputArg.push_back(flattenedOutputForward + (i * outputDim));
 			}
 			//free(flattenedOutput);
 
@@ -62,15 +69,13 @@ namespace PointCloudClassification {
 		}
 
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
-			float* flattenedInput;
-			cudaMalloc((void**)&flattenedInput, batchDim * outputDim * sizeof(float));
+			
+			
 			int i = 0;
 			for (auto current : incomingGradient) {
-				cudaMemcpy(flattenedInput + (i * outputDim), current, outputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+				cudaMemcpy(flattenedInputBackward + (i * outputDim), current, outputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 				i++;
 			}
-			float* flattenedOutput;
-			cudaMalloc((void**)&flattenedOutput, batchDim * inputDim * sizeof(float));
 
 			MatrixGPU* m = new MatrixGPU();
 
@@ -78,17 +83,18 @@ namespace PointCloudClassification {
 			float *ATranspose;
 			cudaMalloc((void**)&ATranspose, inputDim * batchDim * sizeof(float));
 			m->transpose(A, batchDim, inputDim, ATranspose);
-			m->multiply(ATranspose, flattenedInput, inputDim, batchDim, outputDim, dW);
+			m->multiply(ATranspose, flattenedInputBackward, inputDim, batchDim, outputDim, dW);
+			cudaFree(ATranspose);
 
 			// Compute outgoingGradient (w.r.t. input)
-			m->multiplyTranspose(flattenedInput, W, batchDim, outputDim, inputDim, flattenedOutput);
+			m->multiplyTranspose(flattenedInputBackward, W, batchDim, outputDim, inputDim, flattenedOutputBackward);
 
 			//Update weight matrix
 			m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
 			
 			std::vector<float*> outgoingGradient;
 			for (int i = 0; i < batchDim; i++) {
-				outgoingGradient.push_back(flattenedOutput + (i * inputDim));
+				outgoingGradient.push_back(flattenedOutputBackward + (i * inputDim));
 			}
 			//free(flattenedOutput);
 

@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
 
 	// Tests
 	//tests();
-	cout << "********************************************************" << endl;
+	/*cout << "********************************************************" << endl;
 	cout << "Testing Fully Connected Layer CPU ..." << endl;
 	Tests::testFCLayer();
 	cout << "********************************************************" << endl;
@@ -107,6 +107,21 @@ int main(int argc, char* argv[]) {
 	cout << "********************************************************" << endl;
 	cout << "Testing Fully Connected Layer backward GPU..." << endl;
 	Tests::testFCLayerBackwardGPU();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Graph Convolutional Layer backward CPU..." << endl;
+	Tests::testGraphConvolutionLayer();
+	cout << "********************************************************" << endl;*/
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Graph Convolutional Layer forward GPU..." << endl;
+	Tests::testGraphConvolutionLayerGPU();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Softmax Layer forward CPU..." << endl;
+	Tests::testSoftmaxLayer();
 	cout << "********************************************************" << endl;
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)

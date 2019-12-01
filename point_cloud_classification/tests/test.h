@@ -6,8 +6,10 @@
 #include "../hidden_layers/fullyConnectedLayerGPU.cu"
 #include "../hidden_layers/globalPoolingCPU.cu"
 #include "../hidden_layers/graphConvolutionLayerCPU.cu"
+#include "../hidden_layers/graphConvolutionLayerGPU.cu"
 #include "../hidden_layers/RELUActivationLayerCPU.cu"
 #include "../hidden_layers/softmaxActivationLayerCPU.cu"
+#include "../hidden_layers/softmaxActivationLayerGPU.cu"
 #include "../hidden_layers/sigmoidActivationLayerCPU.cu"
 #include "../hidden_layers/CrossEntropyLossCPU.cu"
 #include "../hidden_layers/dropoutLayerCPU.cu"
@@ -363,33 +365,51 @@ namespace Tests {
 	}
 
 	void testSoftmaxLayer() {
-		PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
-
-		PointCloudClassification::softmaxActivationLayerCPU softmax1 (3, Parameters::batch_size, false);
-		gcn.addLayer(&softmax1);
+		PointCloudClassification::softmaxActivationLayerCPU softmax1 (10, Parameters::batch_size, false);
 
 		vector<float*> samples; //Data from file will be stored here
 		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
-			float* temp = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
-			Utilities::genArray(Parameters::num_points * Parameters::input_features, temp);
+			float* temp = (float*)malloc(10 * sizeof(float));
+			Utilities::genArray(10, temp);
 			samples.push_back(temp);
 		}
 
 		std::cout << "SAMPLE: " << std::endl;
-		std::cout << samples[0][0] << " " << samples[0][1] << " " << samples[0][2] << std::endl;
-		std::cout << samples[1][0] << " " << samples[1][1] << " " << samples[1][2] << std::endl;
-		std::cout << samples[2][0] << " " << samples[2][1] << " " << samples[2][2] << std::endl;
+		Utilities::printVectorOfFloats(samples, 5);
 		std::cout << std::endl;
 
-		std::vector<float*> op = gcn.forward(samples, false);
+		std::vector<float*> op = softmax1.forward(samples, false);
 
 		std::cout << "OUTPUT: " << std::endl;
-		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
-		std::cout << op[1][0] << " " << op[1][1] << " " << op[1][2] << std::endl;
-		std::cout << op[2][0] << " " << op[2][1] << " " << op[2][2] << std::endl;
+		Utilities::printVectorOfFloats(op, 5);
 		std::cout << std::endl;
 	}
+
+	//void testSoftmaxLayerGPU() {
+	//	PointCloudClassification::softmaxActivationLayerGPU softmax1(10, Parameters::batch_size, false);
+
+	//	vector<float*> samples; //Data from file will be stored here
+	//	int number_of_random_examples = Parameters::batch_size;
+	//	for (int i = 0; i < number_of_random_examples; i++) {
+	//		float* temp = (float*)malloc(10 * sizeof(float));
+	//		Utilities::genArray(10, temp);
+	//		float* temp_gpu;
+	//		cudaMalloc((void**)&temp_gpu, 10 * sizeof(float));
+	//		cudaMemcpy(temp_gpu, temp, 10 * sizeof(float), cudaMemcpyHostToDevice);
+	//		samples.push_back(temp_gpu);
+	//	}
+
+	//	std::cout << "SAMPLE: " << std::endl;
+	//	Utilities::printVectorOfFloatsGPU(samples, 5);
+	//	std::cout << std::endl;
+
+	//	std::vector<float*> op = softmax1.forward(samples, false);
+
+	//	std::cout << "OUTPUT: " << std::endl;
+	//	Utilities::printVectorOfFloatsGPU(op, 5);
+	//	std::cout << std::endl;
+	//}
 
 	void testCrossEntropyLoss() {
 		PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
@@ -512,5 +532,69 @@ namespace Tests {
 
 		l = gcn.calculateLoss(op, trueLabels);
 		std::cout << "*****NEW LOSS: " << l << std::endl;
+	}
+
+	void testGraphConvolutionLayer() {
+		PointCloudClassification::GraphConvolutionLayerCPU gc1(Parameters::num_points, Parameters::input_features, 3, Parameters::batch_size, 3, false);
+
+		vector<float*> samples; //Data from file will be stored here
+		int number_of_random_examples = Parameters::batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::input_features, temp);
+			samples.push_back(temp);
+		}
+
+		// Append Laplacian of all samples to end of this vector
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::num_points * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::num_points, temp);
+			samples.push_back(temp);
+		}
+
+		std::cout << "SAMPLE: " << std::endl;
+		Utilities::printVectorOfFloats(samples, 5);
+		std::cout << std::endl;
+
+		std::vector<float*> op = gc1.forward(samples, false);
+
+		std::cout << "SAMPLE: " << std::endl;
+		Utilities::printVectorOfFloats(op, 5);
+		std::cout << std::endl;
+	}
+
+	void testGraphConvolutionLayerGPU() {
+		PointCloudClassification::GraphConvolutionLayerGPU gc1(Parameters::num_points, Parameters::input_features, 3, Parameters::batch_size, 3, false);
+
+		vector<float*> samples; //Data from file will be stored here
+		int number_of_random_examples = Parameters::batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::input_features, temp);
+			float* temp_gpu;
+			cudaMalloc((void**)&temp_gpu, Parameters::num_points * Parameters::input_features * sizeof(float));
+			cudaMemcpy(temp_gpu, temp, Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
+			samples.push_back(temp_gpu);
+		}
+
+		// Append Laplacian of all samples to end of this vector
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(Parameters::num_points * Parameters::num_points * sizeof(float));
+			Utilities::genArray(Parameters::num_points * Parameters::num_points, temp);
+			float* temp_gpu;
+			cudaMalloc((void**)&temp_gpu, Parameters::num_points * Parameters::num_points * sizeof(float));
+			cudaMemcpy(temp_gpu, temp, Parameters::num_points * Parameters::num_points * sizeof(float), cudaMemcpyHostToDevice);
+			samples.push_back(temp_gpu);
+		}
+
+		std::cout << "SAMPLE: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(samples, 5);
+		std::cout << std::endl;
+
+		std::vector<float*> op = gc1.forward(samples, false);
+
+		std::cout << "SAMPLE: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(op, 5);
+		std::cout << std::endl;
 	}
 }

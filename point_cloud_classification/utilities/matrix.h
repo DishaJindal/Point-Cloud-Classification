@@ -55,7 +55,6 @@ public:
 	void subtractIdentity(float* A, int m);
 	void getIdentityMatrix(int m, float* A);
 	void linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output);
-	void kroneckerProduct(float* A, float* B, int m, int n, int p, int q, float* C);
 	void maxAcrossDim1(float* A, int  n, int m, int* argmaxOutput, float* output);
 	void meanAcrossDim1(float * A, int m, int n, float * output);
 	void varianceAcrossDim1(float * A, int m, int n, float * output, float* mean);

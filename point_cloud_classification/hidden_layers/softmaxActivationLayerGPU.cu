@@ -16,18 +16,27 @@
 
 #define blockSize 128
 
-__global__ void kernExp(float* input, int m, int n, float* output) {
-	int index = blockIdx.x * blockDim.x + threadIdx.x;
-	if (index < m * n) {
-		output[index] = exp(input[index]);
-	}
-}
+//__global__ void kernExp(float* input, int m, int n, float* output) {
+//	int index = blockIdx.x * blockDim.x + threadIdx.x;
+//	if (index < m * n) {
+//		output[index] = exp(input[index]);
+//	}
+//}
+//
+//__global__ void kernDivideSum(float* input, float* sum, int m, int n, float* output) {
+//	int index = blockIdx.x * blockDim.x + threadIdx.x;
+//	int row = index / n;
+//	if (index < m * n) {
+//		output[index] = input[index] / sum[row];
+//	}
+//}
 
 namespace PointCloudClassification {
+
 	class softmaxActivationLayerGPU : public softmaxActivationLayer {
 		softmaxActivationLayerGPU() {};
-
-		softmaxActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : softmaxActivationLayer(inputDim, outputDim, batchDim, lastLayer) {
+	public:
+		softmaxActivationLayerGPU(int inputDim, int batchDim, bool lastLayer) : softmaxActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
 			
 		}
 
@@ -46,17 +55,31 @@ namespace PointCloudClassification {
 			cudaMalloc((void**)&temp, batchDim * outputDim * sizeof(float));
 
 			dim3 fullBlocksPerGrid((batchDim * inputDim + blockSize - 1) / blockSize);
-			kernExp << <fullBlocksPerGrid, blockSize >> > (flattenedInput, batchDim, inputDim, temp);
+			//kernExp <<<fullBlocksPerGrid, blockSize >>> (flattenedInput, batchDim, inputDim, temp);
 
 			MatrixGPU* m = new MatrixGPU();
 			float* tempT;
 			cudaMalloc((void**)&tempT, batchDim * outputDim * sizeof(float));
 			m->transpose(temp, batchDim, outputDim, tempT);
-			cudaFree(temp);
+			//cudaFree(temp);
 
 			float* sum;
 			cudaMalloc((void**)&sum, batchDim * outputDim * sizeof(float));
-			m->meanAcrossDim1(tempT, outputDim, batchDim, sum);
+			m->meanAcrossDim1(tempT, outputDim, batchDim, sum); //CHANGE THIS TO SUM --> m->sumAcrossDim1(tempT, outputDim, batchDim, sum);
+
+			//dim3 fullBlocksPerGrid((batchDim * inputDim + blockSize - 1) / blockSize);
+			//kernDivideSum << <fullBlocksPerGrid, blockSize >> > (temp, sum, batchDim, inputDim, flattenedOutput);
+
+			cudaFree(temp);
+			cudaFree(tempT);
+			cudaFree(sum);
+
+			std::vector<float*> outputArg;
+			for (int i = 0; i < batchDim; i++) {
+				outputArg.push_back(flattenedOutput + (i * outputDim));
+			}
+
+			return outputArg;
 		}
 
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {

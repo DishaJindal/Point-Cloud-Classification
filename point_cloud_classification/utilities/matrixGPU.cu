@@ -146,7 +146,7 @@ void MatrixGPU::subtractIdentity(float* A, int m) {
 	B -> m x n
 	output = A - alpha * B
 */
-__global__ void kernLCMatrices(float *input1, float *input2, float *output, int m, int n, int alpha, int beta) {
+__global__ void kernLCMatrices(float *input1, float *input2, float *output, int m, int n, float alpha, float beta) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int row = index / n;
 	int col = index % n;

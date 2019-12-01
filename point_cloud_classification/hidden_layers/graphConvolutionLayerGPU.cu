@@ -80,7 +80,9 @@ namespace PointCloudClassification {
 				//X.push_back(current_input);
 				//L.push_back(current_L);
 
+				//cudaMemcpy(Tk_minus_2, current_input, numPoints * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 				Tk_minus_2 = current_input;
+				
 				m->multiply(current_L, current_input, numPoints, numPoints, inputDim, Tk_minus_1);
 
 				//Tk_minus_1 = current_L;
@@ -105,7 +107,7 @@ namespace PointCloudClassification {
 						Tk_minus_1 = Tk;
 					}
 					
-
+					
 					if (k == 0) {
 						m->multiply(Tk, theta[k], numPoints, inputDim, outputDim, current_output);
 					}
@@ -114,13 +116,16 @@ namespace PointCloudClassification {
 						cudaMalloc((void**)&temp_out, numPoints * outputDim * sizeof(float));
 						m->multiply(Tk, theta[k], numPoints, inputDim, outputDim, temp_out);
 						m->add(current_output, temp_out, numPoints, outputDim, current_output);
+						//cudaFree(temp_out);
 					}
+					
 				}
 
 				m->linearCombination(current_output, current_output, (1.0f / numFilters), 0, numPoints, outputDim, current_output);
 				output.push_back(current_output);
 			}
-
+			//cudaFree(Tk_minus_1);
+			//cudaFree(Tk_minus_2);
 			return output;
 		}
 
