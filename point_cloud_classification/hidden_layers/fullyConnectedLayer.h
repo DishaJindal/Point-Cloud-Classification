@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common.h"
+#include "../utilities/utils.h"
 #include "layer.h"
 #include <vector>
 #include <math.h>

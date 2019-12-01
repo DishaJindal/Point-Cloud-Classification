@@ -6,7 +6,7 @@
 #include <math.h>
 
 namespace PointCloudClassification {
-	class softmaxActivationLayer : public Layer {
+	class softmaxActivationLayerCPU : public Layer {
 		protected: 
 			/* 
 				Input
@@ -28,10 +28,10 @@ namespace PointCloudClassification {
 			bool lastLayer;
 
 		public:
-			softmaxActivationLayer() {};
-			softmaxActivationLayer(int inputDim, int outputDim, int batchDim, bool lastLayer) {
+			softmaxActivationLayerCPU() {};
+			softmaxActivationLayerCPU(int inputDim, int batchDim, bool lastLayer) {
 				this->inputDim = inputDim;
-				this->outputDim = outputDim;
+				this->outputDim = inputDim;
 				this->batchDim = batchDim;
 				this->lastLayer = lastLayer;
 			}
@@ -44,8 +44,50 @@ namespace PointCloudClassification {
 				return outputDim;
 			}
 			
-			std::vector<float*> forward(std::vector<float*> input, bool test = false) = 0;
-			std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) = 0;
+			std::vector<float*> forward(std::vector<float*> input, bool test = false);
+			std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
 		};
+
+	class softmaxActivationLayerGPU : public Layer {
+	protected:
+		/*
+			Input
+		*/
+		float *Z = NULL;
+		/*
+			Derivative w.r.t. input
+		*/
+		float *dZ = NULL;
+		/*
+			Output of this layer
+		*/
+		float *A = NULL;
+
+
+		int inputDim;
+		int batchDim;
+		int outputDim;
+		bool lastLayer;
+
+	public:
+		softmaxActivationLayerGPU() {};
+		softmaxActivationLayerGPU(int inputDim, int batchDim, bool lastLayer) {
+			this->inputDim = inputDim;
+			this->outputDim = inputDim;
+			this->batchDim = batchDim;
+			this->lastLayer = lastLayer;
+		}
+
+		int getInputDim() {
+			return inputDim;
+		}
+
+		int getOutputDim() {
+			return outputDim;
+		}
+
+		std::vector<float*> forward(std::vector<float*> input, bool test = false);
+		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
+	};
 }
 

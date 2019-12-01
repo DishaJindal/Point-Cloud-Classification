@@ -5,14 +5,12 @@
 #include "hidden_layers/loss.h"
 #include <vector>
 #include <math.h>
-#include "hidden_layers/softmaxActivationLayerCPU.cu"
-#include "hidden_layers/graphConvolutionLayerCPU.cu"
 #include "hidden_layers/fullyConnectedLayer.h"
-#include "hidden_layers/softmaxActivationLayerGPU.cu"
-#include "hidden_layers/graphConvolutionLayerGPU.cu"
 #include "hidden_layers/globalPoolingLayer.h"
 #include "hidden_layers/RELUActivationLayer.h"
 #include "hidden_layers/dropoutLayer.h"
+#include "hidden_layers/graphConvolutionLayer.h"
+#include "hidden_layers/softmaxActivationLayer.h"
 
 namespace PointCloudClassification {
     Common::PerformanceTimer& timer();
