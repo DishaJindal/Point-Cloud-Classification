@@ -27,6 +27,7 @@
 #include <math.h>
 using namespace std;
 using namespace PointCloudClassification;
+#define GPU false
 
 void tests() {
 	cout << "********************************************************" << endl;
@@ -108,25 +109,26 @@ int main(int argc, char* argv[]) {
 		y_train.push_back(y_temp);
 	}
 	utilityCore::load_data("bullshit", x_train, y_train, "train", per_class);
-	//Utilities::printVectorOfFloats(y_train, Parameters::num_classes);
 	std::cout << "Loaded Data: " << x_train.size() << std::endl;
+
 	// Construct graph for each example and store a vector of L (Laplacians) and AX for each sample
 	vector<float*> laplacians;
-	int ex = 2;
+	int ex = 10;
 	for (int i = 0; i < ex; i++) {
 		float* current_sample = x_train[i];
 		utilityCore::normalize_data(current_sample, Parameters::num_points);
-		Graph::Graph g (current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
+		float* L;
+		if (GPU) {
+			Graph::GraphGPU g(current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
+			L = g.get_Lnorm();
+		}
+		else {
+			Graph::GraphCPU g(current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
+			L = g.get_Lnorm();
+		}
 		std::cout << "Constructed graph for " << i << std::endl;
-		//float* A = g.get_A();
-		//MatrixCPU* m = new MatrixCPU();
-		//float* AX = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
-		//m->multiply(A, current_sample, Parameters::num_points, Parameters::num_points, Parameters::input_features, AX);
-
-		float* L = g.get_Lnorm();
 		laplacians.push_back(L);
 	}
-
 	
 	//Build the network
 	PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
