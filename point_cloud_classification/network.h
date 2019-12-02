@@ -50,7 +50,7 @@ namespace PointCloudClassification {
 		std::vector<float*> forward(std::vector<float*> input, bool test);
 		float calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel);
 		void backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate);
-		void train(std::vector<float*> input, std::vector<float*> laplacians, std::vector<float*> label, int n);
+		void train(std::vector<float*> input, std::vector<float*> label, int n);
 		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float> classification);
 	};
 
@@ -80,6 +80,7 @@ namespace PointCloudClassification {
 		PointCloudClassification::RELUActivationLayerGPU relu1;
 		PointCloudClassification::DropoutLayerGPU dropout_layer4;
 		PointCloudClassification::FullyConnectedLayerGPU fc_layer2;
+		std::vector<float *> output_gn1, output_d1, output_gp1, output_gcn2, output_d2, output_gp2, output_d3, output_fc1, output_r1, output_d4, output_fc2;
 	public:
 		NetworkGPU(int numClasses, int batchSize);
 		void addLayer(Layer* layer);
@@ -88,7 +89,8 @@ namespace PointCloudClassification {
 		std::vector<float*> forward(std::vector<float*> input, bool test);
 		float calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel);
 		void backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate);
-		void train(std::vector<float*> input, std::vector<float*> laplacians, std::vector<float*> label, int n);
+		void train(std::vector<float*> input, std::vector<float*> label, int n);
 		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float> classification);
+		void freeForwardGarbage();
 	};
 }

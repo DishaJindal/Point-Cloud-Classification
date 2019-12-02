@@ -304,6 +304,70 @@ namespace Tests {
 		std::cout << outGradient[0][12] << " " << outGradient[0][13] << " " << outGradient[0][14] << std::endl; // 56.2 57.2 58.2
 		std::cout << std::endl;
 	}
+
+
+	void testDropoutLayerGPU() {
+		int pts = 5;
+		PointCloudClassification::DropoutLayerGPU dropout_layer(pts, Parameters::input_features, Parameters::batch_size, false, Parameters::keep_drop_prob1);
+
+		vector<float*> samples; //Data from file will be stored here
+		vector<float*> samplesGPU; //Data from file will be stored here
+		int number_of_random_examples = Parameters::batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float temp[15] = { 1.0f,2.0f,3.0f,4.0f,5.0f,6.0f,7.0f,8.0f,9.0f,10.0f,11.0f,12.0f,13.0f,14.0f,15.0f };
+			float *tempGPU;
+			cudaMalloc((void **)&tempGPU, 15 * sizeof(float));
+			cudaMemcpy(tempGPU, temp, 15 * sizeof(float), cudaMemcpyHostToDevice);
+			samplesGPU.push_back(tempGPU);
+			samples.push_back(temp);
+		}
+
+		std::cout << "SAMPLE: " << std::endl;
+		std::cout << samples[0][0] << " " << samples[0][1] << " " << samples[0][2] << std::endl;
+		std::cout << samples[0][3] << " " << samples[0][4] << " " << samples[0][5] << std::endl;
+		std::cout << samples[0][6] << " " << samples[0][7] << " " << samples[0][8] << std::endl;
+		std::cout << samples[0][9] << " " << samples[0][10] << " " << samples[0][11] << std::endl;
+		std::cout << samples[0][12] << " " << samples[0][13] << " " << samples[0][14] << std::endl;
+		std::cout << std::endl;
+
+		std::vector<float*> opGPU = dropout_layer.forward(samplesGPU, false);
+		std::vector<float*> op;
+
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float *temp;
+			temp = (float *)malloc(15 * sizeof(float));
+			cudaMemcpy(temp, opGPU[i], 15 * sizeof(float), cudaMemcpyDeviceToHost);
+			op.push_back(temp);
+		}
+
+
+		std::cout << "OUTPUT: " << std::endl;
+		std::cout << op[0][0] << " " << op[0][1] << " " << op[0][2] << std::endl;
+		std::cout << op[0][3] << " " << op[0][4] << " " << op[0][5] << std::endl;
+		std::cout << op[0][6] << " " << op[0][7] << " " << op[0][8] << std::endl;
+		std::cout << op[0][9] << " " << op[0][10] << " " << op[0][11] << std::endl;
+		std::cout << op[0][12] << " " << op[0][13] << " " << op[0][14] << std::endl;
+		std::cout << std::endl;
+
+		std::vector<float*> outGradientGPU = dropout_layer.backward(opGPU, 1);
+		std::vector<float*> outGradient;
+
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float *temp;
+			temp = (float *)malloc(15 * sizeof(float));
+			cudaMemcpy(temp, outGradientGPU[i], 15 * sizeof(float), cudaMemcpyDeviceToHost);
+			outGradient.push_back(temp);
+		}
+
+		std::cout << "GRADIENT: " << std::endl;
+		std::cout << outGradient[0][0] << " " << outGradient[0][1] << " " << outGradient[0][2] << std::endl; // -43.2 -43.2 -43.2
+		std::cout << outGradient[0][3] << " " << outGradient[0][4] << " " << outGradient[0][5] << std::endl; //	-21.6 -21.6 -21.6
+		std::cout << outGradient[0][6] << " " << outGradient[0][7] << " " << outGradient[0][8] << std::endl; //	0 0 0
+		std::cout << outGradient[0][9] << " " << outGradient[0][10] << " " << outGradient[0][11] << std::endl; // 21.6 21.6 21.6
+		std::cout << outGradient[0][12] << " " << outGradient[0][13] << " " << outGradient[0][14] << std::endl; // 56.2 57.2 58.2
+		std::cout << std::endl;
+	}
+
 	void testRELULayer() {
 		PointCloudClassification::RELUActivationLayerCPU relu1(Parameters::num_points * Parameters::input_features, Parameters::batch_size, false);
 

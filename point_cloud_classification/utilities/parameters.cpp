@@ -3,13 +3,13 @@
 
 namespace PointCloudClassification {
 	namespace Parameters {
-		 int num_neighbours = 10;
+		 int num_neighbours = 4;
 		 int num_classes = 10;
 		 int num_points = 1024;
 
 		// Network Parameters
-		 int batch_size = 2;
-		 int num_epochs = 5;//260
+		 int batch_size = 4;
+		 int num_epochs = 20;//260
 		 float learning_rate = 0.001;
 		 float keep_prob = 0.5;
 		 
@@ -28,5 +28,6 @@ namespace PointCloudClassification {
 		 float keep_drop_prob2 = 0.5;
 		 float keep_drop_prob3 = 0.5;
 		 float keep_drop_prob4 = 0.5;
+		 float lamba_reg = 0;// 0.001;
 	}
 }

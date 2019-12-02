@@ -653,9 +653,9 @@ void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output) {
 }
 
 void MatrixGPU::sumAcrossDim1(float* A, int m, int n, float* output) {
-	linearCombination(A, A, 1000, 0, m, n, A);
+	//linearCombination(A, A, 1000, 0, m, n, A);
 	reduce_mean(A, m, n, output, 1.0f);
-	linearCombination(output, output, 1.0f / 1000, 0, m, n, output);
+	//linearCombination(output, output, 1.0f / 1000, 0, m, n, output);
 }
 
 __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *output, int m, int n) {

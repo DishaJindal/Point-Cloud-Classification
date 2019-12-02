@@ -39,8 +39,7 @@ namespace PointCloudClassification {
 		MatrixGPU* m = new MatrixGPU();
 		m->exp(flattenedInput, batchDim, inputDim, temp);
 
-		std::cout << "temp\n";
-		Utilities::printArrayGPU(temp, 20);
+		Utilities::printArrayGPU(temp, 10);
 
 		float* tempT;
 		cudaMalloc((void**)&tempT, batchDim * outputDim * sizeof(float));
@@ -54,11 +53,6 @@ namespace PointCloudClassification {
 		m->sumAcrossDim1(tempT, outputDim, batchDim, sum); //CHANGE THIS TO SUM --> m->sumAcrossDim1(tempT, outputDim, batchDim, sum);
 
 		//m->linearCombination(sum, sum, 1.0f / 1000, 0, batchDim, 1, sum);
-
-		std::cout << "tempT\n";
-		Utilities::printArrayGPU(tempT, 20);
-		std::cout << "sum\n";
-		Utilities::printArrayGPU(sum, 2);
 
 		//dim3 fullBlocksPerGrid((batchDim * inputDim + blockSize - 1) / blockSize);
 		m->divide_sum (temp, sum, batchDim, outputDim, flattenedOutput);

@@ -55,4 +55,16 @@ namespace Utilities {
 			std::cout << std::endl;
 		}
 	}
+
+	inline void printVectorOfFloatsGPU_nonzero(std::vector<float*> arr, int n) {
+		float* temp_cpu = (float*)malloc(n * sizeof(float));
+		for (int i = 0; i < arr.size(); i++) {
+			cudaMemcpy(temp_cpu, arr[i], n * sizeof(float), cudaMemcpyDeviceToHost);
+			for (int j = 0; j < n; j++) {
+				if(temp_cpu[j] > 0)
+					std::cout << j << " ";
+			}
+		}
+		std::cout << std::endl;
+	}
 }

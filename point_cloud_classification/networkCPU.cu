@@ -254,7 +254,57 @@ namespace PointCloudClassification {
 		}
 	}
 
-	void NetworkCPU::train(std::vector<float*> input, std::vector<float*> laplacians, std::vector<float*> label, int n) {
+	void normalize_dat(float* X, int n) {
+		// Mean
+		float mean[3] = { 0 };
+		for (int i = 0; i < n; i++) {
+			mean[0] += X[i * 3];
+			mean[1] += X[i * 3 + 1];
+			mean[2] += X[i * 3 + 2];
+		}
+		mean[0] = mean[0] / n;
+		mean[1] = mean[1] / n;
+		mean[2] = mean[2] / n;
+		// Mean center
+		for (int i = 0; i < n; i++) {
+			X[i * 3] -= mean[0];
+			X[i * 3 + 1] -= mean[1];
+			X[i * 3 + 2] -= mean[2];
+		}
+		// Furthest distance
+		float furthest_dist = 0;
+		for (int i = 0; i < n; i++) {
+			float dist = 0;
+			dist = (X[i * 3] * X[i * 3]) + (X[i * 3 + 1] * X[i * 3 + 1]) + (X[i * 3 + 2] * X[i * 3 + 2]);
+			dist = std::sqrt(dist);
+			if (dist > furthest_dist) {
+				furthest_dist = dist;
+			}
+		}
+		// Divide by furthest distance
+		for (int i = 0; i < n; i++) {
+			X[i * 3] /= furthest_dist;
+			X[i * 3 + 1] /= furthest_dist;
+			X[i * 3 + 2] /= furthest_dist;
+		}
+	}
+
+	std::vector<float*> get_laplacia(std::vector<float*> x_train) {
+		std::vector<float*> laplacians;
+		for (int i = 0; i < x_train.size(); i++) {
+			float* current_sample = x_train[i];
+			//normalize_dat(current_sample, Parameters::num_points);
+			Graph::GraphCPU g(current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
+			float* L = g.get_Lnorm();
+			if (debug) {
+				std::cout << "Constructed graph for " << i << std::endl;
+			}
+			laplacians.push_back(L);
+		}
+		return laplacians;
+	}
+
+	void NetworkCPU::train(std::vector<float*> input, std::vector<float*> label, int n) {
 
 		float* perEpochLoss = (float*)malloc(Parameters::num_epochs * sizeof(float));
 		float epochLoss = 0;
@@ -274,7 +324,12 @@ namespace PointCloudClassification {
 
 				// Grab one batch's data
 				std::vector<float*> batch_in = std::vector < float* >(input.begin() + b * this->batchSize, input.begin() + (b + 1) * this->batchSize);
-				std::vector<float*> batch_lap = std::vector < float* >(laplacians.begin() + b * this->batchSize, laplacians.begin() + (b + 1) * this->batchSize);
+				
+				for (int bi = 0; bi < batch_in.size(); bi++) {
+					normalize_dat(batch_in[bi], Parameters::num_points);
+				}
+
+				std::vector<float*> batch_lap = get_laplacia(batch_in);
 				std::vector<float*> batch;
 				batch.reserve(batch_in.size() + batch_lap.size()); // preallocate memory
 				batch.insert(batch.end(), batch_in.begin(), batch_in.end());
@@ -291,13 +346,16 @@ namespace PointCloudClassification {
 				// Calculate Loss
 				float loss = calculateLoss(prediction, trueLabel);
 				epochLoss += loss;
+
+				PointCloudClassification::softmaxActivationLayerCPU softmaxLayer(numClasses, Parameters::batch_size, false);
+				std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
 				
 				// Check Prediction: Can comment this in training later on..
-				getClassification(prediction, this->numClasses, classification);
+				getClassification(pprob, this->numClasses, classification);
 				std::cout << "True Label: ";
 				Utilities::printVectorOfFloats(trueLabel, Parameters::num_classes);
 				// Backward Pass
-				backward(prediction, trueLabel, Parameters::learning_rate);
+				backward(pprob, trueLabel, Parameters::learning_rate);
 			}
 			epochLoss /= num_batches;
 			perEpochLoss[ep] = epochLoss;

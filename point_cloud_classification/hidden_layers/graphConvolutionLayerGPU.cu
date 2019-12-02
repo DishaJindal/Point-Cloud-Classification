@@ -117,41 +117,41 @@ namespace PointCloudClassification {
 	std::vector<float*> GraphConvolutionLayerGPU::backward(std::vector<float*> incomingGradient, float learningRate) {
 		std::vector<float*> outgoingGradient;
 		MatrixGPU* m = new MatrixGPU();
+		
+		float* TX;
+		cudaMalloc((void**)&TX, numPoints * inputDim * sizeof(float));
+		//checkCUDAError("cudaMalloc((void**)&TX");
 
-			float* TX;
-			cudaMalloc((void**)&TX, numPoints * inputDim * sizeof(float));
-			checkCUDAError("cudaMalloc((void**)&TX");
+		float* TXT;
+		cudaMalloc((void**)&TXT, numPoints * inputDim * sizeof(float));
+		//checkCUDAError("cudaMalloc((void**)&TXT");
 
-			float* TXT;
-			cudaMalloc((void**)&TXT, numPoints * inputDim * sizeof(float));
-			checkCUDAError("cudaMalloc((void**)&TXT");
+		float* dtheta;
+		cudaMalloc((void**)&dtheta, inputDim * outputDim * sizeof(float));
+		//checkCUDAError("cudaMalloc((void**)&dtheta");
 
-			float* dtheta;
-			cudaMalloc((void**)&dtheta, inputDim * outputDim * sizeof(float));
-			checkCUDAError("cudaMalloc((void**)&dtheta");
+		float* Tk_minus_2;
+		cudaMalloc((void**)&Tk_minus_2, numPoints * numPoints * sizeof(float));
+		//checkCUDAError("cudaMalloc((void**)&Tk_minus_2");
+		m->getIdentityMatrix(numPoints, Tk_minus_2);
 
-			float* Tk_minus_2;
-			cudaMalloc((void**)&Tk_minus_2, numPoints * numPoints * sizeof(float));
-			checkCUDAError("cudaMalloc((void**)&Tk_minus_2");
-			m->getIdentityMatrix(numPoints, Tk_minus_2);
+		float* Tk_minus_1;
+		cudaMalloc((void**)&Tk_minus_1, numPoints * numPoints * sizeof(float));
+		//checkCUDAError("cudaMalloc((void**)&Tk_minus_1");
 
-			float* Tk_minus_1;
-			cudaMalloc((void**)&Tk_minus_1, numPoints * numPoints * sizeof(float));
-			checkCUDAError("cudaMalloc((void**)&Tk_minus_1");
+		float* Tk;
 
-			float* Tk;
+		float* TG;
+		cudaMalloc((void**)&TG, numPoints * outputDim * sizeof(float));
+		//checkCUDAError("cudaMalloc((void**)&TG");
 
-			float* TG;
-			cudaMalloc((void**)&TG, numPoints * outputDim * sizeof(float));
-			checkCUDAError("cudaMalloc((void**)&TG");
+		float* temp;
+		cudaMalloc((void**)&temp, numPoints * inputDim * sizeof(float));
+		//checkCUDAError("cudaMalloc((void**)&temp");
 
-			float* temp;
-			cudaMalloc((void**)&temp, numPoints * inputDim * sizeof(float));
-			checkCUDAError("cudaMalloc((void**)&temp");
-
-			float* thetaT;
-			cudaMalloc((void**)&thetaT, outputDim * inputDim * sizeof(float));
-			checkCUDAError("cudaMalloc((void**)&thetaT");
+		float* thetaT;
+		cudaMalloc((void**)&thetaT, outputDim * inputDim * sizeof(float));
+		//checkCUDAError("cudaMalloc((void**)&thetaT");
 
 
 		int number_of_samples = incomingGradient.size();
@@ -207,7 +207,7 @@ namespace PointCloudClassification {
 		cudaFree(dtheta);
 		cudaFree(Tk_minus_2);
 		cudaFree(Tk_minus_1);
-		cudaFree(Tk);
+		//cudaFree(Tk);
 		cudaFree(TG);
 		cudaFree(temp);
 		cudaFree(thetaT);

@@ -71,7 +71,7 @@ namespace PointCloudClassification {
 		for (int b = 0; b < this->batchDim; b++) {
 			float* oneOutgoingGradient;
 			cudaMalloc((void**)&oneOutgoingGradient, numPoints * inputDim * sizeof(float));
-			dim3 nBlocks(((inputDim ) + blockSize - 1) / blockSize);
+			dim3 nBlocks(((inputDim * numPoints) + blockSize - 1) / blockSize);
 
 				
 			/* Consume Gradient coming from max pooling

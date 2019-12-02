@@ -27,5 +27,7 @@ namespace PointCloudClassification {
 		extern float keep_drop_prob2;
 		extern float keep_drop_prob3;
 		extern float keep_drop_prob4;
+
+		extern float lamba_reg;
 	}
 }

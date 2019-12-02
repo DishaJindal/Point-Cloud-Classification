@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 #include "../common.h"
 #include "../utilities/kernels.h"
+#include "../utilities/parameters.h"
 #include "../utilities/utils.h"
 #include "../utilities/matrix.h"
 #include "layer.h"
@@ -64,7 +65,8 @@ namespace PointCloudClassification {
 		m->multiplyTranspose(flattenedInputBackward, W, batchDim, outputDim, inputDim, flattenedOutputBackward);
 
 		//Update weight matrix
-		m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
+		//m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
+		m->linearCombination(W, dW, (1.0f - Parameters::lamba_reg),-1.0f*learningRate, inputDim, outputDim, W);
 			
 		std::vector<float*> outgoingGradient;
 		for (int i = 0; i < batchDim; i++) {
