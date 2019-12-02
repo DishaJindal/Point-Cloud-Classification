@@ -67,8 +67,11 @@ namespace PointCloudClassification {
 		DropoutLayerGPU() {}
 		DropoutLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer, float k_prob) : DropoutLayer(numPoints, inputDim, batchDim, lastLayer) {
 			// Allocate space to save which nodes were kept required for back propagataion
-			for (int i = 0; i < batchDim; i++)
-				this->nodesKeep.push_back((float*)malloc(inputDim * numPoints * sizeof(float)));
+			for (int i = 0; i < batchDim; i++) {
+				float* flattened_current_random_numbers;
+				cudaMalloc((void**)&flattened_current_random_numbers, numPoints * inputDim * sizeof(float));
+				this->nodesKeep.push_back(flattened_current_random_numbers);
+			}
 			std::default_random_engine generator;
 			this->rand_generator = generator;
 		}

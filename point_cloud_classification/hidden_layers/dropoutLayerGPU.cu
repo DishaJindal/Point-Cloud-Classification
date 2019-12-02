@@ -37,7 +37,7 @@ __global__ void dropoutForward(float *input, float *output, float *probabilities
 	thrust::minstd_rand rng = thrust::minstd_rand(utilhash((1 << 31) | r) ^ utilhash(index));
 	thrust::uniform_real_distribution<float> dist(0, 1);
 	if (index < n) {
-		probabilities[index] = (dist(rng) > 1 - keepProb) ? 1 / keepProb : 0;
+		probabilities[index] = (dist(rng) <= 1 - keepProb) ? 1 / keepProb : 0;
 		output[index] = input[index] * probabilities[index];
 	}
 }
@@ -60,15 +60,12 @@ namespace PointCloudClassification {
 		for (int b = 0; b < batchDim; b++) {
 			float* flattened_current_output;
 			cudaMalloc((void**)&flattened_current_output, numPoints * inputDim * sizeof(float));
-			float* flattened_current_random_numbers;
-			cudaMalloc((void**)&flattened_current_random_numbers, numPoints * inputDim * sizeof(float));
 			dim3 fullBlocksPerGrid((inputDim * numPoints + blockSize - 1) / blockSize);
-			dropoutForward << <fullBlocksPerGrid, blockSize >> > (inputArg[b], flattened_current_output, flattened_current_random_numbers, inputDim * numPoints, Parameters::keep_prob, this->rand_generator());
-			this->nodesKeep.push_back(flattened_current_random_numbers);
+			dropoutForward << <fullBlocksPerGrid, blockSize >> > (inputArg[b], flattened_current_output, this->nodesKeep[b], inputDim * numPoints, Parameters::keep_prob, this->rand_generator());
 			output.push_back(flattened_current_output);
 		}
 		return output;
-	}
+}
 
 	std::vector<float*> DropoutLayerGPU::backward(std::vector<float*> incomingGradient, float learningRate) {
 		std::vector<float*> outgoingGradient;

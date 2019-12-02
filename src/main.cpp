@@ -86,16 +86,35 @@ void tests() {
 	Tests::testGlobalPoolingLayer();
 	cout << "********************************************************" << endl;
 
-	//cout << "********************************************************" << endl;
-	//cout << "Testing Dropout Layer ..." << endl;
-	//Tests::testDropoutLayer();
-	//cout << "********************************************************" << endl;
-}
+	cout << "********************************************************" << endl;
+	cout << "Testing Softmax Layer forward GPU..." << endl;
+	Tests::testSoftmaxLayerGPU();
+	cout << "********************************************************" << endl;
 
-int main(int argc, char* argv[]) {
+	cout << "********************************************************" << endl;
+	cout << "Testing RELU Layer forward CPU..." << endl;
+	Tests::testRELULayer();
+	cout << "********************************************************" << endl;
 
-	// Tests
-	//tests();
+	cout << "********************************************************" << endl;
+	cout << "Testing RELU Layer forward GPU..." << endl;
+	Tests::testRELULayerGPU();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing CE LOSS GPU..." << endl;
+	Tests::testCrossEntropyLossGPU();
+	cout << "********************************************************" << endl; 
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Dropout Layer ..." << endl;
+	Tests::testDropoutLayer();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing Droput Layer GPU..." << endl;
+	Tests::testDropoutLayerGPU();
+	cout << "********************************************************" << endl;
 	/*cout << "********************************************************" << endl;
 	cout << "Testing Fully Connected Layer CPU ..." << endl;
 	Tests::testFCLayer();
@@ -109,9 +128,14 @@ int main(int argc, char* argv[]) {
 	cout << "********************************************************" << endl;
 	cout << "Testing Fully Connected Layer backward GPU..." << endl;
 	Tests::testFCLayerBackwardGPU();
-	cout << "********************************************************" << endl;*/
+	cout << "********************************************************" << endl;
 
-	/*cout << "********************************************************" << endl;
+	cout << "********************************************************" << endl;
+	cout << "Testing GPU Matrix Reduction ..." << endl;
+	Tests::testMatrixGPUReduction();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
 	cout << "Testing Graph Convolutional Layer backward CPU..." << endl;
 	Tests::testGraphConvolutionLayer();
 	cout << "********************************************************" << endl;
@@ -125,6 +149,12 @@ int main(int argc, char* argv[]) {
 	cout << "Testing Softmax Layer forward CPU..." << endl;
 	Tests::testSoftmaxLayer();
 	cout << "********************************************************" << endl;*/
+}
+
+int main(int argc, char* argv[]) {
+
+	// Tests
+	//tests();
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
 	int per_class = 5;
@@ -159,8 +189,6 @@ int main(int argc, char* argv[]) {
 		std::cout << "Built Architecture!" << std::endl;
 		gcn.train(x_train, y_train, per_class * 10);
 	}
-	// Train 
-	//int number_of_batches = ceil(Parameters::num_points / Parameters::batch_size);
 }
 
 

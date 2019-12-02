@@ -241,9 +241,8 @@ namespace PointCloudClassification {
 		}
 		// Add
 		for (int i = 0; i < Parameters::batch_size; i++) {
-			for (int j = 0; j < Parameters::num_points * Parameters::gcn1_out_features; j++) {
-				gp2[i][j] += gp1[i][j];
-			}
+			MatrixGPU* m = new MatrixGPU();
+			m->add(gp1[i], gp2[i], Parameters::num_points, Parameters::gcn1_out_features, gp2[i]);
 		}
 		if (debug) {
 			std::cout << "Add " << std::endl;
@@ -363,9 +362,9 @@ namespace PointCloudClassification {
 				// Check Prediction: Can comment this in training later on..
 				getClassification(prediction, this->numClasses, classification);
 				std::cout << "True Label: ";
-				Utilities::printVectorOfFloatsGPU(trueLabel, Parameters::num_classes);
+				Utilities::printVectorOfFloatsGPU(dev_label, Parameters::num_classes);
 				// Backward Pass
-				backward(prediction, trueLabel, Parameters::learning_rate);
+				backward(prediction, dev_label, Parameters::learning_rate);
 			}
 			epochLoss /= num_batches;
 			perEpochLoss[ep] = epochLoss;
@@ -387,10 +386,14 @@ namespace PointCloudClassification {
 		for (int i = 0; i < n; i++) {
 			float maxProb = 0;
 			float clazz = 0;
+			float* pprob_cpu;
+			pprob_cpu = (float*)malloc(classes * sizeof(float));
+
+			cudaMemcpy(pprob_cpu, pprob[i], classes * sizeof(float), cudaMemcpyDeviceToHost);
 			for (int j = 0; j < classes; j++) {
-				if (pprob[i][j] > maxProb) {
+				if (pprob_cpu[j] > maxProb) {
 					clazz = j;
-					maxProb = pprob[i][j];
+					maxProb = pprob_cpu[j];
 				}
 			}
 			classification[i] = clazz;
