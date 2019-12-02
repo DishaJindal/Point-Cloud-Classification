@@ -13,7 +13,7 @@
 #include "hidden_layers/softmaxActivationLayer.h"
 
 namespace PointCloudClassification {
-    Common::PerformanceTimer& timer();
+    //Common::PerformanceTimer& timer();
 
 	class NetworkCPU {
 
@@ -22,6 +22,12 @@ namespace PointCloudClassification {
 		int batchSize;
 		int numClasses;
 		Layer* softmaxFunction;
+
+		Common::PerformanceTimer& timer()
+		{
+			static Common::PerformanceTimer timer;
+			return timer;
+		}
 
 		// Architecture Layers
 		PointCloudClassification::GraphConvolutionLayerCPU gcn_layer1;
@@ -55,6 +61,12 @@ namespace PointCloudClassification {
 		int batchSize;
 		int numClasses;
 		Layer* softmaxFunction;
+
+		Common::PerformanceTimer& timer()
+		{
+			static Common::PerformanceTimer timer;
+			return timer;
+		}
 
 		// Architecture Layers
 		PointCloudClassification::GraphConvolutionLayerGPU gcn_layer1;

@@ -647,8 +647,10 @@ namespace Tests {
 
 	void testGraphConvolutionLayerGPU() {
 		PointCloudClassification::GraphConvolutionLayerGPU gc1(Parameters::num_points, Parameters::input_features, 3, Parameters::batch_size, 3, false);
+		PointCloudClassification::GraphConvolutionLayerCPU gc2(Parameters::num_points, Parameters::input_features, 3, Parameters::batch_size, 3, false);
 
-		vector<float*> samples; //Data from file will be stored here
+		vector<float*> samples1; //Data from file will be stored here
+		vector<float*> samples2;
 		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
 			float* temp = (float*)malloc(Parameters::num_points * Parameters::input_features * sizeof(float));
@@ -656,7 +658,8 @@ namespace Tests {
 			float* temp_gpu;
 			cudaMalloc((void**)&temp_gpu, Parameters::num_points * Parameters::input_features * sizeof(float));
 			cudaMemcpy(temp_gpu, temp, Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
-			samples.push_back(temp_gpu);
+			samples1.push_back(temp_gpu);
+			samples2.push_back(temp);
 		}
 
 		// Append Laplacian of all samples to end of this vector
@@ -666,23 +669,33 @@ namespace Tests {
 			float* temp_gpu;
 			cudaMalloc((void**)&temp_gpu, Parameters::num_points * Parameters::num_points * sizeof(float));
 			cudaMemcpy(temp_gpu, temp, Parameters::num_points * Parameters::num_points * sizeof(float), cudaMemcpyHostToDevice);
-			samples.push_back(temp_gpu);
+			samples1.push_back(temp_gpu);
+			samples2.push_back(temp);
 		}
 
 		std::cout << "SAMPLE: " << std::endl;
-		Utilities::printVectorOfFloatsGPU(samples, 5);
+		Utilities::printVectorOfFloatsGPU(samples1, 15);
 		std::cout << std::endl;
 
-		std::vector<float*> op = gc1.forward(samples, false);
-
-		std::cout << "OUTPUT: " << std::endl;
-		Utilities::printVectorOfFloatsGPU(op, 5);
+		std::cout << "SAMPLE: " << std::endl;
+		Utilities::printVectorOfFloats(samples2, 15);
 		std::cout << std::endl;
 
-		std::vector<float*> og = gc1.backward(op, false);
+		std::vector<float*> op1 = gc1.forward(samples1, false);
+		std::vector<float*> op2 = gc2.forward(samples2, false);
 
-		std::cout << "OG: " << std::endl;
+		std::cout << "OUTPUT GPU: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(op1, 15);
+		std::cout << std::endl;
+
+		std::cout << "OUTPUT CPU: " << std::endl;
+		Utilities::printVectorOfFloats(op2, 15);
+		std::cout << std::endl;
+
+		//std::vector<float*> og = gc1.backward(op, false);
+
+		/*std::cout << "OG: " << std::endl;
 		Utilities::printVectorOfFloatsGPU(og, 5);
-		std::cout << std::endl;
+		std::cout << std::endl;*/
 	}
 }

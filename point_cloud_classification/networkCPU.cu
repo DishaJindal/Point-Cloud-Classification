@@ -6,6 +6,7 @@
 #include "utilities/matrix.h"
 #include "utilities/parameters.h"
 #include "utilities/utils.h"
+#include "../src/testing_helpers.hpp"
 #include <fstream>
 #include <string>
 
@@ -14,7 +15,7 @@
 #endif
 
 #define blockSize 128
-#define debug false
+#define debug true
 
 namespace PointCloudClassification {
 
@@ -280,8 +281,12 @@ namespace PointCloudClassification {
 				batch.insert(batch.end(), batch_lap.begin(), batch_lap.end());
 				std::vector<float*> trueLabel = std::vector < float* >(label.begin() + b * this->batchSize, label.begin() + (b + 1) * this->batchSize);
 				
+				timer().startCpuTimer();
 				// Forward Pass
 				std::vector<float*> prediction = forward(batch, false);
+
+				timer().endCpuTimer();
+				printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "(Forward Pass / batch) ==> CPU");
 
 				// Calculate Loss
 				float loss = calculateLoss(prediction, trueLabel);
@@ -312,7 +317,6 @@ namespace PointCloudClassification {
 		int n = prediction.size();
 		PointCloudClassification::softmaxActivationLayerCPU softmaxLayer(numClasses, Parameters::batch_size, false);
 		std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
-		Utilities::printVectorOfFloats(pprob, 10);
 		for (int i = 0; i < n; i++) {
 			float maxProb = 0;
 			float clazz = 0;
