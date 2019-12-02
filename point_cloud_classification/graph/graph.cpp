@@ -61,7 +61,7 @@ namespace Graph {
 			int counter = 0;
 			for (auto idx : sort_indexes(dist)) {
 				counter++;
-				if (counter >= k)
+				if (counter > k)
 					A[n * i + idx] = 0;
 			}
 		}

@@ -18,10 +18,10 @@ namespace Graph {
 	
 	GraphGPU::GraphGPU(float *points, int n, int f_in, int k) {
 		// Allocate Memory
-		
 		float *dev_points;
 		cudaMalloc((void**)&dev_A, n * n * sizeof(float));
 		cudaMalloc((void**)&dev_points, n * f_in * sizeof(float));
+		cudaMemcpy(dev_points, points, n * f_in * sizeof(float), cudaMemcpyHostToDevice);
 		
 		fill_adjA(dev_points, dev_A, n, f_in, k);
 		normalize_adjA(dev_A, n);
@@ -29,13 +29,12 @@ namespace Graph {
 		fill_normalized_laplace(dev_A, n);
 		
 		// Free Memory
-		cudaFree(dev_A);
 		cudaFree(dev_points);
 	};
 
 
 	float* GraphGPU::get_A() {
-		return dev_A;;
+		return dev_A;
 	};
 
 	float* GraphGPU::get_Lnorm() {
@@ -52,11 +51,11 @@ namespace Graph {
 		for (int k = 0; k < f_in; k++) {
 			A[idx] += (p1[k] - p2[k]) * (p1[k] - p2[k]);
 		}
+		A[idx] = exp(-1 * A[idx]);
 	}
 
 	__global__ void kernel_mark_top_k(float *dev_A, int n, int k) {
 		int idx = blockIdx.x * blockDim.x + threadIdx.x;
-
 		for (int i = 0; i < k; i++) {
 			float k_min = FLT_MAX;
 			int k_idx = -1;
@@ -80,6 +79,16 @@ namespace Graph {
 		}
 	}
 
+	void GraphGPU::fill_adjA(float *dev_points, float *dev_A, int n, int f_in, int k) {
+		dim3 nsquareBlocks((n*n + blockSize - 1) / blockSize);
+		kernel_find_dist << < nsquareBlocks, blockSize >> > (n, f_in, dev_points, dev_A);
+
+		dim3 nBlocks((n + blockSize - 1) / blockSize);
+		kernel_mark_top_k << <nBlocks, blockSize >> > (dev_A, n, k);
+
+		kernel_update_dist << < nsquareBlocks, blockSize >> > (dev_A);
+	};
+	
 	__global__ void kernel_pow(float *scan_temp) {
 		int idx = blockIdx.x * blockDim.x + threadIdx.x;
 		float raise = -0.5f;
@@ -100,36 +109,6 @@ namespace Graph {
 		dev_A[n*j + i] = dev_A[n*j + i] * D[i];
 	}
 
-	__global__ void kernel_laplace(float *dev_A, int n) {
-		int idx = blockIdx.x * blockDim.x + threadIdx.x;
-		int i = idx / n;
-		int j = idx % n;
-		if (i == j)
-			dev_A[n*i + j] = 1 - dev_A[n*i + j];
-		else
-			dev_A[n*i + j] = 0 - dev_A[n*i + j];
-	}
-
-	__global__ void kernel_norm_laplace(float *dev_A, int n, float max_eigen) {
-		int idx = blockIdx.x * blockDim.x + threadIdx.x;
-		int i = idx / n;
-		int j = idx % n;
-		if (i == j)
-			dev_A[n*i + j] = ((2 * dev_A[n*i + j]) / max_eigen) - 1;
-		else
-			dev_A[n*i + j] = (2 * dev_A[n*i + j]) / max_eigen;
-	}
-
-	void GraphGPU::fill_adjA(float *dev_points, float *dev_A, int n, int f_in, int k) {
-		dim3 nsquareBlocks((n*n + blockSize - 1) / blockSize);
-		kernel_find_dist << < nsquareBlocks, blockSize >> > (n, f_in, dev_points, dev_A);
-
-		dim3 nBlocks((n + blockSize - 1) / blockSize);
-		kernel_mark_top_k << <nBlocks, blockSize >> > (dev_A, n, k);
-
-		kernel_update_dist << < nsquareBlocks, blockSize >> > (dev_A);
-	};
-	
 	void GraphGPU::normalize_adjA(float* dev_A, int n) {
 		float* devA_temp;
 		float* scan_temp;
@@ -158,10 +137,30 @@ namespace Graph {
 		cudaFree(scan_temp);
 	};
 
+	__global__ void kernel_laplace(float *dev_A, int n) {
+		int idx = blockIdx.x * blockDim.x + threadIdx.x;
+		int i = idx / n;
+		int j = idx % n;
+		if (i == j)
+			dev_A[n*i + j] = 1 - dev_A[n*i + j];
+		else
+			dev_A[n*i + j] = 0 - dev_A[n*i + j];
+	}
+
 	void GraphGPU::find_laplace(float* dev_A, int n) {
 		dim3 nsquareBlocks((n*n + blockSize - 1) / blockSize);
 		kernel_laplace << <nsquareBlocks, blockSize >> > (dev_A, n);
 	};
+
+	__global__ void kernel_norm_laplace(float *dev_A, int n, float max_eigen) {
+		int idx = blockIdx.x * blockDim.x + threadIdx.x;
+		int i = idx / n;
+		int j = idx % n;
+		if (i == j)
+			dev_A[n*i + j] = ((2 * dev_A[n*i + j]) / max_eigen) - 1;
+		else
+			dev_A[n*i + j] = (2 * dev_A[n*i + j]) / max_eigen;
+	}
 
 	void GraphGPU::fill_normalized_laplace(float* dev_A, int n) {
 		dim3 nsquareBlocks((n*n + blockSize - 1) / blockSize);

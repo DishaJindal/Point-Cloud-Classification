@@ -28,7 +28,7 @@
 #include <math.h>
 using namespace std;
 using namespace PointCloudClassification;
-#define GPU true
+#define GPU false
 
 void tests() {
 	//cout << "********************************************************" << endl;
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 	Tests::testFCLayerBackwardGPU();
 	cout << "********************************************************" << endl;*/
 
-	cout << "********************************************************" << endl;
+	/*cout << "********************************************************" << endl;
 	cout << "Testing Graph Convolutional Layer backward CPU..." << endl;
 	Tests::testGraphConvolutionLayer();
 	cout << "********************************************************" << endl;
@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 	cout << "********************************************************" << endl;
 	cout << "Testing Softmax Layer forward CPU..." << endl;
 	Tests::testSoftmaxLayer();
-	cout << "********************************************************" << endl;
+	cout << "********************************************************" << endl;*/
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
 	int per_class = 1;
@@ -138,6 +138,7 @@ int main(int argc, char* argv[]) {
 		memset(y_temp, 0.0f, Parameters::num_classes * sizeof(float));
 		y_train.push_back(y_temp);
 	}
+	// Make sure you have downloaded the data
 	utilityCore::load_data("bullshit", x_train, y_train, "train", per_class);
 	std::cout << "Loaded Data: " << x_train.size() << std::endl;
 
@@ -151,10 +152,12 @@ int main(int argc, char* argv[]) {
 		if (GPU) {
 			Graph::GraphGPU g(current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
 			L = g.get_Lnorm();
+			//Utilities::printArrayGPU(L, 1024);
 		}
 		else {
 			Graph::GraphCPU g(current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
 			L = g.get_Lnorm();
+			//Utilities::printArray(L, 1024);
 		}
 		std::cout << "Constructed graph for " << i << std::endl;
 		laplacians.push_back(L);
