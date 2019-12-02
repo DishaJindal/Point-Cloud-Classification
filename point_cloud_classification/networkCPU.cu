@@ -19,7 +19,8 @@ using namespace std::chrono;
 
 #define blockSize 128
 #define debug false
-#define time true
+#define time false
+#define graph_time true
 
 namespace PointCloudClassification {
 
@@ -502,6 +503,7 @@ namespace PointCloudClassification {
 
 			// Loop batch by batch
 			for (int b = 0; b < num_batches; b++) {
+				Parameters::num_points = 1024;
 
 				// Grab one batch's data
 				std::vector<float*> batch_in = std::vector < float* >(input.begin() + b * this->batchSize, input.begin() + (b + 1) * this->batchSize);
@@ -514,9 +516,9 @@ namespace PointCloudClassification {
 				std::vector<float*> batch_lap = get_laplacia(batch_in);
 				auto stop = high_resolution_clock::now();
 				auto duration = duration_cast<microseconds>(stop - start);
-				if (time) {
+				if (graph_time) {
 					std::cout << "************************************************************************************" << std::endl;
-					std::cout << "CPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "CPU : (Graph Generation / batch) ==> " << duration.count() << " seconds" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
 					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}

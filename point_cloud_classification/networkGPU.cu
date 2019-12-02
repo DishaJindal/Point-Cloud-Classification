@@ -18,6 +18,8 @@ using namespace std::chrono;
 
 #define blockSize 128
 #define debug false
+#define time false
+#define graph_time true
 
 namespace PointCloudClassification {
 
@@ -542,6 +544,7 @@ namespace PointCloudClassification {
 			classification.push_back(0.0f);
 		}
 		int num_batches = n / this->batchSize;
+		
 
 		// Iterate for as many epochs..
 		for (int ep = 0; ep < Parameters::num_epochs; ep++) {
@@ -577,9 +580,9 @@ namespace PointCloudClassification {
 				std::vector<float*> dev_lap = get_laplacian(batch_in);
 				auto stop = high_resolution_clock::now();
 				auto duration = duration_cast<microseconds>(stop - start);
-				if (time) {
+				if (graph_time) {
 					std::cout << "************************************************************************************" << std::endl;
-					std::cout << "GPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "GPU : (Graph Generation / batch) ==> " << duration.count() << " seconds" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
 					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}
