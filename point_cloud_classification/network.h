@@ -44,7 +44,7 @@ namespace PointCloudClassification {
 		std::vector<float*> forward(std::vector<float*> input, bool test);
 		float calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel);
 		void backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate);
-		void train(std::vector<float*> input, std::vector<float*> laplacians, std::vector<float*> label, int n);
+		void train(std::vector<float*> input, std::vector<float*> label, int n);
 		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float> classification);
 	};
 
@@ -76,7 +76,7 @@ namespace PointCloudClassification {
 		std::vector<float*> forward(std::vector<float*> input, bool test);
 		float calculateLoss(std::vector<float*> prediction, std::vector<float*> trueLabel);
 		void backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate);
-		void train(std::vector<float*> input, std::vector<float*> laplacians, std::vector<float*> label, int n);
+		void train(std::vector<float*> input, std::vector<float*> label, int n);
 		void getClassification(const std::vector<float*> prediction, const int classes, std::vector<float> classification);
 	};
 }

@@ -3,7 +3,7 @@
 
 namespace PointCloudClassification {
 	namespace Parameters {
-		 int num_neighbours = 10;
+		 int num_neighbours = 4;
 		 int num_classes = 10;
 		 int num_points = 1024;
 
