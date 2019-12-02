@@ -15,7 +15,7 @@
 #include "point_cloud_classification/utilities/matrix.h"
 #include "point_cloud_classification/utilities/utils.h"
 #include "point_cloud_classification/utilities/parameters.h"
-#include "point_cloud_classification/hidden_layers/fullyConnectedLayerCPU.cu"
+#include "point_cloud_classification/hidden_layers/fullyConnectedLayer.h"
 
 #include "point_cloud_classification/tests/test.h"
 
@@ -112,6 +112,11 @@ int main(int argc, char* argv[]) {
 	cout << "********************************************************" << endl;*/
 
 	cout << "********************************************************" << endl;
+	cout << "Testing GPU Matrix Reduction ..." << endl;
+	Tests::testMatrixGPUReduction();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
 	cout << "Testing Graph Convolutional Layer backward CPU..." << endl;
 	Tests::testGraphConvolutionLayer();
 	cout << "********************************************************" << endl;
@@ -126,10 +131,10 @@ int main(int argc, char* argv[]) {
 	Tests::testSoftmaxLayer();
 	cout << "********************************************************" << endl;
 
-	/*cout << "********************************************************" << endl;
+	cout << "********************************************************" << endl;
 	cout << "Testing Softmax Layer forward GPU..." << endl;
 	Tests::testSoftmaxLayerGPU();
-	cout << "********************************************************" << endl;*/
+	cout << "********************************************************" << endl;
 
 	cout << "********************************************************" << endl;
 	cout << "Testing RELU Layer forward CPU..." << endl;
@@ -139,6 +144,11 @@ int main(int argc, char* argv[]) {
 	cout << "********************************************************" << endl;
 	cout << "Testing RELU Layer forward GPU..." << endl;
 	Tests::testRELULayerGPU();
+	cout << "********************************************************" << endl;
+
+	cout << "********************************************************" << endl;
+	cout << "Testing CE LOSS GPU..." << endl;
+	Tests::testCrossEntropyLossGPU();
 	cout << "********************************************************" << endl;
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)

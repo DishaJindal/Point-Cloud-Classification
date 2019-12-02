@@ -463,7 +463,7 @@ __device__ void kern_warp_reduce_mean(volatile float *sdata, unsigned int tid, i
 	}
 }
 template <unsigned int blockSize>
-__global__ void kern_reduce_mean(float *g_idata, float *g_odata, unsigned int m, unsigned int startColumn, int width, int n, int denominator) {
+__global__ void kern_reduce_mean(float *g_idata, float *g_odata, unsigned int m, unsigned int startColumn, int width, int n, float denominator) {
 	extern __shared__ float sdata[];
 	unsigned int tid = threadIdx.x;
 	unsigned int i = blockIdx.x*(blockSize * 2) + tid;
@@ -506,7 +506,7 @@ __global__ void kern_reduce_mean(float *g_idata, float *g_odata, unsigned int m,
 	}
 }
 
-void reduce_mean(float* dev_A, int m, int n, float* dev_B, int denominator) {
+void reduce_mean(float* dev_A, int m, int n, float* dev_B, float denominator) {
 
 	int numFeaturesConsidered = 12;
 	int s = m;
@@ -653,7 +653,9 @@ void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output) {
 }
 
 void MatrixGPU::sumAcrossDim1(float* A, int m, int n, float* output) {
-	reduce_mean(A, m, n, output, 1);
+	linearCombination(A, A, 1000, 0, m, n, A);
+	reduce_mean(A, m, n, output, 1.0f);
+	linearCombination(output, output, 1.0f / 1000, 0, m, n, output);
 }
 
 __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *output, int m, int n) {
@@ -710,4 +712,30 @@ __global__ void kernGetIdentity(float *input, int m) {
 void MatrixGPU::getIdentityMatrix(int m, float* A) {
 	dim3 fullBlocksPerGrid((m * m + BLOCK_SIZE - 1) / BLOCK_SIZE);
 	kernGetIdentity << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, m);
+}
+
+__global__ void kernExp(float* input, int m, int n, float* output) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index < m * n) {
+		output[index] = exp(input[index]);
+	}
+}
+
+__global__ void kernDivideSum(float* input, float* sum, int m, int n, float* output) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	int row = index / n;
+	if (index < m * n) {
+		output[index] = input[index] / sum[row];
+	}
+}
+
+void MatrixGPU::exp(float* input, int batchDim, int inputDim, float* output) {
+	dim3 fullBlocksPerGrid((batchDim * inputDim + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernExp << <fullBlocksPerGrid, BLOCK_SIZE >> > (input, batchDim, inputDim, output);
+}
+
+void MatrixGPU::divide_sum(float* input, float* sum, int batchDim, int outputDim, float* output) {
+	dim3 fullBlocksPerGrid((batchDim * outputDim + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernDivideSum << <fullBlocksPerGrid, BLOCK_SIZE >> > (input, sum, batchDim, outputDim, output);
+
 }

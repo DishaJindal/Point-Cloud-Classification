@@ -18,75 +18,67 @@
 
 #define blockSize 128
 
-//__global__ void kernExp(float* input, int m, int n, float* output) {
-//	int index = blockIdx.x * blockDim.x + threadIdx.x;
-//	if (index < m * n) {
-//		output[index] = exp(input[index]);
-//	}
-//}
-//
-//__global__ void kernDivideSum(float* input, float* sum, int m, int n, float* output) {
-//	int index = blockIdx.x * blockDim.x + threadIdx.x;
-//	int row = index / n;
-//	if (index < m * n) {
-//		output[index] = input[index] / sum[row];
-//	}
-//}
+
 
 namespace PointCloudClassification {
 
-	class softmaxActivationLayerGPU : public softmaxActivationLayer {
-		softmaxActivationLayerGPU() {};
-	public:
-		softmaxActivationLayerGPU(int inputDim, int batchDim, bool lastLayer) : softmaxActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
-			
+	std::vector<float*> softmaxActivationLayerGPU::forward(std::vector<float*> inputArg, bool test) {
+		float* flattenedInput;
+		cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
+		int i = 0;
+		for (auto current : inputArg) {
+			cudaMemcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+			i++;
+		}
+		float* flattenedOutput;
+		cudaMalloc((void**)&flattenedOutput, batchDim * outputDim * sizeof(float));
+
+		float* temp;
+		cudaMalloc((void**)&temp, batchDim * outputDim * sizeof(float));
+
+		MatrixGPU* m = new MatrixGPU();
+		m->exp(flattenedInput, batchDim, inputDim, temp);
+
+		std::cout << "temp\n";
+		Utilities::printArrayGPU(temp, 20);
+
+		float* tempT;
+		cudaMalloc((void**)&tempT, batchDim * outputDim * sizeof(float));
+		m->transpose(temp, batchDim, outputDim, tempT);
+		//cudaFree(temp);
+
+		//m->linearCombination(tempT, tempT, 1000, 0, outputDim, batchDim, tempT);
+
+		float* sum;
+		cudaMalloc((void**)&sum, batchDim * outputDim * sizeof(float));
+		m->sumAcrossDim1(tempT, outputDim, batchDim, sum); //CHANGE THIS TO SUM --> m->sumAcrossDim1(tempT, outputDim, batchDim, sum);
+
+		//m->linearCombination(sum, sum, 1.0f / 1000, 0, batchDim, 1, sum);
+
+		std::cout << "tempT\n";
+		Utilities::printArrayGPU(tempT, 20);
+		std::cout << "sum\n";
+		Utilities::printArrayGPU(sum, 2);
+
+		//dim3 fullBlocksPerGrid((batchDim * inputDim + blockSize - 1) / blockSize);
+		m->divide_sum (temp, sum, batchDim, outputDim, flattenedOutput);
+
+		cudaFree(temp);
+		cudaFree(tempT);
+		cudaFree(sum);
+
+		std::vector<float*> outputArg;
+		for (int i = 0; i < batchDim; i++) {
+			outputArg.push_back(flattenedOutput + (i * outputDim));
 		}
 
-		std::vector<float*> forward(std::vector<float*> inputArg, bool test) {
-			float* flattenedInput;
-			cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
-			int i = 0;
-			for (auto current : inputArg) {
-				cudaMemcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
-				i++;
-			}
-			float* flattenedOutput;
-			cudaMalloc((void**)&flattenedOutput, batchDim * outputDim * sizeof(float));
+		return outputArg;
+	}
 
-			float* temp;
-			cudaMalloc((void**)&temp, batchDim * outputDim * sizeof(float));
+	std::vector<float*> softmaxActivationLayerGPU::backward(std::vector<float*> incomingGradient, float learningRate) {
+		std::vector<float*> sample;
+		return sample;
+	}
 
-			dim3 fullBlocksPerGrid((batchDim * inputDim + blockSize - 1) / blockSize);
-			//kernExp <<<fullBlocksPerGrid, blockSize >>> (flattenedInput, batchDim, inputDim, temp);
+};
 
-			MatrixGPU* m = new MatrixGPU();
-			float* tempT;
-			cudaMalloc((void**)&tempT, batchDim * outputDim * sizeof(float));
-			m->transpose(temp, batchDim, outputDim, tempT);
-			//cudaFree(temp);
-
-			float* sum;
-			cudaMalloc((void**)&sum, batchDim * outputDim * sizeof(float));
-			m->meanAcrossDim1(tempT, outputDim, batchDim, sum); //CHANGE THIS TO SUM --> m->sumAcrossDim1(tempT, outputDim, batchDim, sum);
-
-			//dim3 fullBlocksPerGrid((batchDim * inputDim + blockSize - 1) / blockSize);
-			//kernDivideSum << <fullBlocksPerGrid, blockSize >> > (temp, sum, batchDim, inputDim, flattenedOutput);
-
-			cudaFree(temp);
-			cudaFree(tempT);
-			cudaFree(sum);
-
-			std::vector<float*> outputArg;
-			for (int i = 0; i < batchDim; i++) {
-				outputArg.push_back(flattenedOutput + (i * outputDim));
-			}
-
-			return outputArg;
-		}
-
-		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
-			std::vector<float*> sample;
-			return sample;
-		}
-	};
-}

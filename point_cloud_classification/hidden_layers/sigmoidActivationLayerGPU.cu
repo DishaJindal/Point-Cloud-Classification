@@ -17,18 +17,12 @@
 
 namespace PointCloudClassification {
 
-	class sigmoidActivationLayerGPU : public sigmoidActivationLayer {
-		sigmoidActivationLayerGPU() {};
+	void sigmoidActivationLayerGPU::forward(float *inputArg, float *outputArg, bool test) {
 
-		sigmoidActivationLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : sigmoidActivationLayer(inputDim, outputDim, batchDim, lastLayer) {
-		}
+	}
 
-		void forward(float *inputArg, float *outputArg, bool test) {
+	void sigmoidActivationLayerGPU::backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
 
-		}
+	}
+};
 
-		void backward(float *incomingGradient, float *outgoingGradient, float learningRate) {
-
-		}
-	};
-}

@@ -2,18 +2,15 @@
 #include "../common.h"
 #include "../network.h"
 #include "../utilities/parameters.h"
-#include "../hidden_layers/fullyConnectedLayerCPU.cu"
-#include "../hidden_layers/fullyConnectedLayerGPU.cu"
-#include "../hidden_layers/globalPoolingCPU.cu"
-#include "../hidden_layers/globalPoolingGPU.cu"
-#include "../hidden_layers/graphConvolutionLayerCPU.cu"
-#include "../hidden_layers/graphConvolutionLayerGPU.cu"
+#include "../hidden_layers/fullyConnectedLayer.h"
+#include "../hidden_layers/globalPoolingLayer.h"
 #include "../hidden_layers/RELUActivationLayer.h"
-#include "../hidden_layers/softmaxActivationLayerCPU.cu"
-#include "../hidden_layers/softmaxActivationLayerGPU.cu"
-#include "../hidden_layers/sigmoidActivationLayerCPU.cu"
+#include "../hidden_layers/sigmoidActivationLayer.h"
 #include "../hidden_layers/CrossEntropyLossCPU.cu"
+#include "../hidden_layers/CrossEntropyLossGPU.cu"
 #include "../hidden_layers/dropoutLayer.h"
+#include "../hidden_layers/graphConvolutionLayer.h"
+#include "../hidden_layers/softmaxActivationLayer.h"
 
 using namespace std;
 using namespace PointCloudClassification;
@@ -41,8 +38,8 @@ namespace Tests {
 
 
 
-		int m = 1024;
-		int n = 1000;
+		int m = 10;
+		int n = 2;
 		int size = n * m;
 		float * a;
 		a = (float*)malloc(size * sizeof(float));
@@ -434,8 +431,10 @@ namespace Tests {
 
 	void testSoftmaxLayerGPU() {
 		PointCloudClassification::softmaxActivationLayerGPU softmax1(10, Parameters::batch_size, false);
+		PointCloudClassification::softmaxActivationLayerCPU softmax2(10, Parameters::batch_size, false);
 
-		vector<float*> samples; //Data from file will be stored here
+		vector<float*> samples1; //Data from file will be stored here
+		vector<float*> samples2;
 		int number_of_random_examples = Parameters::batch_size;
 		for (int i = 0; i < number_of_random_examples; i++) {
 			float* temp = (float*)malloc(10 * sizeof(float));
@@ -443,18 +442,55 @@ namespace Tests {
 			float* temp_gpu;
 			cudaMalloc((void**)&temp_gpu, 10 * sizeof(float));
 			cudaMemcpy(temp_gpu, temp, 10 * sizeof(float), cudaMemcpyHostToDevice);
-			samples.push_back(temp_gpu);
+			samples1.push_back(temp_gpu);
+			samples2.push_back(temp);
 		}
 
 		std::cout << "SAMPLE: " << std::endl;
-		Utilities::printVectorOfFloatsGPU(samples, 5);
+		Utilities::printVectorOfFloatsGPU(samples1, 10);
 		std::cout << std::endl;
 
-		std::vector<float*> op = softmax1.forward(samples, false);
+		std::vector<float*> op1 = softmax1.forward(samples1, false);
+		std::vector<float*> op2 = softmax2.forward(samples2, false);
 
-		std::cout << "OUTPUT: " << std::endl;
-		Utilities::printVectorOfFloatsGPU(op, 5);
+		std::cout << "OUTPUT 1: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(op1, 10);
 		std::cout << std::endl;
+
+		std::cout << "OUTPUT 2: " << std::endl;
+		Utilities::printVectorOfFloats(op2, 10);
+		std::cout << std::endl;
+	}
+
+	void testCrossEntropyLossGPU() {
+		PointCloudClassification::CrossEntropyLossGPU celoss(Parameters::batch_size, 3);
+
+		vector<float*> samples; //Data from file will be stored here
+		vector<float*> trueLabels;
+		float temp_true[3 * 3] = { 0, 1, 0, 1, 0, 0, 0, 0, 1 };
+		int number_of_random_examples = Parameters::batch_size;
+		for (int i = 0; i < number_of_random_examples; i++) {
+			float* temp = (float*)malloc(3 * sizeof(float));
+
+			Utilities::genArray(3, temp);
+			float* temp_gpu;
+			cudaMalloc((void**)&temp_gpu, 3 * sizeof(float));
+			cudaMemcpy(temp_gpu, temp, 3 * sizeof(float), cudaMemcpyHostToDevice);
+			samples.push_back(temp_gpu);
+
+			float* temp_true_gpu;
+			cudaMalloc((void**)&temp_true_gpu, 3 * sizeof(float));
+			cudaMemcpy(temp_true_gpu, temp_true + (i * 3), 3 * sizeof(float), cudaMemcpyHostToDevice);
+			trueLabels.push_back(temp_true_gpu);
+		}
+
+		std::cout << "SAMPLE: " << std::endl;
+		Utilities::printVectorOfFloatsGPU(samples, 3);
+		std::cout << std::endl;
+
+		float l = celoss.cost(samples, trueLabels);
+
+		std::cout << "Loss: " << l << std::endl;
 	}
 
 	void testCrossEntropyLoss() {

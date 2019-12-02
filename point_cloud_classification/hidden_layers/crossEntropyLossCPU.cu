@@ -6,6 +6,7 @@
 #include "../utilities/utils.h"
 #include "layer.h"
 #include "crossEntropyLoss.h"
+#include "softmaxActivationLayer.h"
 #include <fstream>
 #include <string>
 #include <math.h>

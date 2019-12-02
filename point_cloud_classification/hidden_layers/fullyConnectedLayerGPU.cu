@@ -20,86 +20,60 @@
 
 namespace PointCloudClassification {
 
-	class FullyConnectedLayerGPU : public FullyConnectedLayer {
+	std::vector<float*> FullyConnectedLayerGPU::forward(std::vector<float*> inputArg, bool test) {
+		int i = 0;
+		for (auto current : inputArg) {
+			cudaMemcpy(flattenedInputForward + (i * inputDim), current, inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+			i++;
+		}
+		MatrixGPU* m = new MatrixGPU();
+		m->multiply(flattenedInputForward, W, batchDim, inputDim, outputDim, flattenedOutputForward);
+		//free(flattenedInput);
 
-		float* flattenedInputForward;
-		float* flattenedOutputForward;
+		// Store input and output of this layer
+		cudaMemcpy(A, flattenedInputForward, batchDim * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 
-		float* flattenedInputBackward;
-		float* flattenedOutputBackward;
-		
-	public:
-		FullyConnectedLayerGPU() {};
-		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) : FullyConnectedLayer(inputDim, outputDim, batchDim, lastLayer)  {
-			cudaMalloc((void **)&W, inputDim * outputDim * sizeof(float));
-			float *weightRand = new float[inputDim * outputDim];
-			Utilities::genArray(inputDim * outputDim, weightRand);
-			cudaMemcpy(W, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
-			cudaMalloc((void**)&A, inputDim * batchDim * sizeof(float));
-			cudaMalloc((void**)&dW, inputDim * outputDim * sizeof(float));
+		std::vector<float*> outputArg;
+		for (int i = 0; i < batchDim; i++) {
+			outputArg.push_back(flattenedOutputForward + (i * outputDim));
+		}
+		//free(flattenedOutput);
 
+		return outputArg;
+	}
+
+	std::vector<float*> FullyConnectedLayerGPU::backward(std::vector<float*> incomingGradient, float learningRate) {
 			
-			cudaMalloc((void**)&flattenedInputForward, batchDim * inputDim * sizeof(float));
-			cudaMalloc((void**)&flattenedOutputForward, batchDim * outputDim * sizeof(float));
-			cudaMalloc((void**)&flattenedInputBackward, batchDim * outputDim * sizeof(float));
-			cudaMalloc((void**)&flattenedOutputBackward, batchDim * inputDim * sizeof(float));
+			
+		int i = 0;
+		for (auto current : incomingGradient) {
+			cudaMemcpy(flattenedInputBackward + (i * outputDim), current, outputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+			i++;
 		}
 
+		MatrixGPU* m = new MatrixGPU();
 
-		std::vector<float*> FullyConnectedLayer::forward(std::vector<float*> inputArg, bool test) {
-			int i = 0;
-			for (auto current : inputArg) {
-				cudaMemcpy(flattenedInputForward + (i * inputDim), current, inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
-				i++;
-			}
-			MatrixGPU* m = new MatrixGPU();
-			m->multiply(flattenedInputForward, W, batchDim, inputDim, outputDim, flattenedOutputForward);
-			//free(flattenedInput);
+		// Compute gradient w.r.t weights
+		float *ATranspose;
+		cudaMalloc((void**)&ATranspose, inputDim * batchDim * sizeof(float));
+		m->transpose(A, batchDim, inputDim, ATranspose);
+		m->multiply(ATranspose, flattenedInputBackward, inputDim, batchDim, outputDim, dW);
+		cudaFree(ATranspose);
 
-			// Store input and output of this layer
-			cudaMemcpy(A, flattenedInputForward, batchDim * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+		// Compute outgoingGradient (w.r.t. input)
+		m->multiplyTranspose(flattenedInputBackward, W, batchDim, outputDim, inputDim, flattenedOutputBackward);
 
-			std::vector<float*> outputArg;
-			for (int i = 0; i < batchDim; i++) {
-				outputArg.push_back(flattenedOutputForward + (i * outputDim));
-			}
-			//free(flattenedOutput);
-
-			return outputArg;
+		//Update weight matrix
+		m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
+			
+		std::vector<float*> outgoingGradient;
+		for (int i = 0; i < batchDim; i++) {
+			outgoingGradient.push_back(flattenedOutputBackward + (i * inputDim));
 		}
+		//free(flattenedOutput);
 
-		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate) {
-			
-			
-			int i = 0;
-			for (auto current : incomingGradient) {
-				cudaMemcpy(flattenedInputBackward + (i * outputDim), current, outputDim * sizeof(float), cudaMemcpyDeviceToDevice);
-				i++;
-			}
+		return outgoingGradient;
 
-			MatrixGPU* m = new MatrixGPU();
+	}
+};
 
-			// Compute gradient w.r.t weights
-			float *ATranspose;
-			cudaMalloc((void**)&ATranspose, inputDim * batchDim * sizeof(float));
-			m->transpose(A, batchDim, inputDim, ATranspose);
-			m->multiply(ATranspose, flattenedInputBackward, inputDim, batchDim, outputDim, dW);
-			cudaFree(ATranspose);
-
-			// Compute outgoingGradient (w.r.t. input)
-			m->multiplyTranspose(flattenedInputBackward, W, batchDim, outputDim, inputDim, flattenedOutputBackward);
-
-			//Update weight matrix
-			m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
-			
-			std::vector<float*> outgoingGradient;
-			for (int i = 0; i < batchDim; i++) {
-				outgoingGradient.push_back(flattenedOutputBackward + (i * inputDim));
-			}
-			//free(flattenedOutput);
-
-			return outgoingGradient;
-
-		}
-	};
-}

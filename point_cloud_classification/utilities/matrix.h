@@ -58,6 +58,8 @@ public:
 	void sumAcrossDim1(float * A, int m, int n, float * output);
 	void varianceAcrossDim1(float * A, int m, int n, float * output, float* mean);
 	void ReluForward(float* A, int m, int n, float* output);
+	void exp(float * A, int m, int n, float * output);
+	void divide_sum(float* input, float* sum, int batchDim, int outputDim, float* output);
 };
 
 
