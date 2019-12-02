@@ -8,13 +8,16 @@
 #include "utilities/utils.h"
 #include <fstream>
 #include <string>
+#include <chrono>
+
+using namespace std::chrono;
 
 #ifndef imax
 #define imax(a,b) (((a)>(b))?(a):(b))
 #endif
 
 #define blockSize 128
-#define debug true
+#define debug false
 
 namespace PointCloudClassification {
 
@@ -83,19 +86,41 @@ namespace PointCloudClassification {
 	}
 
 	std::vector<float*> NetworkGPU::forward(std::vector<float*> input, bool test) {
+		auto start = high_resolution_clock::now();
 		output_gn1 = gcn_layer1.forward(input, false);
+		auto stop = high_resolution_clock::now();
+		auto duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Graph Convolution Layer 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "############################# FORWARD #################################### \n";
 			std::cout << "gcn1  " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gn1, 10);
 		}
 
+		start = high_resolution_clock::now();
 		output_d1 = dropout_layer1.forward(output_gn1, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Dropout 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "D 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d1, 10);
 		}
+		start = high_resolution_clock::now();
 		output_gp1 = gp_layer1.forward(output_d1, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Global Pooling 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "GP 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp1, 10);
@@ -106,17 +131,43 @@ namespace PointCloudClassification {
 		output_with_L.insert(output_with_L.end(), output_d1.begin(), output_d1.end());
 		output_with_L.insert(output_with_L.end(), batch_L.begin(), batch_L.end());
 
+		start = high_resolution_clock::now();
 		output_gcn2 = gcn_layer2.forward(output_with_L, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Graph Convolution Layer 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "GCN2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gcn2, 10);
 		}
+
+		start = high_resolution_clock::now();
 		output_d2 = dropout_layer2.forward(output_gcn2, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Dropout 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "D2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d2, 10);
 		}
+
+		start = high_resolution_clock::now();
 		output_gp2 = gp_layer2.forward(output_d2, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Global Pooling 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "GP 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp2, 10);
@@ -135,27 +186,72 @@ namespace PointCloudClassification {
 			std::cout << "Cat " << std::endl;
 			Utilities::printVectorOfFloatsGPU(cat_vec, 10);
 		}
+
+		start = high_resolution_clock::now();
 		output_d3 = dropout_layer3.forward(cat_vec, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Dropout 3 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "D 3 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d3, 10);
 		}
+
+		start = high_resolution_clock::now();
 		output_fc1 = fc_layer1.forward(output_d3, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Fully Connected Layer 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "FC 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_fc1, 10);
 		}
+
+		start = high_resolution_clock::now();
 		output_r1 = relu1.forward(output_fc1, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (RELU 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "R 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_r1, 10);
 		}
+
+		start = high_resolution_clock::now();
 		output_d4 = dropout_layer4.forward(output_r1, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Dropout 4 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "D 4 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d4, 10);
 		}
+
+		start = high_resolution_clock::now();
 		output_fc2 = fc_layer2.forward(output_d4, false);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Fully Connected Layer 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
+
 		if (debug) {
 			std::cout << "FC 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_fc2, 10);
@@ -169,7 +265,14 @@ namespace PointCloudClassification {
 
 	void NetworkGPU::backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate) {
 		// Get the gradient of the loss
+		auto start = high_resolution_clock::now();
 		std::vector<float*> dloss = this->loss->dcost(prediction, trueLabel);
+		auto stop = high_resolution_clock::now();
+		auto duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Loss gradient / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		std::vector<float*> incomingGradient(dloss);
 
 		if (debug) {
@@ -177,27 +280,62 @@ namespace PointCloudClassification {
 			std::cout << "Loss " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		start = high_resolution_clock::now();
 		incomingGradient = fc_layer2.backward(incomingGradient, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Fully Connected Layer 2 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "FC2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		start = high_resolution_clock::now();
 		incomingGradient = dropout_layer4.backward(incomingGradient, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Dropout 4 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "Dropout 4 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		start = high_resolution_clock::now();
 		incomingGradient = relu1.backward(incomingGradient, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (RELU 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "RELU 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		start = high_resolution_clock::now();
 		incomingGradient = fc_layer1.backward(incomingGradient, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Fully Connected Layer 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "FC1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		start = high_resolution_clock::now();
 		incomingGradient = dropout_layer3.backward(incomingGradient, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Dropout Layer 3 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)")
+		}
 		if (debug) {
 			std::cout << "Dropout 3 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
@@ -212,29 +350,62 @@ namespace PointCloudClassification {
 			std::cout << "Split " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
-
+		start = high_resolution_clock::now();
 		gp1 = gp_layer2.backward(gp1, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Global Pooling Layer 2 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "GP 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
+		start = high_resolution_clock::now();
 		gp1 = dropout_layer2.backward(gp1, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Dropout Layer 2 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "Dropout 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
+		start = high_resolution_clock::now();
 		gp1 = gcn_layer2.backward(gp1, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Graph Convolution Layer 2 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "GCN 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
-
+		start = high_resolution_clock::now();
 		gp2 = gp_layer1.backward(gp2, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Global Pooling Layer 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "GP 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp2, 10);
 		}
+		start = high_resolution_clock::now();
 		gp2 = dropout_layer1.backward(gp2, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Dropout 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "Dropout 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp2, 10);
@@ -248,7 +419,14 @@ namespace PointCloudClassification {
 			std::cout << "Add " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp2, 10);
 		}
+		start = high_resolution_clock::now();
 		gp1 = gcn_layer1.backward(gp2, learningRate);
+		stop = high_resolution_clock::now();
+		duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "GPU : (Graph Convolution Layer 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
+			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+		}
 		if (debug) {
 			std::cout << "GCN 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
@@ -394,9 +572,18 @@ namespace PointCloudClassification {
 				}
 
 				
-
+				auto start = high_resolution_clock::now();
 				// Laplacian of the batch data
 				std::vector<float*> dev_lap = get_laplacian(batch_in);
+				auto stop = high_resolution_clock::now();
+				auto duration = duration_cast<microseconds>(stop - start);
+				if (time) {
+					std::cout << "************************************************************************************" << std::endl;
+					std::cout << "GPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "************************************************************************************" << std::endl;
+					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+				}
+
 				//Concatenate Input and Laplacian
 				dev_batch.insert(dev_batch.end(), dev_in.begin(), dev_in.end());
 				dev_batch.insert(dev_batch.end(), dev_lap.begin(), dev_lap.end());
@@ -409,13 +596,23 @@ namespace PointCloudClassification {
 					dev_label.push_back(dev_blab);
 				}
 
+				start = high_resolution_clock::now();
 				// Forward Pass
 				std::vector<float*> prediction = forward(dev_batch, false);
+				stop = high_resolution_clock::now();
+				duration = duration_cast<microseconds>(stop - start);
+				if (time) {
+					std::cout << "************************************************************************************" << std::endl;
+					std::cout << "GPU : (Forward Pass / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "************************************************************************************" << std::endl;
+					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+				}
 
 				// Calculate Loss
 				float loss = calculateLoss(prediction, dev_label);
 				epochLoss += loss;
 
+				start = high_resolution_clock::now();
 				PointCloudClassification::softmaxActivationLayerGPU softmaxLayer(numClasses, Parameters::batch_size, false);
 				std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
 
@@ -425,6 +622,15 @@ namespace PointCloudClassification {
 				//Utilities::printVectorOfFloatsGPU_nonzero(dev_label, Parameters::num_classes);
 				// Backward Pass
 				backward(pprob, dev_label, Parameters::learning_rate);
+				stop = high_resolution_clock::now();
+				duration = duration_cast<microseconds>(stop - start);
+				if (time) {
+					std::cout << "************************************************************************************" << std::endl;
+					std::cout << "GPU : (Backward Pass / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "************************************************************************************" << std::endl;
+					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
+				}
+
 				freeForwardGarbage();
 			}
 			epochLoss /= num_batches;
