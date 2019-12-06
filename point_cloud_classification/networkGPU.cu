@@ -545,6 +545,19 @@ namespace PointCloudClassification {
 
 		// Iterate for as many epochs..
 		for (int ep = 0; ep < Parameters::num_epochs; ep++) {
+			
+			// show memory usage of GPU
+			size_t free_byte;
+			size_t total_byte;
+			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte)) {
+				checkCUDAError("Error: cudaMemGetInfo fails");
+			}
+			double free_db = (double)free_byte;
+			double total_db = (double)total_byte;
+			double used_db = total_db - free_db;
+			printf("GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
+
+
 			std::cout << "****************************Epoch " << ep << "***************************" << std::endl;
 			epochLoss = 0;
 

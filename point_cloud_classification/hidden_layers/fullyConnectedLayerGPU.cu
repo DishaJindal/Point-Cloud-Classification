@@ -36,6 +36,7 @@ namespace PointCloudClassification {
 
 		std::vector<float*> outputArg;
 		for (int i = 0; i < batchDim; i++) {
+			m->add((float *)(flattenedOutputForward + (i * outputDim)), B, 1, outputDim, (float *)(flattenedOutputForward + (i * outputDim)));
 			outputArg.push_back(flattenedOutputForward + (i * outputDim));
 		}
 		//free(flattenedOutput);
@@ -67,7 +68,13 @@ namespace PointCloudClassification {
 		//Update weight matrix
 		//m->subtractWithFactor(W, dW, learningRate, inputDim, outputDim, W);
 		m->linearCombination(W, dW, (1.0f - Parameters::lamba_reg),-1.0f*learningRate, inputDim, outputDim, W);
-			
+
+		cudaMalloc((void**)&ATranspose, outputDim * batchDim * sizeof(float));
+		m->sumAcrossDim1(flattenedInputBackward, batchDim, outputDim, ATranspose);
+		m->linearCombination(B, ATranspose, 1.0f, -1.0f*learningRate, 1, outputDim, B);
+		cudaFree(ATranspose);
+
+
 		std::vector<float*> outgoingGradient;
 		for (int i = 0; i < batchDim; i++) {
 			outgoingGradient.push_back(flattenedOutputBackward + (i * inputDim));
