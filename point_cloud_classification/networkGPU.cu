@@ -117,16 +117,7 @@ namespace PointCloudClassification {
 			std::cout << "gcn1  " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gn1, 10);
 		}
-		if (memStats) { 
-			size_t free_byte; 
-			size_t total_byte; 
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte)) 
-			{ checkCUDAError("Error: cudaMemGetInfo fails"); } 
-			double free_db = (double)free_byte; 
-			double total_db = (double)total_byte; 
-			double used_db = total_db - free_db; 
-			printf("After GCN 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0); 
-		}
+		memPrint("After GCN 1");
 
 		start = high_resolution_clock::now();
 		output_d1 = dropout_layer1.forward(output_gn1, false);
@@ -136,18 +127,7 @@ namespace PointCloudClassification {
 			std::cout << "GPU : (Dropout 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After D 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		memPrint("After D 1");
 
 		if (debug) {
 			std::cout << "D 1 " << std::endl;
@@ -165,18 +145,7 @@ namespace PointCloudClassification {
 			std::cout << "GP 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp1, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After GP 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		memPrint("After GP 1");
 		std::vector<float*> batch_L = std::vector<float*>(input.begin() + Parameters::batch_size, input.end());
 		std::vector<float*> output_with_L;
 		output_with_L.reserve(output_d1.size() + batch_L.size()); // preallocate memory
@@ -196,19 +165,7 @@ namespace PointCloudClassification {
 			std::cout << "GCN2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gcn2, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After GCN 2. GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
-
+		memPrint("After GCN 2");
 		start = high_resolution_clock::now();
 		output_d2 = dropout_layer2.forward(output_gcn2, false);
 		stop = high_resolution_clock::now();
@@ -222,19 +179,7 @@ namespace PointCloudClassification {
 			std::cout << "D2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d2, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After D 2. GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
-
+		memPrint("After D 2");
 		start = high_resolution_clock::now();
 		output_gp2 = gp_layer2.forward(output_d2, false);
 		stop = high_resolution_clock::now();
@@ -248,18 +193,7 @@ namespace PointCloudClassification {
 			std::cout << "GP 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp2, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After GP 2 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		memPrint("After GP 2");
 		// Concatenate
 		std::vector<float*> cat_vec;
 		for (int i = 0; i < Parameters::batch_size; i++) {
@@ -288,19 +222,7 @@ namespace PointCloudClassification {
 			std::cout << "D 3 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d3, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After D 3 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
-
+		memPrint("After D 3");
 		start = high_resolution_clock::now();
 		output_fc1 = fc_layer1.forward(output_d3, false);
 		stop = high_resolution_clock::now();
@@ -712,18 +634,7 @@ namespace PointCloudClassification {
 			std::cout << "GCN 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After GCN 1. GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		memPrint("After GCN 1");
 	}
 
 	void normalize_data(float* X, int n) {
