@@ -17,7 +17,7 @@ using namespace std::chrono;
 #endif
 
 #define blockSize 128
-#define debug false
+#define debug true
 #define memStats true
 #define time false
 
@@ -77,9 +77,6 @@ namespace PointCloudClassification {
 		PointCloudClassification::GlobalPoolingLayerGPU gp_layer2(Parameters::num_points, Parameters::gcn2_out_features, Parameters::batch_size, false);
 		this->gp_layer2 = gp_layer2;
 
-		// Concatenate GCN Layer 1 and GCN Layer 2
-
-
 		// Dropout 3
 		int cat_features = (Parameters::gcn1_out_features + Parameters::gcn2_out_features);
 		PointCloudClassification::DropoutLayerGPU dropout_layer3(cat_features, 2, Parameters::batch_size, false, Parameters::keep_drop_prob3);
@@ -103,21 +100,18 @@ namespace PointCloudClassification {
 	}
 
 	std::vector<float*> NetworkGPU::forward(std::vector<float*> input, bool test) {
-		memPrint("Before GCN 1");
 		auto start = high_resolution_clock::now();
 		output_gn1 = gcn_layer1.forward(input, false);
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Graph Convolution Layer 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "############################# FORWARD #################################### \n";
 			std::cout << "gcn1  " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gn1, 10);
 		}
-		memPrint("After GCN 1");
 
 		start = high_resolution_clock::now();
 		output_d1 = dropout_layer1.forward(output_gn1, false);
@@ -125,9 +119,7 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Dropout 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
-		memPrint("After D 1");
 
 		if (debug) {
 			std::cout << "D 1 " << std::endl;
@@ -139,13 +131,11 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Global Pooling 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "GP 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp1, 10);
 		}
-		memPrint("After GP 1");
 		std::vector<float*> batch_L = std::vector<float*>(input.begin() + Parameters::batch_size, input.end());
 		std::vector<float*> output_with_L;
 		output_with_L.reserve(output_d1.size() + batch_L.size()); // preallocate memory
@@ -158,42 +148,36 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Graph Convolution Layer 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 
 		if (debug) {
 			std::cout << "GCN2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gcn2, 10);
 		}
-		memPrint("After GCN 2");
 		start = high_resolution_clock::now();
 		output_d2 = dropout_layer2.forward(output_gcn2, false);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Dropout 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 
 		if (debug) {
 			std::cout << "D2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d2, 10);
 		}
-		memPrint("After D 2");
 		start = high_resolution_clock::now();
 		output_gp2 = gp_layer2.forward(output_d2, false);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Global Pooling 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 
 		if (debug) {
 			std::cout << "GP 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp2, 10);
 		}
-		memPrint("After GP 2");
 		// Concatenate
 		std::vector<float*> cat_vec;
 		for (int i = 0; i < Parameters::batch_size; i++) {
@@ -215,65 +199,38 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Dropout 3 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 
 		if (debug) {
 			std::cout << "D 3 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d3, 10);
 		}
-		memPrint("After D 3");
 		start = high_resolution_clock::now();
 		output_fc1 = fc_layer1.forward(output_d3, false);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Fully Connected Layer 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 
 		if (debug) {
 			std::cout << "FC 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_fc1, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After FC 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
-
+		
 		start = high_resolution_clock::now();
 		output_r1 = relu1.forward(output_fc1, false);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (RELU 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 
 		if (debug) {
 			std::cout << "R 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_r1, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After R 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 
 		start = high_resolution_clock::now();
 		output_d4 = dropout_layer4.forward(output_r1, false);
@@ -281,51 +238,26 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Dropout 4 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 
 		if (debug) {
 			std::cout << "D 4 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d4, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After D 4 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
-
+		
 		start = high_resolution_clock::now();
 		output_fc2 = fc_layer2.forward(output_d4, false);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Fully Connected Layer 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 
 		if (debug) {
 			std::cout << "FC 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_fc2, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After FC 2 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 		return output_fc2;
 	}
 
@@ -334,18 +266,7 @@ namespace PointCloudClassification {
 	}
 
 	void NetworkGPU::backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate) {
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("Before FC 2 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 
 		// Get the gradient of the loss
 		auto start = high_resolution_clock::now();
@@ -354,7 +275,6 @@ namespace PointCloudClassification {
 		auto duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Loss gradient / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		std::vector<float*> incomingGradient(dloss);
 
@@ -369,71 +289,34 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Fully Connected Layer 2 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "FC2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After FC 2 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 		start = high_resolution_clock::now();
 		incomingGradient = dropout_layer4.backward(incomingGradient, learningRate);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Dropout 4 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "Dropout 4 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After D 4 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 		start = high_resolution_clock::now();
 		incomingGradient = relu1.backward(incomingGradient, learningRate);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (RELU 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "RELU 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
-		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After RELU 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
 		}
 		start = high_resolution_clock::now();
 		incomingGradient = fc_layer1.backward(incomingGradient, learningRate);
@@ -441,23 +324,10 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Fully Connected Layer 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "FC1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
-		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After FC 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
 		}
 		start = high_resolution_clock::now();
 		incomingGradient = dropout_layer3.backward(incomingGradient, learningRate);
@@ -465,23 +335,10 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Dropout Layer 3 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)")
 		}
 		if (debug) {
 			std::cout << "Dropout 3 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
-		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After D 3 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
 		}
 		// Split
 		std::vector<float*> gp1, gp2;
@@ -499,120 +356,60 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Global Pooling Layer 2 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "GP 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After GP 2 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 		start = high_resolution_clock::now();
 		gp1 = dropout_layer2.backward(gp1, learningRate);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Dropout Layer 2 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "Dropout 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After D 2 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 		start = high_resolution_clock::now();
 		gp1 = gcn_layer2.backward(gp1, learningRate);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Graph Convolution Layer 2 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "GCN 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After GCN 2. GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 		start = high_resolution_clock::now();
 		gp2 = gp_layer1.backward(gp2, learningRate);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Global Pooling Layer 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "GP 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp2, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After GP 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 		start = high_resolution_clock::now();
 		gp2 = dropout_layer1.backward(gp2, learningRate);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Dropout 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "Dropout 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp2, 10);
 		}
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("After D 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
+		
 		// Add
 		for (int i = 0; i < Parameters::batch_size; i++) {
 			MatrixGPU* m = new MatrixGPU();
@@ -628,13 +425,11 @@ namespace PointCloudClassification {
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
 			std::cout << "GPU : (Graph Convolution Layer 1 Backward / batch) ==> " << duration.count() << " microseconds" << std::endl;
-			//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 		}
 		if (debug) {
 			std::cout << "GCN 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
-		memPrint("After GCN 1");
 	}
 
 	void normalize_data(float* X, int n) {
@@ -682,7 +477,6 @@ namespace PointCloudClassification {
 	}
 
 	void NetworkGPU::freeForwardGarbage() {
-		//std::vector<float *> output_gn1, output_d1, output_gp1, output_gcn2, output_d2, output_gp2, output_d3, output_fc1, output_r1, output_d4, output_fc2;
 		for (int i = 0; i < output_gn1.size(); i++) {
 			cudaFree(output_gn1[i]);
 		}
@@ -786,11 +580,12 @@ namespace PointCloudClassification {
 		}
 		memPrint("After Forward Input");
 
-		memPrint("Before Any Epoch");
+		
 		// Iterate for as many epochs..
 		for (int ep = 0; ep < Parameters::num_epochs; ep++) {
 			std::cout << "****************************Epoch " << ep << "***************************" << std::endl;
 			epochLoss = 0;
+			memPrint("Memory Stats");
 
 			// Loop batch by batch
 			for (int b = 0; b < num_batches; b++) {
@@ -802,18 +597,17 @@ namespace PointCloudClassification {
 				for (int bi = 0; bi < batch_in.size(); bi++) {
 					normalize_data(batch_in[bi], Parameters::num_points);
 				}
-
-				std::cout << "************************************************************************************" << std::endl;
-				std::cout << "GPU : Forward for batch  ==> " << b << std::endl;
-				std::cout << "************************************************************************************" << std::endl;
-
+				if (debug) {
+					std::cout << "************************************************************************************" << std::endl;
+					std::cout << "GPU : Forward for batch  ==> " << b << std::endl;
+					std::cout << "************************************************************************************" << std::endl;
+				}
 				for (int bi = 0; bi < batch_in.size(); bi++) {
 					cudaMemcpy(dev_in[bi], batch_in[bi], Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
 				}
 				
 				auto start = high_resolution_clock::now();
 				// Laplacian of the batch data
-				
 				get_laplacian(batch_in, dev_lap);
 
 				auto stop = high_resolution_clock::now();
@@ -822,7 +616,6 @@ namespace PointCloudClassification {
 					std::cout << "************************************************************************************" << std::endl;
 					std::cout << "GPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
-					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}
 
 				// Copy Label and Forward Data
@@ -845,7 +638,6 @@ namespace PointCloudClassification {
 					std::cout << "************************************************************************************" << std::endl;
 					std::cout << "GPU : (Forward Pass / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
-					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}
 
 				// Calculate Loss
@@ -858,13 +650,13 @@ namespace PointCloudClassification {
 
 				// Check Prediction: Can comment this in training later on..
 				getClassification(pprob, this->numClasses, classification);
-				//std::cout << "True Label: ";
-				//Utilities::printVectorOfFloatsGPU_nonzero(dev_label, Parameters::num_classes);
+				
 				// Backward Pass
-
-				std::cout << "************************************************************************************" << std::endl;
-				std::cout << "GPU : Backward for batch  ==> " << b << std::endl;
-				std::cout << "************************************************************************************" << std::endl;
+				if (debug) {
+					std::cout << "************************************************************************************" << std::endl;
+					std::cout << "GPU : Backward for batch  ==> " << b << std::endl;
+					std::cout << "************************************************************************************" << std::endl;
+				}
 				backward(pprob, dev_label, Parameters::learning_rate);
 				stop = high_resolution_clock::now();
 				duration = duration_cast<microseconds>(stop - start);
@@ -872,18 +664,7 @@ namespace PointCloudClassification {
 					std::cout << "************************************************************************************" << std::endl;
 					std::cout << "GPU : (Backward Pass / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
-					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}
-				//memPrint("Before Graph Clearing");
-				//for (int i = 0; i < Parameters::batch_size; i++) {
-				//	cudaFree(dev_lap[i]);
-				//	memPrint("After Graph Clearing i");
-				//}
-				//dev_lap.clear();
-				//memPrint("After Graph Clearing");
-				//memPrint("Before freeForwardGarbage");
-				//freeForwardGarbage();
-				//memPrint("After freeForwardGarbage");
 			}
 			epochLoss /= num_batches;
 			perEpochLoss[ep] = epochLoss;
@@ -915,8 +696,6 @@ namespace PointCloudClassification {
 			}
 			classification[i] = clazz;
 		}
-		//std::cout << "Prediction: ";
-		//Utilities::printVector(classification, this->batchSize);
 	}
 	
 }
