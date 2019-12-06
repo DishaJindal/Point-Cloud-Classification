@@ -17,9 +17,9 @@ using namespace std::chrono;
 #endif
 
 #define blockSize 128
-#define debug true
+#define debug false
 #define memStats true
-#define time false
+#define time true
 
 namespace PointCloudClassification {
 
@@ -526,8 +526,6 @@ namespace PointCloudClassification {
 	void NetworkGPU::train(std::vector<float*> input, std::vector<float*> label, int n) {
 
 		float* perEpochLoss = (float*)malloc(Parameters::num_epochs * sizeof(float));
-		// Space for Laplacian per batch
-
 		float epochLoss = 0;
 		std::vector<float> classification;
 		for (int i = 0; i < this->batchSize; i++) {
@@ -535,7 +533,7 @@ namespace PointCloudClassification {
 		}
 		int num_batches = n / this->batchSize; 
 		
-		// One batch worth Laplacians
+		// One batch worth Laplacians on GPU
 		memPrint("Before Batch Graph Cons");
 		std::vector<float*> dev_lap;
 		for (int i = 0; i < Parameters::batch_size; i++) {
@@ -545,7 +543,7 @@ namespace PointCloudClassification {
 		}
 		memPrint("After Batch Graph Cons");
 
-		// One batch worth Input Data
+		// One batch worth Input Data on GPU
 		memPrint("Before Input Data");
 		std::vector<float*> dev_in;
 		for (int bi = 0; bi < Parameters::batch_size; bi++) {
@@ -555,7 +553,7 @@ namespace PointCloudClassification {
 		}
 		memPrint("After Input Data");
 
-		// Label on GPU
+		// One batch worth labels on GPU
 		memPrint("Before Label");
 		std::vector<float*> dev_label;
 		for (int bi = 0; bi < Parameters::batch_size; bi++) {
@@ -565,7 +563,7 @@ namespace PointCloudClassification {
 		}
 		memPrint("After Label");
 
-		// Prepare Forward Input
+		// One batch worth input on GPU
 		memPrint("Before Forward Input");
 		std::vector<float*> dev_batch;
 		for (int bi = 0; bi < Parameters::batch_size; bi++) {
@@ -580,7 +578,6 @@ namespace PointCloudClassification {
 		}
 		memPrint("After Forward Input");
 
-		
 		// Iterate for as many epochs..
 		for (int ep = 0; ep < Parameters::num_epochs; ep++) {
 			std::cout << "****************************Epoch " << ep << "***************************" << std::endl;
@@ -614,7 +611,7 @@ namespace PointCloudClassification {
 				auto duration = duration_cast<microseconds>(stop - start);
 				if (time) {
 					std::cout << "************************************************************************************" << std::endl;
-					std::cout << "GPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "GPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " ms" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
 				}
 
@@ -636,7 +633,7 @@ namespace PointCloudClassification {
 				duration = duration_cast<microseconds>(stop - start);
 				if (time) {
 					std::cout << "************************************************************************************" << std::endl;
-					std::cout << "GPU : (Forward Pass / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "GPU : (Forward Pass / batch) ==> " << duration.count() / 1000 << " ms" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
 				}
 
@@ -662,7 +659,7 @@ namespace PointCloudClassification {
 				duration = duration_cast<microseconds>(stop - start);
 				if (time) {
 					std::cout << "************************************************************************************" << std::endl;
-					std::cout << "GPU : (Backward Pass / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "GPU : (Backward Pass / batch) ==> " << duration.count() / 1000 << " ms" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
 				}
 			}

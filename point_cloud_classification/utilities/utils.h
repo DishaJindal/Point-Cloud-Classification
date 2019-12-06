@@ -2,14 +2,21 @@
 #include <iostream>
 #include <vector>
 #include "../common.h"
+#include <iostream>
+#include <random>
+#include <cmath>
 
 namespace Utilities {
 	inline void genArray(int n, float *a, int seed = 0) {
 		if (seed != 0) {
 			srand(seed);
 		}
+
+		std::random_device rd{};
+		std::mt19937 gen{ rd() };
+		std::normal_distribution<> d{ 0,0.05 };
 		for (int i = 0; i < n; i++) {
-			a[i] = ((2 * ((rand() * 1.0) / RAND_MAX)) - 1) * 0.2;
+			a[i] = d(gen);
 		}
 	}
 

@@ -516,7 +516,7 @@ namespace PointCloudClassification {
 				auto duration = duration_cast<microseconds>(stop - start);
 				if (time) {
 					std::cout << "************************************************************************************" << std::endl;
-					std::cout << "CPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "CPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " ms" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
 					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}
@@ -535,7 +535,7 @@ namespace PointCloudClassification {
 				duration = duration_cast<microseconds>(stop - start);
 				if (time) {
 					std::cout << "************************************************************************************" << std::endl;
-					std::cout << "CPU : (Forward Pass / batch) ==> "<< duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "CPU : (Forward Pass / batch) ==> "<< duration.count() / 1000 << " ms" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
 					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}
@@ -558,7 +558,7 @@ namespace PointCloudClassification {
 				duration = duration_cast<microseconds>(stop - start);
 				if (time) {
 					std::cout << "************************************************************************************" << std::endl;
-					std::cout << "CPU : (Backward Pass / batch) ==> " << duration.count() / 1000 << " seconds" << std::endl;
+					std::cout << "CPU : (Backward Pass / batch) ==> " << duration.count() / 1000 << " ms" << std::endl;
 					std::cout << "************************************************************************************" << std::endl;
 					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}

@@ -45,7 +45,6 @@ namespace PointCloudClassification {
 	}
 
 	std::vector<float*> GraphConvolutionLayerGPU::forward(std::vector<float*> inputArg, bool test) {
-		//std::vector<float*> output;
 		MatrixGPU* m = new MatrixGPU();
 		float* Tk;
 
@@ -55,25 +54,10 @@ namespace PointCloudClassification {
 		for (int i = 0; i < batchDim; i++) {
 			float* current_input = inputArg[i];
 			float* current_L = inputArg[i + batchDim];
-
-			// Store data required for backward pass
-			//X.push_back(current_input);
-			//L.push_back(current_L);
-
-			//cudaMemcpy(Tk_minus_2, current_input, numPoints * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 			Tk_minus_2 = current_input;
 				
 			m->multiply(current_L, current_input, numPoints, numPoints, inputDim, Tk_minus_1);
-
-			//Tk_minus_1 = current_L;
-
-			
-
-			//std::cout << "Printing GCN Weights: " << std::endl;
-			//Utilities::printVectorOfFloats(theta, 50);
 			for (int k = 0; k < numFilters; k++) {
-				//std::cout << "k = " << k << " ==> ";
-
 				if (k == 0) {
 					Tk = Tk_minus_2;
 				}
@@ -86,7 +70,6 @@ namespace PointCloudClassification {
 					Tk_minus_1 = Tk;
 				}
 					
-					
 				if (k == 0) {
 					m->multiply(Tk, theta[k], numPoints, inputDim, outputDim, output[i]);
 				}
@@ -97,11 +80,8 @@ namespace PointCloudClassification {
 					m->add(output[i], temp_out, numPoints, outputDim, output[i]);
 					cudaFree(temp_out);
 				}
-					
 			}
-			
 			m->linearCombination(output[i], output[i], (1.0f / numFilters), 0, numPoints, outputDim, output[i]);
-			//output.push_back(current_output);
 		}
 		return output;
 	}
