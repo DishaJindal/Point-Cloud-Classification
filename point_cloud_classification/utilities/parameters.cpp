@@ -15,8 +15,8 @@ namespace PointCloudClassification {
 		 
 		 // Architecture 
 		 int input_features = 3;
-		 int gcn1_out_features = 100;
-		 int gcn2_out_features = 100;
+		 int gcn1_out_features = 1000;
+		 int gcn2_out_features = 1000;
 		 int fc1_out_features = 600;
 
 		 // Pooling Layer Specific

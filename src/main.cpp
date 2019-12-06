@@ -157,6 +157,11 @@ int main(int argc, char* argv[]) {
 	// Tests
 	//tests();
 
+	/*cout << "********************************************************" << endl;
+	cout << "Testing Graph Convolutional Layer forward GPU..." << endl;
+	Tests::testGraphConvolutionLayerGPU();
+	cout << "********************************************************" << endl;*/
+
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
 	int per_class = 5;
 	std::vector<float*> x_train;

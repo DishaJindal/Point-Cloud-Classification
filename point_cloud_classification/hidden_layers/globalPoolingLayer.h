@@ -86,6 +86,14 @@ namespace PointCloudClassification {
 		std::vector<int*> argMax;
 		MatrixGPU* m;
 
+		float* current_output;
+		std::vector<float*> output;
+
+		float* oneOutgoingGradient;
+		std::vector<float*> outgoing_gradient;
+		
+		
+
 	public:
 		GlobalPoolingLayerGPU() {};
 		GlobalPoolingLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer) {
@@ -105,6 +113,12 @@ namespace PointCloudClassification {
 				int* argmax_b;
 				cudaMalloc((void**)&argmax_b, inputDim * sizeof(int));
 				this->argMax.push_back(argmax_b);
+
+				cudaMalloc((void**)&current_output, inputDim * 2 * sizeof(float));
+				this->output.push_back(current_output);
+
+				cudaMalloc((void**)&oneOutgoingGradient, numPoints * inputDim * sizeof(float));
+				outgoing_gradient.push_back(oneOutgoingGradient);
 			}
 			this->m = new MatrixGPU();
 

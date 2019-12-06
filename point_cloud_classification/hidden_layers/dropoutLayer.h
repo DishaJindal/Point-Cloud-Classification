@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cuda.h>
+#include <cuda_runtime.h>
 #include "../common.h"
 #include "layer.h"
 #include <vector>
@@ -16,6 +18,9 @@ namespace PointCloudClassification {
 		*/
 		std::vector<float *> Z;
 
+		
+		
+
 		int numPoints;
 		int inputDim;
 		int batchDim;
@@ -31,6 +36,8 @@ namespace PointCloudClassification {
 			this->inputDim = inputDim;
 			this->batchDim = batchDim;
 			this->lastLayer = lastLayer;
+
+
 		}
 
 		int getInputDim() {
@@ -63,6 +70,12 @@ namespace PointCloudClassification {
 	};
 
 	class DropoutLayerGPU : public DropoutLayer {
+
+		std::vector<float*> output;
+		float* flattened_current_output;
+
+		std::vector<float*> outgoing_gradient;
+		float* flattened_outgoing_gradient;
 	public:
 		DropoutLayerGPU() {}
 		DropoutLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer, float k_prob) : DropoutLayer(numPoints, inputDim, batchDim, lastLayer) {
@@ -71,6 +84,12 @@ namespace PointCloudClassification {
 				float* flattened_current_random_numbers;
 				cudaMalloc((void**)&flattened_current_random_numbers, numPoints * inputDim * sizeof(float));
 				this->nodesKeep.push_back(flattened_current_random_numbers);
+
+				cudaMalloc((void**)&flattened_current_output, numPoints * inputDim * sizeof(float));
+				this->output.push_back(flattened_current_output);
+
+				cudaMalloc((void**)&flattened_outgoing_gradient, numPoints * inputDim * sizeof(float));
+				this->outgoing_gradient.push_back(flattened_outgoing_gradient);
 			}
 			std::default_random_engine generator;
 			this->rand_generator = generator;

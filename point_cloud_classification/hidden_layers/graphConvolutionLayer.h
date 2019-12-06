@@ -27,6 +27,8 @@ namespace PointCloudClassification {
 			int numPoints;
 			int numFilters;
 
+			
+
 			bool lastLayer;
 			Common::PerformanceTimer& timer()
 			{
@@ -49,6 +51,8 @@ namespace PointCloudClassification {
 				Utilities::genArray(inputDim * outputDim, temp);
 				theta.push_back(temp);
 			}
+			
+			
 		}
 
 		int getInputDim() {
@@ -84,6 +88,22 @@ namespace PointCloudClassification {
 		int numPoints;
 		int numFilters;
 
+		float* Tk_minus_2;
+		float* Tk_minus_1;
+		float* current_output;
+		std::vector<float*> output;
+
+		float* TX;
+		float* TXT;
+		float* dtheta;
+		float* Tk_minus_2_back;
+		float* Tk_minus_1_back;
+		float* TG;
+		float* temp;
+		float* thetaT;
+		float* current_outgoing_gradient;
+		std::vector<float*> outgoing_gradient;
+
 		bool lastLayer;
 
 	public:
@@ -103,6 +123,48 @@ namespace PointCloudClassification {
 				cudaMemcpy(temp, temp_cpu, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 				theta.push_back(temp);
 			}
+
+			cudaMalloc((void**)&Tk_minus_2, numPoints * inputDim * sizeof(float));
+
+			cudaMalloc((void**)&Tk_minus_1, numPoints * inputDim * sizeof(float));
+
+			for (int i = 0; i < batchDim; i++) {
+				cudaMalloc((void**)&current_output, numPoints * outputDim * sizeof(float));
+				output.push_back(current_output);
+			}
+
+			// Backward mallocs
+
+			cudaMalloc((void**)&TX, numPoints * inputDim * sizeof(float));
+			//checkCUDAError("cudaMalloc((void**)&TX");
+
+			cudaMalloc((void**)&TXT, numPoints * inputDim * sizeof(float));
+			//checkCUDAError("cudaMalloc((void**)&TXT");
+
+			cudaMalloc((void**)&dtheta, inputDim * outputDim * sizeof(float));
+			//checkCUDAError("cudaMalloc((void**)&dtheta");
+
+			cudaMalloc((void**)&Tk_minus_2_back, numPoints * numPoints * sizeof(float));
+			//checkCUDAError("cudaMalloc((void**)&Tk_minus_2");
+
+			cudaMalloc((void**)&Tk_minus_1_back, numPoints * numPoints * sizeof(float));
+			//checkCUDAError("cudaMalloc((void**)&Tk_minus_1");
+
+			cudaMalloc((void**)&TG, numPoints * outputDim * sizeof(float));
+			//checkCUDAError("cudaMalloc((void**)&TG");
+
+			cudaMalloc((void**)&temp, numPoints * inputDim * sizeof(float));
+			//checkCUDAError("cudaMalloc((void**)&temp");
+
+			cudaMalloc((void**)&thetaT, outputDim * inputDim * sizeof(float));
+			//checkCUDAError("cudaMalloc((void**)&thetaT");
+
+			for (int i = 0; i < batchDim; i++) {
+				cudaMalloc((void**)&current_outgoing_gradient, numPoints * inputDim * sizeof(float));
+				outgoing_gradient.push_back(current_outgoing_gradient);
+			}
+
+
 		}
 
 		int getInputDim() {

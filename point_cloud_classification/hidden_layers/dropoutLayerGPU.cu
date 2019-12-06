@@ -56,26 +56,25 @@ namespace PointCloudClassification {
 		outputArg -> batchDim x inputDim
 	*/
 	std::vector<float*> DropoutLayerGPU::forward(std::vector<float*> inputArg, bool test) {
-		std::vector<float*> output;
+		//std::vector<float*> output;
 		for (int b = 0; b < batchDim; b++) {
-			float* flattened_current_output;
-			cudaMalloc((void**)&flattened_current_output, numPoints * inputDim * sizeof(float));
+			
 			dim3 fullBlocksPerGrid((inputDim * numPoints + blockSize - 1) / blockSize);
-			dropoutForward << <fullBlocksPerGrid, blockSize >> > (inputArg[b], flattened_current_output, this->nodesKeep[b], inputDim * numPoints, Parameters::keep_prob, this->rand_generator());
-			output.push_back(flattened_current_output);
+			dropoutForward << <fullBlocksPerGrid, blockSize >> > (inputArg[b], this->output[b], this->nodesKeep[b], inputDim * numPoints, Parameters::keep_prob, this->rand_generator());
+			//output.push_back(flattened_current_output);
 		}
 		return output;
 }
 
 	std::vector<float*> DropoutLayerGPU::backward(std::vector<float*> incomingGradient, float learningRate) {
-		std::vector<float*> outgoingGradient;
+		//std::vector<float*> outgoingGradient;
 		for (int b = 0; b < batchDim; b++) {
-			float* flattened_outgoing_gradient;
-			cudaMalloc((void**)&flattened_outgoing_gradient, numPoints * inputDim * sizeof(float));
+			
+			
 			dim3 fullBlocksPerGrid((inputDim * numPoints + blockSize - 1) / blockSize);
-			dropoutBackward << <fullBlocksPerGrid, blockSize >> > (incomingGradient[b], this->nodesKeep[b], flattened_outgoing_gradient, inputDim * numPoints);
-			outgoingGradient.push_back(flattened_outgoing_gradient);
+			dropoutBackward << <fullBlocksPerGrid, blockSize >> > (incomingGradient[b], this->nodesKeep[b], this->outgoing_gradient[b], inputDim * numPoints);
+			//outgoingGradient.push_back(flattened_outgoing_gradient);
 		}
-		return outgoingGradient;
+		return outgoing_gradient;
 	}
 };

@@ -42,22 +42,21 @@ namespace PointCloudClassification {
 		this->Z = inputArg;
 
 		// Calculate Output
-		std::vector<float*> output;
+		//std::vector<float*> output;
 		for (int b = 0; b < inputArg.size(); b++) {
-			float* current_output;
-			cudaMalloc((void**)&current_output, inputDim * 2 * sizeof(float));
+			
 
 			// Max Pooling and Save Argmax for back prop
-			m->maxAcrossDim1(inputArg[b], numPoints, inputDim, this->argMax[b], current_output);
+			m->maxAcrossDim1(inputArg[b], numPoints, inputDim, this->argMax[b], this->output[b]);
 
 			// Calculate mean and Save it for back prop
 			m->meanAcrossDim1(inputArg[b], numPoints, inputDim, this->mean[b]);
 
 			// Variance Pooling
-			m->varianceAcrossDim1(inputArg[b], numPoints, inputDim, current_output + inputDim, this->mean[b]);
-			output.push_back(current_output);
+			m->varianceAcrossDim1(inputArg[b], numPoints, inputDim, this->output[b] + inputDim, this->mean[b]);
+			//output.push_back(current_output);
 		}
-		return output;
+		return this->output;
 	}
 
 
@@ -67,10 +66,9 @@ namespace PointCloudClassification {
 
 	*/
 	std::vector<float*> GlobalPoolingLayerGPU::backward(std::vector<float*> incomingGradient, float learningRate) {
-		std::vector<float*> outgoingGradient;
+		//std::vector<float*> outgoingGradient;
 		for (int b = 0; b < this->batchDim; b++) {
-			float* oneOutgoingGradient;
-			cudaMalloc((void**)&oneOutgoingGradient, numPoints * inputDim * sizeof(float));
+			
 			dim3 nBlocks(((inputDim * numPoints) + blockSize - 1) / blockSize);
 
 				
@@ -91,10 +89,10 @@ namespace PointCloudClassification {
 					oneOutgoingGradient[this->inputDim * n + d] += incomingGradient[b][d] * del_yj_by_xij;
 				}
 			}*/
-			kernel_max_pool<<<nBlocks, blockSize>>> (oneOutgoingGradient, incomingGradient[b], this->numPoints, this->inputDim, this->argMax[b]);
-			kernel_variance_pool<<<nBlocks, blockSize>>> (oneOutgoingGradient, incomingGradient[b], this->numPoints, this->inputDim, this->mean[b], this->Z[b]);
-			outgoingGradient.push_back(oneOutgoingGradient);
+			kernel_max_pool<<<nBlocks, blockSize>>> (this->outgoing_gradient[b], incomingGradient[b], this->numPoints, this->inputDim, this->argMax[b]);
+			kernel_variance_pool<<<nBlocks, blockSize>>> (this->outgoing_gradient[b], incomingGradient[b], this->numPoints, this->inputDim, this->mean[b], this->Z[b]);
+			//outgoingGradient.push_back(oneOutgoingGradient);
 		}
-		return outgoingGradient;
+		return this->outgoing_gradient;
 	}
 };

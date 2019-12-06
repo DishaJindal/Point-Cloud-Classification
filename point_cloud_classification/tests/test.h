@@ -756,10 +756,10 @@ namespace Tests {
 		Utilities::printVectorOfFloats(op2, 15);
 		std::cout << std::endl;
 
-		//std::vector<float*> og = gc1.backward(op, false);
+		std::vector<float*> og = gc1.backward(op1, false);
 
-		/*std::cout << "OG: " << std::endl;
+		std::cout << "OG: " << std::endl;
 		Utilities::printVectorOfFloatsGPU(og, 5);
-		std::cout << std::endl;*/
+		std::cout << std::endl;
 	}
 }
