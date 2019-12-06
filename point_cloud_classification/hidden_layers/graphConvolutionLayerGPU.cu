@@ -47,11 +47,6 @@ namespace PointCloudClassification {
 	std::vector<float*> GraphConvolutionLayerGPU::forward(std::vector<float*> inputArg, bool test) {
 		//std::vector<float*> output;
 		MatrixGPU* m = new MatrixGPU();
-
-		
-
-		
-
 		float* Tk;
 
 		this->X = std::vector < float* >(inputArg.begin(), inputArg.begin() + batchDim);

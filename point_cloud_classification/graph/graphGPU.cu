@@ -16,17 +16,19 @@
 namespace Graph {
 	using std::vector;
 	
-	GraphGPU::GraphGPU(float *points, int n, int f_in, int k) {
+	GraphGPU::GraphGPU(float *points, float* dev_Lap, int n, int f_in, int k) {
 		// Allocate Memory
 		float *dev_points;
-		cudaMalloc((void**)&dev_A, n * n * sizeof(float));
+		//dev_A = dev_Lap;
+		//cudaMalloc((void**)&dev_A, n * n * sizeof(float));
+		cudaMemset(dev_Lap, 0, n * n * sizeof(float));
 		cudaMalloc((void**)&dev_points, n * f_in * sizeof(float));
 		cudaMemcpy(dev_points, points, n * f_in * sizeof(float), cudaMemcpyHostToDevice);
 		
-		fill_adjA(dev_points, dev_A, n, f_in, k);
-		normalize_adjA(dev_A, n);
-		find_laplace(dev_A, n);
-		fill_normalized_laplace(dev_A, n);
+		fill_adjA(dev_points, dev_Lap, n, f_in, k);
+		normalize_adjA(dev_Lap, n);
+		find_laplace(dev_Lap, n);
+		fill_normalized_laplace(dev_Lap, n);
 		
 		// Free Memory
 		cudaFree(dev_points);

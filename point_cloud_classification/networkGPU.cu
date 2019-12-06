@@ -36,6 +36,21 @@ namespace PointCloudClassification {
 		this->loss = loss;
 	}
 
+	void memPrint(const char* statement) {
+		if (memStats) {
+			size_t free_byte;
+			size_t total_byte;
+			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
+			{
+				checkCUDAError("Error: cudaMemGetInfo fails");
+			}
+			double free_db = (double)free_byte;
+			double total_db = (double)total_byte;
+			double used_db = total_db - free_db;
+			printf(statement);
+			printf(". GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
+		}
+	}
 	void NetworkGPU::buildArchitecture()
 	{
 		// GCN Layer 1
@@ -88,20 +103,7 @@ namespace PointCloudClassification {
 	}
 
 	std::vector<float*> NetworkGPU::forward(std::vector<float*> input, bool test) {
-
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("Before GCN 1 . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-		}
-
+		memPrint("Before GCN 1");
 		auto start = high_resolution_clock::now();
 		output_gn1 = gcn_layer1.forward(input, false);
 		auto stop = high_resolution_clock::now();
@@ -759,23 +761,17 @@ namespace PointCloudClassification {
 		}
 	}
 
-	std::vector<float*> get_laplacian(std::vector<float*> x_train) {
-		std::vector<float*> laplacians;
+	void get_laplacian(std::vector<float*> x_train, std::vector<float*> dev_lap) {
 		for (int i = 0; i < x_train.size(); i++) {
-			float* current_sample = x_train[i];
-			//normalize_data(current_sample, Parameters::num_points);
-			Graph::GraphGPU g(current_sample, Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
-			float* L = g.get_Lnorm();
+			Graph::GraphGPU g(x_train[i], dev_lap[i], Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
 			if (debug) {
 				std::cout << "Constructed graph for " << i << std::endl;
 			}
-			laplacians.push_back(L);
 		}
-		return laplacians;
 	}
 
 	void NetworkGPU::freeForwardGarbage() {
-		std::vector<float *> output_gn1, output_d1, output_gp1, output_gcn2, output_d2, output_gp2, output_d3, output_fc1, output_r1, output_d4, output_fc2;
+		//std::vector<float *> output_gn1, output_d1, output_gp1, output_gcn2, output_d2, output_gp2, output_d3, output_fc1, output_r1, output_d4, output_fc2;
 		for (int i = 0; i < output_gn1.size(); i++) {
 			cudaFree(output_gn1[i]);
 		}
@@ -825,7 +821,7 @@ namespace PointCloudClassification {
 	void NetworkGPU::train(std::vector<float*> input, std::vector<float*> label, int n) {
 
 		float* perEpochLoss = (float*)malloc(Parameters::num_epochs * sizeof(float));
-		//cudaMalloc((void**)&perEpochLoss, Parameters::num_epochs * sizeof(float));
+		// Space for Laplacian per batch
 
 		float epochLoss = 0;
 		std::vector<float> classification;
@@ -834,29 +830,60 @@ namespace PointCloudClassification {
 		}
 		int num_batches = n / this->batchSize; 
 		
-		
-		if (memStats) {
-			size_t free_byte;
-			size_t total_byte;
-			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-			{
-				checkCUDAError("Error: cudaMemGetInfo fails");
-			}
-			double free_db = (double)free_byte;
-			double total_db = (double)total_byte;
-			double used_db = total_db - free_db;
-			printf("Before Any Epoch . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
+		// One batch worth Laplacians
+		memPrint("Before Batch Graph Cons");
+		std::vector<float*> dev_lap;
+		for (int i = 0; i < Parameters::batch_size; i++) {
+			float* l;
+			cudaMalloc((void**)&l, Parameters::num_points * Parameters::num_points * sizeof(float));
+			dev_lap.push_back(l);
 		}
+		memPrint("After Batch Graph Cons");
 
+		// One batch worth Input Data
+		memPrint("Before Input Data");
+		std::vector<float*> dev_in;
+		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+			float* dev_bin;
+			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::input_features * sizeof(float));
+			dev_in.push_back(dev_bin);
+		}
+		memPrint("After Input Data");
+
+		// Label on GPU
+		memPrint("Before Label");
+		std::vector<float*> dev_label;
+		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+			float* dev_blab;
+			cudaMalloc((void**)&dev_blab, Parameters::num_classes * sizeof(float));
+			dev_label.push_back(dev_blab);
+		}
+		memPrint("After Label");
+
+		// Prepare Forward Input
+		memPrint("Before Forward Input");
+		std::vector<float*> dev_batch;
+		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+			float* dev_bin;
+			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::input_features * sizeof(float));
+			dev_batch.push_back(dev_bin);
+		}
+		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+			float* dev_bin;
+			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::num_points * sizeof(float));
+			dev_batch.push_back(dev_bin);
+		}
+		memPrint("After Forward Input");
+
+		memPrint("Before Any Epoch");
 		// Iterate for as many epochs..
 		for (int ep = 0; ep < Parameters::num_epochs; ep++) {
-
 			std::cout << "****************************Epoch " << ep << "***************************" << std::endl;
 			epochLoss = 0;
 
 			// Loop batch by batch
 			for (int b = 0; b < num_batches; b++) {
-
+				
 				// Grab one batch's data on CPU
 				std::vector<float*> batch_in = std::vector < float* >(input.begin() + b * this->batchSize, input.begin() + (b + 1) * this->batchSize);
 				std::vector<float*> trueLabel = std::vector < float* >(label.begin() + b * this->batchSize, label.begin() + (b + 1) * this->batchSize);
@@ -865,42 +892,19 @@ namespace PointCloudClassification {
 					normalize_data(batch_in[bi], Parameters::num_points);
 				}
 
-				// Prepare Data on GPU
-				std::vector<float*> dev_batch;
-				dev_batch.reserve(batch_in.size()*2); // preallocate memory
-				// Copy batch's data to GPU
-				std::vector<float*> dev_in;
-
 				std::cout << "************************************************************************************" << std::endl;
 				std::cout << "GPU : Forward for batch  ==> " << b << std::endl;
 				std::cout << "************************************************************************************" << std::endl;
 
-
 				for (int bi = 0; bi < batch_in.size(); bi++) {
-					float* dev_bin;
-					cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::input_features * sizeof(float));
-					cudaMemcpy(dev_bin, batch_in[bi], Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
-					dev_in.push_back(dev_bin);
+					cudaMemcpy(dev_in[bi], batch_in[bi], Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
 				}
-
-
-				if (memStats) {
-					size_t free_byte;
-					size_t total_byte;
-					if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-					{
-						checkCUDAError("Error: cudaMemGetInfo fails");
-					}
-					double free_db = (double)free_byte;
-					double total_db = (double)total_byte;
-					double used_db = total_db - free_db;
-					printf("After reading input into GPU . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-				}
-
 				
 				auto start = high_resolution_clock::now();
 				// Laplacian of the batch data
-				std::vector<float*> dev_lap = get_laplacian(batch_in);
+				
+				get_laplacian(batch_in, dev_lap);
+
 				auto stop = high_resolution_clock::now();
 				auto duration = duration_cast<microseconds>(stop - start);
 				if (time) {
@@ -910,31 +914,15 @@ namespace PointCloudClassification {
 					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}
 
-
-				if (memStats) {
-					size_t free_byte;
-					size_t total_byte;
-					if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
-					{
-						checkCUDAError("Error: cudaMemGetInfo fails");
-					}
-					double free_db = (double)free_byte;
-					double total_db = (double)total_byte;
-					double used_db = total_db - free_db;
-					printf("After creating Laplacian into GPU . GPU memory usage: used = %f, free = %f MB, total = %f MB\n\n", used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
-				}
-
-
-				//Concatenate Input and Laplacian
-				dev_batch.insert(dev_batch.end(), dev_in.begin(), dev_in.end());
-				dev_batch.insert(dev_batch.end(), dev_lap.begin(), dev_lap.end());
-				// Label on GPU
-				std::vector<float*> dev_label;
+				// Copy Label and Forward Data
 				for (int bi = 0; bi < batch_in.size(); bi++) {
-					float* dev_blab;
-					cudaMalloc((void**)&dev_blab, Parameters::num_classes * sizeof(float));
-					cudaMemcpy(dev_blab, trueLabel[bi], Parameters::num_classes * sizeof(float), cudaMemcpyHostToDevice);
-					dev_label.push_back(dev_blab);
+					cudaMemcpy(dev_batch[bi], dev_in[bi], Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyDeviceToDevice);
+				}
+				for (int bi = batch_in.size(); bi < 2*batch_in.size(); bi++) {
+					cudaMemcpy(dev_batch[bi], dev_lap[bi - batch_in.size()], Parameters::num_points * Parameters::num_points * sizeof(float), cudaMemcpyDeviceToDevice);
+				}
+				for (int bi = 0; bi < batch_in.size(); bi++) {
+					cudaMemcpy(dev_label[bi], trueLabel[bi], Parameters::num_classes * sizeof(float), cudaMemcpyHostToDevice);
 				}
 
 				start = high_resolution_clock::now();
@@ -975,8 +963,16 @@ namespace PointCloudClassification {
 					std::cout << "************************************************************************************" << std::endl;
 					//printElapsedTime(timer().getCpuElapsedTimeForPreviousOperation(), "CPU : (Forward Pass / batch)");
 				}
-
-				freeForwardGarbage();
+				//memPrint("Before Graph Clearing");
+				//for (int i = 0; i < Parameters::batch_size; i++) {
+				//	cudaFree(dev_lap[i]);
+				//	memPrint("After Graph Clearing i");
+				//}
+				//dev_lap.clear();
+				//memPrint("After Graph Clearing");
+				//memPrint("Before freeForwardGarbage");
+				//freeForwardGarbage();
+				//memPrint("After freeForwardGarbage");
 			}
 			epochLoss /= num_batches;
 			perEpochLoss[ep] = epochLoss;

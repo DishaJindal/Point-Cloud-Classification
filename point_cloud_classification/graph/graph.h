@@ -49,7 +49,7 @@ namespace Graph {
 		int n;
 		float *dev_A;
 	public:
-		GraphGPU(float *points, int n, int f_in, int k);
+		GraphGPU(float *points, float* dev_Lap, int n, int f_in, int k);
 		float* get_A();
 		float* get_Lnorm();
 	private:

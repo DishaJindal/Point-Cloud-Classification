@@ -39,7 +39,7 @@ namespace PointCloudClassification {
 		MatrixGPU* m = new MatrixGPU();
 		m->exp(flattenedInput, batchDim, inputDim, temp);
 
-		Utilities::printArrayGPU(temp, 10);
+		//Utilities::printArrayGPU(temp, 10);
 
 		float* tempT;
 		cudaMalloc((void**)&tempT, batchDim * outputDim * sizeof(float));
