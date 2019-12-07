@@ -10,6 +10,9 @@
 #include <fstream>
 #include <string>
 #include "device_launch_parameters.h"
+#include <chrono>
+
+using namespace std::chrono;
 
 #ifndef imax
 #define imax(a,b) (((a)>(b))?(a):(b))
@@ -19,16 +22,16 @@
 
 namespace PointCloudClassification {
 
-	float* GraphConvolutionLayerGPU::get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float mul) {
+	void GraphConvolutionLayerGPU::get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float*Tk, float mul) {
 		MatrixGPU* m = new MatrixGPU();
 
-		float* Tk;
+		//float* Tk;
 		if (mul) {
 			float* t;
 			cudaMalloc((void**)&t, numPoints * inputDim * sizeof(float));
 			m->multiply(L, Tk1, numPoints, numPoints, inputDim, t);
 
-			cudaMalloc((void**)&Tk, numPoints * inputDim * sizeof(float));
+			//cudaMalloc((void**)&Tk, numPoints * inputDim * sizeof(float));
 			m->linearCombination(t, Tk2, 2, -1, numPoints, inputDim, Tk);
 			cudaFree(t);
 		}
@@ -37,16 +40,16 @@ namespace PointCloudClassification {
 			cudaMalloc((void**)&t, numPoints * numPoints * sizeof(float));
 			m->multiply(L, Tk1, numPoints, numPoints, numPoints, t);
 
-			cudaMalloc((void**)&Tk, numPoints * numPoints * sizeof(float));
+			//cudaMalloc((void**)&Tk, numPoints * numPoints * sizeof(float));
 			m->linearCombination(t, Tk2, 2, -1, numPoints, numPoints, Tk);
 			cudaFree(t);
 		}
-		return Tk;
 	}
 
 	std::vector<float*> GraphConvolutionLayerGPU::forward(std::vector<float*> inputArg, bool test) {
 		MatrixGPU* m = new MatrixGPU();
-		float* Tk;
+		//float* Tk;
+		
 
 		this->X = std::vector < float* >(inputArg.begin(), inputArg.begin() + batchDim);
 		this->L = std::vector < float* >(inputArg.begin() + batchDim, inputArg.end());
@@ -65,7 +68,7 @@ namespace PointCloudClassification {
 					Tk = Tk_minus_1;
 				}
 				else {
-					Tk = get_chebeshev_polynomial(Tk_minus_1, Tk_minus_2, current_L, true);
+					get_chebeshev_polynomial(Tk_minus_1, Tk_minus_2, current_L, Tk, true);
 					Tk_minus_2 = Tk_minus_1;
 					Tk_minus_1 = Tk;
 				}
@@ -81,8 +84,10 @@ namespace PointCloudClassification {
 					cudaFree(temp_out);
 				}
 			}
+			//
 			m->linearCombination(output[i], output[i], (1.0f / numFilters), 0, numPoints, outputDim, output[i]);
 		}
+		//cudaFree(Tk);
 		return output;
 	}
 
@@ -93,7 +98,8 @@ namespace PointCloudClassification {
 		//checkCUDAError("cudaMalloc((void**)&Tk_minus_2");
 		m->getIdentityMatrix(numPoints, Tk_minus_2_back);
 
-		float* Tk;
+		//float* Tk;
+		
 
 		int number_of_samples = incomingGradient.size();
 		for (int i = 0; i < number_of_samples; i++) {
@@ -108,19 +114,19 @@ namespace PointCloudClassification {
 
 			for (int k = 0; k < numFilters; k++) {
 				if (k == 0) {
-					Tk = Tk_minus_2_back;
+					Tk_back = Tk_minus_2_back;
 				}
 				else if (k == 1) {
-					Tk = Tk_minus_1_back;
+					Tk_back = Tk_minus_1_back;
 				}
 				else {
-					Tk = get_chebeshev_polynomial(Tk_minus_1_back, Tk_minus_2_back, current_L, false);
+					get_chebeshev_polynomial(Tk_minus_1_back, Tk_minus_2_back, current_L, Tk_back, false);
 					Tk_minus_2_back = Tk_minus_1_back;
-					Tk_minus_1_back = Tk;
+					Tk_minus_1_back = Tk_back;
 				}
 
 				// Update theta (weights) --> Local Gradient
-				m->multiply(Tk, current_input, numPoints, numPoints, inputDim, TX);
+				m->multiply(Tk_back, current_input, numPoints, numPoints, inputDim, TX);
 
 				m->transpose(TX, numPoints, inputDim, TXT);
 
@@ -129,7 +135,7 @@ namespace PointCloudClassification {
 				m->linearCombination(theta[k], dtheta, 1, (-1.0f *learningRate) / numFilters, inputDim, outputDim, theta[k]);
 
 				// Calculate outgoing gradient
-				m->multiply(Tk, current_gradient, numPoints, numPoints, outputDim, TG);
+				m->multiply(Tk_back, current_gradient, numPoints, numPoints, outputDim, TG);
 				m->transpose(theta[k], inputDim, outputDim, thetaT);
 				if (k == 0) {
 					m->multiply(TG, thetaT, numPoints, outputDim, inputDim, outgoing_gradient[i]);
@@ -139,21 +145,14 @@ namespace PointCloudClassification {
 					m->add(outgoing_gradient[i], temp, numPoints, inputDim, outgoing_gradient[i]);
 				}
 			}
+			//
 			m->linearCombination(outgoing_gradient[i], outgoing_gradient[i], (1.0f / numFilters), 0, numPoints, inputDim, outgoing_gradient[i]);
 			//cudaFree(current_outgoing_gradient);
 			//outgoingGradient.push_back(current_outgoing_gradient);
 		}
 
-		/*cudaFree(TX);
-		cudaFree(TXT);
-		cudaFree(dtheta);
-		cudaFree(Tk_minus_2);
-		cudaFree(Tk_minus_1);*/
+		
 		//cudaFree(Tk);
-		/*cudaFree(TG);
-		cudaFree(temp);
-		cudaFree(thetaT);*/
-
 		return outgoing_gradient;
 	}
 };

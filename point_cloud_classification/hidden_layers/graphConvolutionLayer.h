@@ -88,6 +88,7 @@ namespace PointCloudClassification {
 		int numPoints;
 		int numFilters;
 
+		float* Tk;
 		float* Tk_minus_2;
 		float* Tk_minus_1;
 		float* current_output;
@@ -96,6 +97,7 @@ namespace PointCloudClassification {
 		float* TX;
 		float* TXT;
 		float* dtheta;
+		float* Tk_back;
 		float* Tk_minus_2_back;
 		float* Tk_minus_1_back;
 		float* TG;
@@ -123,6 +125,7 @@ namespace PointCloudClassification {
 				cudaMemcpy(temp, temp_cpu, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 				theta.push_back(temp);
 			}
+			cudaMalloc((void**)&Tk, numPoints * inputDim * sizeof(float));
 
 			cudaMalloc((void**)&Tk_minus_2, numPoints * inputDim * sizeof(float));
 
@@ -143,6 +146,8 @@ namespace PointCloudClassification {
 
 			cudaMalloc((void**)&dtheta, inputDim * outputDim * sizeof(float));
 			//checkCUDAError("cudaMalloc((void**)&dtheta");
+
+			cudaMalloc((void**)&Tk_back, numPoints * numPoints * sizeof(float));
 
 			cudaMalloc((void**)&Tk_minus_2_back, numPoints * numPoints * sizeof(float));
 			//checkCUDAError("cudaMalloc((void**)&Tk_minus_2");
@@ -177,6 +182,6 @@ namespace PointCloudClassification {
 
 		std::vector<float*> forward(std::vector<float*> input, bool test = false);
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
-		float* get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float mul = false);
+		void get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float* Tk, float mul = false);
 	};
 }

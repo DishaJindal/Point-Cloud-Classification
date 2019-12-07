@@ -112,7 +112,7 @@ namespace PointCloudClassification {
 			std::cout << "gcn1  " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gn1, 10);
 		}
-
+		memPrint("After GCN 1");
 		start = high_resolution_clock::now();
 		output_d1 = dropout_layer1.forward(output_gn1, false);
 		stop = high_resolution_clock::now();
@@ -120,6 +120,7 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Dropout 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After D 1");
 
 		if (debug) {
 			std::cout << "D 1 " << std::endl;
@@ -132,6 +133,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Global Pooling 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After GP 1");
+
 		if (debug) {
 			std::cout << "GP 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp1, 10);
@@ -149,6 +152,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Graph Convolution Layer 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After GCN 2");
+
 
 		if (debug) {
 			std::cout << "GCN2 " << std::endl;
@@ -161,6 +166,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Dropout 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After D 2");
+
 
 		if (debug) {
 			std::cout << "D2 " << std::endl;
@@ -173,6 +180,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Global Pooling 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After GP 2");
+
 
 		if (debug) {
 			std::cout << "GP 2 " << std::endl;
@@ -200,6 +209,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Dropout 3 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After D 3");
+
 
 		if (debug) {
 			std::cout << "D 3 " << std::endl;
@@ -212,6 +223,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Fully Connected Layer 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After FC 1");
+
 
 		if (debug) {
 			std::cout << "FC 1 " << std::endl;
@@ -225,6 +238,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (RELU 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After RELU 1");
+
 
 		if (debug) {
 			std::cout << "R 1 " << std::endl;
@@ -239,6 +254,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Dropout 4 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After D 4");
+
 
 		if (debug) {
 			std::cout << "D 4 " << std::endl;
@@ -252,6 +269,8 @@ namespace PointCloudClassification {
 		if (time) {
 			std::cout << "GPU : (Fully Connected Layer 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
+		memPrint("After FC 2");
+
 
 		if (debug) {
 			std::cout << "FC 2 " << std::endl;
@@ -294,6 +313,7 @@ namespace PointCloudClassification {
 			std::cout << "FC2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		memPrint("After FC 2");
 		
 		start = high_resolution_clock::now();
 		incomingGradient = dropout_layer4.backward(incomingGradient, learningRate);
@@ -306,6 +326,7 @@ namespace PointCloudClassification {
 			std::cout << "Dropout 4 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		memPrint("After D 4");
 		
 		start = high_resolution_clock::now();
 		incomingGradient = relu1.backward(incomingGradient, learningRate);
@@ -318,6 +339,8 @@ namespace PointCloudClassification {
 			std::cout << "RELU 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		memPrint("After RELU 1");
+
 		start = high_resolution_clock::now();
 		incomingGradient = fc_layer1.backward(incomingGradient, learningRate);
 		stop = high_resolution_clock::now();
@@ -329,6 +352,8 @@ namespace PointCloudClassification {
 			std::cout << "FC1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		memPrint("After FC 1");
+
 		start = high_resolution_clock::now();
 		incomingGradient = dropout_layer3.backward(incomingGradient, learningRate);
 		stop = high_resolution_clock::now();
@@ -340,6 +365,8 @@ namespace PointCloudClassification {
 			std::cout << "Dropout 3 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+		memPrint("After D 3");
+
 		// Split
 		std::vector<float*> gp1, gp2;
 		for (int i = 0; i < Parameters::batch_size; i++) {
@@ -350,6 +377,7 @@ namespace PointCloudClassification {
 			std::cout << "Split " << std::endl;
 			Utilities::printVectorOfFloatsGPU(incomingGradient, 10);
 		}
+
 		start = high_resolution_clock::now();
 		gp1 = gp_layer2.backward(gp1, learningRate);
 		stop = high_resolution_clock::now();
@@ -361,6 +389,7 @@ namespace PointCloudClassification {
 			std::cout << "GP 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
+		memPrint("After GP 2");
 		
 		start = high_resolution_clock::now();
 		gp1 = dropout_layer2.backward(gp1, learningRate);
@@ -373,6 +402,7 @@ namespace PointCloudClassification {
 			std::cout << "Dropout 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
+		memPrint("After D 2");
 		
 		start = high_resolution_clock::now();
 		gp1 = gcn_layer2.backward(gp1, learningRate);
@@ -385,6 +415,7 @@ namespace PointCloudClassification {
 			std::cout << "GCN 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
+		memPrint("After GCN 2");
 		
 		start = high_resolution_clock::now();
 		gp2 = gp_layer1.backward(gp2, learningRate);
@@ -397,6 +428,7 @@ namespace PointCloudClassification {
 			std::cout << "GP 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp2, 10);
 		}
+		memPrint("After GP 1");
 		
 		start = high_resolution_clock::now();
 		gp2 = dropout_layer1.backward(gp2, learningRate);
@@ -409,6 +441,7 @@ namespace PointCloudClassification {
 			std::cout << "Dropout 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp2, 10);
 		}
+		memPrint("After D 1");
 		
 		// Add
 		for (int i = 0; i < Parameters::batch_size; i++) {
@@ -430,6 +463,7 @@ namespace PointCloudClassification {
 			std::cout << "GCN 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(gp1, 10);
 		}
+		memPrint("After GCN 1");
 	}
 
 	void normalize_data(float* X, int n) {
