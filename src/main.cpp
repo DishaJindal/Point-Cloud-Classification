@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 	//tests();
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
-	int per_class = Parameters::batch_size << 2;
+	int per_class = 32*4;
 	std::vector<float*> x_train;
 	std::vector<float*> y_train;
 

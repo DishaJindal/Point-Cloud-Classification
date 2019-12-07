@@ -60,6 +60,7 @@ public:
 	void ReluForward(float* A, int m, int n, float* output);
 	void exp(float * A, int m, int n, float * output);
 	void divide_sum(float* input, float* sum, int batchDim, int outputDim, float* output);
+	void cross_entropy(float* pred, float* trueLabel, int batchDim, int outputDim, float* output);
 };
 
 

@@ -19,6 +19,7 @@ namespace PointCloudClassification {
 
 	class CrossEntropyLossGPU : public CrossEntropyLoss {
 		float* flattenedInput;
+		float* flattenedLabels;
 		float* softmaxOutput;
 		float* temp;
 		float* tempT;
@@ -32,6 +33,7 @@ namespace PointCloudClassification {
 
 		CrossEntropyLossGPU(int batchDim, int numClasses) : CrossEntropyLoss(batchDim, numClasses) {
 			cudaMalloc((void**)&flattenedInput, batchDim * numClasses * sizeof(float));
+			cudaMalloc((void**)&flattenedLabels, batchDim * numClasses * sizeof(float));
 			cudaMalloc((void**)&softmaxOutput, batchDim * numClasses * sizeof(float));
 			cudaMalloc((void**)&temp, batchDim * numClasses * sizeof(float));
 			cudaMalloc((void**)&tempT, batchDim * numClasses * sizeof(float));
@@ -50,6 +52,11 @@ namespace PointCloudClassification {
 				cudaMemcpy(flattenedInput + (i * numClasses), current, numClasses * sizeof(float), cudaMemcpyDeviceToDevice);
 				i++;
 			}
+			i = 0;
+			for (auto current : trueLabel) {
+				cudaMemcpy(flattenedLabels + (i * numClasses), current, numClasses * sizeof(float), cudaMemcpyDeviceToDevice);
+				i++;
+			}
 
 			MatrixGPU* m = new MatrixGPU();
 			m->exp(flattenedInput, batchDim, numClasses, temp);
@@ -65,7 +72,7 @@ namespace PointCloudClassification {
 
 			//dim3 fullBlocksPerGrid((batchDim * inputDim + blockSize - 1) / blockSize);
 			m->divide_sum(temp, sum, batchDim, numClasses, softmaxOutput);
-
+			m->cross_entropy(softmaxOutput, flattenedLabels, batchDim, numClasses, softmaxOutput);
 			m->sumAcrossDim1(softmaxOutput, batchDim * numClasses, 1, all_sum);
 
 			float* loss = (float*)malloc(sizeof(float));

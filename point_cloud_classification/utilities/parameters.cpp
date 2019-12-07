@@ -8,9 +8,9 @@ namespace PointCloudClassification {
 		 int num_points = 1024;
 
 		// Network Parameters
-		 int batch_size = 1 << 5;
+		 int batch_size = 32;
 		 int num_epochs = 20;//260
-		 float learning_rate = 0.0001;
+		 float learning_rate = 0.01;
 		 float keep_prob = 1.0f;
 		 
 		 // Architecture 
@@ -28,6 +28,6 @@ namespace PointCloudClassification {
 		 float keep_drop_prob2 = 1.0f;
 		 float keep_drop_prob3 = 1.0f;
 		 float keep_drop_prob4 = 1.0f;
-		 float lamba_reg = 0.001;
+		 float lamba_reg = 0.0f;
 	}
 }

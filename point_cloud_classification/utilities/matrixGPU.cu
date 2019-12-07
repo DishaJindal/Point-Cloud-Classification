@@ -1,7 +1,7 @@
 #pragma once
 #include "matrix.h"
-#include<thrust/device_vector.h>
 #include "cublas_v2.h"
+#include<thrust/device_vector.h>
 #include "common.h"
 #include "device_launch_parameters.h"
 
@@ -703,11 +703,11 @@ void reduce_mean(float* dev_A, int m, int n, float* dev_B, float denominator) {
 	output = n
 */
 void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output) {
-	reduce_mean(A, m, n, output, m);
+	/*reduce_mean(A, m, n, output, m);
 	return;
 
 
-
+*/
 	cublasHandle_t handle;
 	thrust::device_vector<float> d_ones(m, 1.0f/m);
 
@@ -720,8 +720,8 @@ void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output) {
 
 void MatrixGPU::sumAcrossDim1(float* A, int m, int n, float* output) {
 	linearCombination(A, A, 1000, 0, m, n, A);
-	reduce_mean(A, m, n, output, 1.0f);
-	return;
+	//reduce_mean(A, m, n, output, 1.0f);
+	//return;
 
 	cublasHandle_t handle;
 	thrust::device_vector<float> d_ones(m, 1.0f);
@@ -817,6 +817,13 @@ __global__ void kernDivideSum(float* input, float* sum, int m, int n, float* out
 	}
 }
 
+__global__ void kernCrossEntropy(float* pred, float* trueLabel, int m, int n, float* output) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index < m * n) {
+		output[index] = -1.0f * trueLabel[index] * log(pred[index]);
+	}
+}
+
 void MatrixGPU::exp(float* input, int batchDim, int inputDim, float* output) {
 	dim3 fullBlocksPerGrid((batchDim * inputDim + BLOCK_SIZE - 1) / BLOCK_SIZE);
 	kernExp << <fullBlocksPerGrid, BLOCK_SIZE >> > (input, batchDim, inputDim, output);
@@ -825,5 +832,11 @@ void MatrixGPU::exp(float* input, int batchDim, int inputDim, float* output) {
 void MatrixGPU::divide_sum(float* input, float* sum, int batchDim, int outputDim, float* output) {
 	dim3 fullBlocksPerGrid((batchDim * outputDim + BLOCK_SIZE - 1) / BLOCK_SIZE);
 	kernDivideSum << <fullBlocksPerGrid, BLOCK_SIZE >> > (input, sum, batchDim, outputDim, output);
+
+}
+
+void MatrixGPU::cross_entropy(float* pred, float* trueLabel, int batchDim, int outputDim, float* output) {
+	dim3 fullBlocksPerGrid((batchDim * outputDim + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernCrossEntropy << <fullBlocksPerGrid, BLOCK_SIZE >> > (pred, trueLabel, batchDim, outputDim, output);
 
 }
