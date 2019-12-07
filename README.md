@@ -1,8 +1,46 @@
 # Point-Cloud-Classification
-**Team**: Saket Karve, Kushagra Goel, Disha Jindal
+**Team**: [Saket Karve](https://www.linkedin.com/in/saket-karve-43930511b/), [Kushagra Goel](https://www.linkedin.com/in/disha-jindal/), [Disha Jindal](https://www.linkedin.com/in/kushagragoel/)
 
-[Proposal](https://github.com/DishaJindal/Point-Cloud-Classification/blob/master/Proposal.pdf)
+[Proposal](./milestones/Proposal.pdf)
 [Data](https://drive.google.com/file/d/1c2gZ2URDaMdimGsyt1sK17F6H6byQCMq/view?usp=sharing)
+
+![](./img/Chair.gif)
+
+# Overview
+
+The aim of our project is 3D point cloud classification using Graph convolutional neural networks on CUDA. GCNs are very effective because they efficiently exploit the local structure in point clouds. The architecture involves nearest neighbor search to construct the graph from the point clouds.  The graph layers take a graph as input and propagate the input preserving the graph structure across layers. Graph neural networks are an ongoing topic of research and have applications in various fields. 
+
+In this project, we have implemented a full end to end graph convolution network on GPU using CUDA and CPU as a benchmark for performance analysis. An optimized version of the kernels for reduction and basic matrix operations is also implemented. 
+
+# Features Implemented
+
+- Designed a framework for implementing any generic neural network architecture
+- Farthest sampling of point clouds
+- Graph generation of data on CPU and GPU
+- CPU implementation of all layers
+- GPU implementation of all layers
+- Optimization of various kernels using memory optimiztion and streams
+
+# Network Architecture
+
+![](./img/architecture.png)
+
+# Some Predictions
+
+![](./img/table.jpg)
+
+The above input was predicted as a 'Table' by our network
+
+![](./img/toilet.jpeg)
+
+The above input was predicted as a 'Toilet' by our network
+
+# Performance Analysis
+
+![](./img/fwd.png)
+
+![](./img/layer_wise.png)
+
 # References
 
 [A Graph-CNN for 3D Point Cloud Classification](https://arxiv.org/pdf/1812.01711.pdf)
