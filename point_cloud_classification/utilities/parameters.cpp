@@ -8,10 +8,10 @@ namespace PointCloudClassification {
 		 int num_points = 1024;
 
 		// Network Parameters
-		 int batch_size = 10;
-		 int num_epochs = 6;//260
-		 float learning_rate = 0.001;
-		 float keep_prob = 0.5;
+		 int batch_size = 1 << 5;
+		 int num_epochs = 20;//260
+		 float learning_rate = 0.0001;
+		 float keep_prob = 1.0f;
 		 
 		 // Architecture 
 		 int input_features = 3;
@@ -24,10 +24,10 @@ namespace PointCloudClassification {
 		 int chebyshev2_order = 3;
 
 		 // Dropout Probability
-		 float keep_drop_prob1 = 0.5;
-		 float keep_drop_prob2 = 0.5;
-		 float keep_drop_prob3 = 0.5;
-		 float keep_drop_prob4 = 0.5;
-		 float lamba_reg = 0;// 0.001;
+		 float keep_drop_prob1 = 1.0f;
+		 float keep_drop_prob2 = 1.0f;
+		 float keep_drop_prob3 = 1.0f;
+		 float keep_drop_prob4 = 1.0f;
+		 float lamba_reg = 0.001;
 	}
 }

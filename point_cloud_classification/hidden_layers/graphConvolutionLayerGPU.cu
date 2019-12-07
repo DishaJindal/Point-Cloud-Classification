@@ -5,6 +5,7 @@
 #include "../common.h"
 #include "../utilities/kernels.h"
 #include "../utilities/matrix.h"
+#include "../utilities/parameters.h"
 #include "layer.h"
 #include "graphConvolutionLayer.h"
 #include <fstream>
@@ -58,7 +59,6 @@ namespace PointCloudClassification {
 			float* current_input = inputArg[i];
 			float* current_L = inputArg[i + batchDim];
 			Tk_minus_2 = current_input;
-				
 			m->multiply(current_L, current_input, numPoints, numPoints, inputDim, Tk_minus_1);
 			for (int k = 0; k < numFilters; k++) {
 				if (k == 0) {
@@ -132,7 +132,7 @@ namespace PointCloudClassification {
 
 				m->multiply(TXT, current_gradient, inputDim, numPoints, outputDim, dtheta);
 
-				m->linearCombination(theta[k], dtheta, 1, (-1.0f *learningRate) / numFilters, inputDim, outputDim, theta[k]);
+				m->linearCombination(theta[k], dtheta, (1.0f - Parameters::lamba_reg), (-1.0f *learningRate) / numFilters, inputDim, outputDim, theta[k]);
 
 				// Calculate outgoing gradient
 				m->multiply(Tk_back, current_gradient, numPoints, numPoints, outputDim, TG);

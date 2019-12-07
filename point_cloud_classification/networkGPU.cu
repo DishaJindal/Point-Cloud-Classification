@@ -18,8 +18,8 @@ using namespace std::chrono;
 
 #define blockSize 128
 #define debug false
-#define memStats true
-#define time true
+#define memStats false
+#define time false
 
 namespace PointCloudClassification {
 
@@ -504,6 +504,7 @@ namespace PointCloudClassification {
 	void get_laplacian(std::vector<float*> x_train, std::vector<float*> dev_lap) {
 		for (int i = 0; i < x_train.size(); i++) {
 			Graph::GraphGPU g(x_train[i], dev_lap[i], Parameters::num_points, Parameters::input_features, Parameters::num_neighbours);
+
 			if (debug) {
 				std::cout << "Constructed graph for " << i << std::endl;
 			}
@@ -640,7 +641,6 @@ namespace PointCloudClassification {
 				auto start = high_resolution_clock::now();
 				// Laplacian of the batch data
 				get_laplacian(batch_in, dev_lap);
-
 				auto stop = high_resolution_clock::now();
 				auto duration = duration_cast<microseconds>(stop - start);
 				if (time) {

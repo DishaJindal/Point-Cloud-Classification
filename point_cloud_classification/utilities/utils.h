@@ -6,6 +6,14 @@
 #include <random>
 #include <cmath>
 
+#ifndef imin
+#define imin(a,b) (((a)<(b))?(a):(b))
+#endif
+
+#ifndef imax
+#define imax(a,b) (((a)>(b))?(a):(b))
+#endif
+
 namespace Utilities {
 	inline void genArray(int n, float *a, int seed = 0) {
 		if (seed != 0) {
@@ -17,6 +25,11 @@ namespace Utilities {
 		std::normal_distribution<> d{ 0,0.05 };
 		for (int i = 0; i < n; i++) {
 			a[i] = d(gen);
+
+			if (a[i] > 1.0f || a[i] < -1.0f) {
+				std::cout << a[i] << std::endl;
+				a[i] = imax(imin(a[i], 1.0f), - 1.0f);
+			}
 		}
 	}
 

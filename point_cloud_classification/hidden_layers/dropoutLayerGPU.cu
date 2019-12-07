@@ -37,7 +37,7 @@ __global__ void dropoutForward(float *input, float *output, float *probabilities
 	thrust::minstd_rand rng = thrust::minstd_rand(utilhash((1 << 31) | r) ^ utilhash(index));
 	thrust::uniform_real_distribution<float> dist(0, 1);
 	if (index < n) {
-		probabilities[index] = (dist(rng) <= 1 - keepProb) ? 1 / keepProb : 0;
+		probabilities[index] = (dist(rng) <= keepProb) ? 1 / keepProb : 0;
 		output[index] = input[index] * probabilities[index];
 	}
 }

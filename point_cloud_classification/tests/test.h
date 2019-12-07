@@ -107,31 +107,35 @@ namespace Tests {
 	
 	void testMatrixMultiplication() {
 
-		const int m = 3;
-		const int n = 2;
-		const int q = 5;
+		const int m = 1024;
+		const int n = 1024;
+		const int q = 100;
 
 		MatrixCPU* mc = new MatrixCPU();
 		MatrixGPU* mg = new MatrixGPU();
 
-		float A[m * n] = { 1,2,3,4,5,6 };
-		float B[n * q] = { 1,2,3,4,5,6, 7, 8, 9, 10 };
+		float *A;
+		A = (float *)malloc(m * n * sizeof(float));
+		Utilities::genArray(m * n, A);
+		float *B;
+		B = (float *)malloc(n * q * sizeof(float));
+		Utilities::genArray(n * q, B);
 		float* C = (float*)malloc(m * q * sizeof(float));
 
 		mc->multiply(A, B, m, n, q, C);
 
-		std::cout << "A: " << endl;
-		mc->printMatrix(A, m, n);
-		std::cout << std::endl;
+		//std::cout << "A: " << endl;
+		//mc->printMatrix(A, m, n);
+		//std::cout << std::endl;
 
-		std::cout << "B: " << endl;
-		mc->printMatrix(B, n, q);
-		std::cout << std::endl;
+		//std::cout << "B: " << endl;
+		//mc->printMatrix(B, n, q);
+		//std::cout << std::endl;
 
-		std::cout << "C (on CPU) = A X B : " << endl;
-		mc->printMatrix(C, m, q);
-		std::cout << std::endl;
-		std::cout << std::endl;
+		//std::cout << "C (on CPU) = A X B : " << endl;
+		//mc->printMatrix(C, m, q);
+		//std::cout << std::endl;
+		//std::cout << std::endl;
 
 		float *dev_A;
 		cudaMalloc((void **)&dev_A, m * n * sizeof(float));
@@ -144,17 +148,30 @@ namespace Tests {
 
 		mg->multiply(dev_A, dev_B, m, n, q, dev_C);
 
-		cudaMemcpy(C, dev_C, m * q * sizeof(float), cudaMemcpyDeviceToHost);
-		checkCUDAError("Here");
+		float *bGPU;
+		bGPU = (float *)malloc(m * q * sizeof(float));
+		cudaMemcpy(bGPU, dev_C, q * m * sizeof(float), cudaMemcpyDeviceToHost);
 
-		std::cout << "C (on GPU) = A X B : " << endl;
-		mg->printMatrix(C, m, q);
-		std::cout << std::endl;
-		std::cout << std::endl;
+		//std::cout << "C (on GPU) = A X B : " << endl;
+		//mg->printMatrix(bGPU, m, q);
+		//std::cout << std::endl;
+		//std::cout << std::endl;
+
+		double error = 0;
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < q; ++j) {
+				error = error + ((bGPU[i * q + j] - C[i * q + j])*(bGPU[i * q + j] - C[i * q + j])) / (m * q);
+			}
+		}
 
 		cudaFree(dev_A);
 		cudaFree(dev_B);
 		cudaFree(dev_C);
+
+
+		std::cout << "\nError between the CPU and the GPU implementation is " << error << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
 
 
 	}
@@ -841,20 +858,20 @@ namespace Tests {
 }
 
 void tests() {
-	cout << "********************************************************" << endl;
-	cout << "Testing GPU Matrix Reduction ..." << endl;
-	Tests::testMatrixGPUReduction();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing GPU Matrix Reduction ..." << endl;
+	//Tests::testMatrixGPUReduction();
+	//cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing Matrix Transpose ..." << endl;
 	//Tests::testMatrixTranspose();
 	//cout << "********************************************************" << endl;
 
-	//cout << "********************************************************" << endl;
-	//cout << "Testing Matrix Multiplication ..." << endl;
-	//Tests::testMatrixMultiplication();
-	//cout << "********************************************************" << endl;
+	cout << "********************************************************" << endl;
+	cout << "Testing Matrix Multiplication ..." << endl;
+	Tests::testMatrixMultiplication();
+	cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing Matrix Multiplication Transpose ..." << endl;
@@ -891,7 +908,7 @@ void tests() {
 	//Tests::testAllBackward();
 	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
+	/*cout << "********************************************************" << endl;
 	cout << "Testing Global Pooling Layer ..." << endl;
 	Tests::testGlobalPoolingLayer();
 	cout << "********************************************************" << endl;
@@ -925,7 +942,7 @@ void tests() {
 	cout << "Testing Droput Layer GPU..." << endl;
 	Tests::testDropoutLayerGPU();
 	cout << "********************************************************" << endl;
-	/*cout << "********************************************************" << endl;
+	cout << "********************************************************" << endl;
 	cout << "Testing Fully Connected Layer CPU ..." << endl;
 	Tests::testFCLayer();
 	cout << "********************************************************" << endl;
