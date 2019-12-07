@@ -27,13 +27,13 @@ In this project, we have implemented a full end to end graph convolution network
 
 # Some Predictions
 
-![](./img/table.jpg)
+<p align="center"><img src="./img/table.jpg" width="500"/> </p>
 
-The above input was predicted as a 'Table' by our network
+The above input was predicted as a 'Table' by our network.
 
-![](./img/toilet.jpeg)
+<p align="center"><img src="./img/toilet.jpeg" width="500"/> </p>
 
-The above input was predicted as a 'Toilet' by our network
+The above input was predicted as a 'Toilet' by our network.
 
 # Performance Analysis
 
