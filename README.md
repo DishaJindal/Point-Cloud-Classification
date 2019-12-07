@@ -1,5 +1,5 @@
 # Point-Cloud-Classification
-**Team**: [Saket Karve](https://www.linkedin.com/in/saket-karve-43930511b/), [Kushagra Goel](https://www.linkedin.com/in/disha-jindal/), [Disha Jindal](https://www.linkedin.com/in/kushagragoel/)
+**Team**: [Saket Karve](https://www.linkedin.com/in/saket-karve-43930511b/), [Disha Jindal](https://www.linkedin.com/in/disha-jindal/), [Kushagra Goel](https://www.linkedin.com/in/kushagragoel/)
 
 [Proposal](./milestones/Proposal.pdf)
 [Data](https://drive.google.com/file/d/1c2gZ2URDaMdimGsyt1sK17F6H6byQCMq/view?usp=sharing)
