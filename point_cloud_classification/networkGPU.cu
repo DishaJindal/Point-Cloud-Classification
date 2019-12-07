@@ -266,8 +266,6 @@ namespace PointCloudClassification {
 	}
 
 	void NetworkGPU::backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate) {
-		
-
 		// Get the gradient of the loss
 		auto start = high_resolution_clock::now();
 		std::vector<float*> dloss = this->loss->dcost(prediction, trueLabel);

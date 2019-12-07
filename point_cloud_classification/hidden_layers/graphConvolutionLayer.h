@@ -174,7 +174,7 @@ namespace PointCloudClassification {
 		int getOutputDim() {
 			return outputDim;
 		}
-
+		void forwardUtil(float* current_input, float* current_L, float* outp, cudaStream_t stream);
 		std::vector<float*> forward(std::vector<float*> input, bool test = false);
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
 		float* get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float mul = false);

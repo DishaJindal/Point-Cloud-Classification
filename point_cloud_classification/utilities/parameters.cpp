@@ -20,8 +20,8 @@ namespace PointCloudClassification {
 		 int fc1_out_features = 600;
 
 		 // Pooling Layer Specific
-		 int chebyshev1_order = 2;
-		 int chebyshev2_order = 2;
+		 int chebyshev1_order = 4;
+		 int chebyshev2_order = 3;
 
 		 // Dropout Probability
 		 float keep_drop_prob1 = 0.5;

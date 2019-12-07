@@ -31,9 +31,12 @@ __global__ void kernMultiplyMatrices(float *input, float *weight, float *output,
 		output[row*k + col] = sum;
 	}
 }
-void MatrixGPU::multiply(float* A, float* B, int m, int n, int p, float* output) {
+void MatrixGPU::multiply(float* A, float* B, int m, int n, int p, float* output, cudaStream_t stream) {
 	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
-	kernMultiplyMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, p);
+	if(stream == NULL)
+		kernMultiplyMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, p);
+	else
+		kernMultiplyMatrices << <fullBlocksPerGrid, BLOCK_SIZE, 0, stream>> > (A, B, output, m, n, p);
 }
 
 
