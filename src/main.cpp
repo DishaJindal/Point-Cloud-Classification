@@ -49,9 +49,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Make sure you have downloaded the data
-	utilityCore::load_data("bullshit", x_train, y_train, "train", per_class);
+	int count_loaded = utilityCore::load_data("bullshit", x_train, y_train, "train", per_class);
+	x_train.erase(x_train.begin() + count_loaded, x_train.end());
+	y_train.erase(y_train.begin() + count_loaded, y_train.end());
 	std::cout << "Loaded Data: " << x_train.size() << std::endl;
-	
 	//Build the network
 	if (GPU) {
 		PointCloudClassification::NetworkGPU gcn(Parameters::num_classes, Parameters::batch_size);

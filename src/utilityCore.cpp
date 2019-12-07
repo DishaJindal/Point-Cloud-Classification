@@ -272,12 +272,11 @@ std::vector<std::string> utilityCore::get_filenames(std::experimental::filesyste
 
 
 
-void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std::vector<float*> &Y, std::string subFolder, int numToRead) {
+int utilityCore::load_data(std::string folderName, std::vector<float*> &X, std::vector<float*> &Y, std::string subFolder, int numToRead) {
 	int count = 0;
 	int main_counter = 0;
 	std::string previousLabel = "begin";
-	for (const auto& name : get_filenames(folderName)) {
-		
+	for (const auto& name : get_filenames(folderName)) {		
 		int len = name.length();
 		if (name[len - 1] == 'f') {
 			std::string altName = name;
@@ -378,6 +377,7 @@ void utilityCore::load_data(std::string folderName, std::vector<float*> &X, std:
 			}
 		}
 	}
+	return count;
 }
 
 void utilityCore::normalize_data(float* X, int n) {

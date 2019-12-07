@@ -19,7 +19,7 @@ using namespace std::chrono;
 #define blockSize 128
 #define debug false
 #define memStats false
-#define time false
+#define time true
 
 namespace PointCloudClassification {
 
@@ -644,9 +644,7 @@ namespace PointCloudClassification {
 				auto stop = high_resolution_clock::now();
 				auto duration = duration_cast<microseconds>(stop - start);
 				if (time) {
-					std::cout << "************************************************************************************" << std::endl;
 					std::cout << "GPU : (Graph Generation / batch) ==> " << duration.count() / 1000 << " ms" << std::endl;
-					std::cout << "************************************************************************************" << std::endl;
 				}
 
 				// Copy Label and Forward Data
