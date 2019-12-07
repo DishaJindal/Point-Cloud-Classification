@@ -1,5 +1,7 @@
 #pragma once
 #include "matrix.h"
+#include<thrust/device_vector.h>
+#include "cublas_v2.h""
 
 #ifndef imax
 #define imax(a,b) (((a)>(b))?(a):(b))
@@ -11,6 +13,18 @@
 
 #define BLOCK_SIZE 1024
 
+#ifndef cublasSafeCall
+#define cublasSafeCall(err)     __cublasSafeCall(err, __FILE__, __LINE__)
+#endif
+
+inline void __cublasSafeCall(cublasStatus_t err, const char *file, const int line)
+{
+	if (CUBLAS_STATUS_SUCCESS != err) {
+		fprintf(stderr, "CUBLAS error in file '%s', line %d\n \nerror %d \nterminating!\n", __FILE__, __LINE__, err);
+		cudaDeviceReset();
+		exit(EXIT_FAILURE);
+	}
+}
 
 
 /*
@@ -32,8 +46,16 @@ __global__ void kernMultiplyMatrices(float *input, float *weight, float *output,
 	}
 }
 void MatrixGPU::multiply(float* A, float* B, int m, int n, int p, float* output) {
-	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
-	kernMultiplyMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, p);
+	//dim3 fullBlocksPerGrid((m * p + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	//kernMultiplyMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, p);
+
+	cublasHandle_t handle;
+
+	cublasSafeCall(cublasCreate(&handle));
+	float alpha = 1.0f;
+	float beta = 1.0f;
+	cublasSafeCall(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, p, m, n, &alpha, B, p, A, n, &beta, output, p));
+	cublasDestroy(handle);
 }
 
 
@@ -56,8 +78,17 @@ __global__ void kernMultiplyMatricesTranspose(float *input, float *weight, float
 	}
 }
 void MatrixGPU::multiplyTranspose(float* A, float* B, int m, int n, int p, float* output) {
-	dim3 fullBlocksPerGrid((m * p + BLOCK_SIZE - 1) / BLOCK_SIZE);
-	kernMultiplyMatricesTranspose <<<fullBlocksPerGrid, BLOCK_SIZE >>> (A, B, output, m, n, p);
+	/*dim3 fullBlocksPerGrid((m * p + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernMultiplyMatricesTranspose <<<fullBlocksPerGrid, BLOCK_SIZE >>> (A, B, output, m, n, p);*/
+
+
+	cublasHandle_t handle;
+
+	cublasSafeCall(cublasCreate(&handle));
+	float alpha = 1.0f;
+	float beta = 1.0f;
+	cublasSafeCall(cublasSgemm(handle, CUBLAS_OP_T, CUBLAS_OP_N, p, m, n, &alpha, B, n, A, n, &beta, output, p));
+	cublasDestroy(handle);
 }
 /*
 	A -> m x n
@@ -643,19 +674,30 @@ void reduce_mean(float* dev_A, int m, int n, float* dev_B, float denominator) {
 	}
 
 }
-
 /*
 	A -> m x n
 	output = n
 */
 void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output) {
-	reduce_mean(A, m, n, output, m);
+	cublasHandle_t handle;
+	thrust::device_vector<float> d_ones(m, 1.0f/m);
+
+	cublasSafeCall(cublasCreate(&handle));
+	float alpha = 1.0f;
+	float beta = 0.0f;
+	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, A, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output,1));
+	cublasDestroy(handle);
 }
 
 void MatrixGPU::sumAcrossDim1(float* A, int m, int n, float* output) {
-	linearCombination(A, A, 1000, 0, m, n, A);
-	reduce_mean(A, m, n, output, 1.0f);
-	linearCombination(output, output, 1.0f / 1000, 0, m, n, output);
+
+	cublasHandle_t handle;
+	thrust::device_vector<float> d_ones(m, 1.0f);
+
+	cublasSafeCall(cublasCreate(&handle));
+	float alpha = 1.0f;
+	float beta = 0.0f;
+	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, A, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output, 1));
 }
 
 __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *output, int m, int n) {
@@ -665,7 +707,8 @@ __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *o
 
 	if (col < n && row < m) {
 		int pos = row * n + col;
-		output[pos] = (input1[pos] - input2[col]) * (input1[pos] - input2[col]);
+		float temp = input1[pos] - input2[col];
+		output[pos] = (temp) * (temp);
 	}
 
 }
@@ -677,7 +720,13 @@ __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *o
 void MatrixGPU::varianceAcrossDim1(float* A, int m, int n, float* output, float* mean) {
 	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
 	kernMatrixSubVectorSquare << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, mean, A, m, n);
-	reduce_mean(A, m, n, output, m);
+	cublasHandle_t handle;
+	thrust::device_vector<float> d_ones(m, 1.0f / m);
+	cublasSafeCall(cublasCreate(&handle));
+	float alpha = 1.0f;
+	float beta = 0.0f;
+	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, A, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output, 1));
+	cublasDestroy(handle);
 }
 
 /*

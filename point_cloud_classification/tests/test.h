@@ -15,7 +15,9 @@
 using namespace std;
 using namespace PointCloudClassification;
 
+
 namespace Tests {
+
 	unsigned int nextPow2(unsigned int x)
 	{
 		--x;
@@ -33,12 +35,16 @@ namespace Tests {
 		MatrixCPU* mc = new MatrixCPU();
 		MatrixGPU* mg = new MatrixGPU();
 
-		int m = 10;
-		int n = 2;
+
+		int m = 1 << 15;
+		int n = 10;
 		int size = n * m;
 		float * a;
 		a = (float*)malloc(size * sizeof(float));
 		Utilities::genArray(size, a);
+		//cout << "\n********************************" << endl;
+		//cout << "Original Matrix ..." << endl;
+		//mc->printMatrix(a, m, n);
 
 		float *dev_a;
 		cudaMalloc((void **)&dev_a, size * sizeof(float));
@@ -49,17 +55,26 @@ namespace Tests {
 		float * bGPU;
 		bGPU = (float*)malloc(size * sizeof(float));
 
-		int	threads = (m < 1024 * 2) ? nextPow2((m + 1) / 2) : 1024;
-		int	blocks = (m + (threads * 2 - 1)) / (threads * 2);
-
 
 		float *dev_b;
-		cudaMalloc((void **)&dev_b, blocks * n * sizeof(float));
+		cudaMalloc((void **)&dev_b, m * n * sizeof(float));
 
 		mc->meanAcrossDim1(a, m, n, b);
 		mg->meanAcrossDim1(dev_a, m, n, dev_b);
 
-		cudaMemcpy(bGPU, dev_b, n * sizeof(float), cudaMemcpyDeviceToHost);
+
+		cout << "\n********************************" << endl;
+		cout << "CPU Result ..." << endl;
+		mc->printMatrix(b, 1, n);
+
+
+
+		cudaMemcpy(bGPU, dev_b, m * n * sizeof(float), cudaMemcpyDeviceToHost);
+
+		cout << "********************************" << endl;
+		cout << "GPU Result ..." << endl;
+		mc->printMatrix(bGPU, 1, n);
+		cout << "********************************" << endl;
 
 
 		float difference = 0;
@@ -67,7 +82,7 @@ namespace Tests {
 			difference += ((bGPU[i] - b[i])*(bGPU[i] - b[i]))/n;
 		}
 
-		std::cout << "Difference between the CPU and the GPU implementation is " << difference << std::endl;
+		std::cout << "\nDifference between the CPU and the GPU implementation is " << difference << std::endl;
 		std::cout << std::endl;
 		std::cout << std::endl;
 			   		 
@@ -91,43 +106,109 @@ namespace Tests {
 	}
 	
 	void testMatrixMultiplication() {
-		MatrixCPU* m = new MatrixCPU();
-		float A[3 * 2] = { 1,2,3,4,5,6 };
-		float B[2 * 5] = { 1,2,3,4,5,6, 7, 8, 9, 10 };
-		float* C = (float*)malloc(3 * 5 * sizeof(float));
-		m->multiply(A, B, 3, 2, 5, C);
+
+		const int m = 3;
+		const int n = 2;
+		const int q = 5;
+
+		MatrixCPU* mc = new MatrixCPU();
+		MatrixGPU* mg = new MatrixGPU();
+
+		float A[m * n] = { 1,2,3,4,5,6 };
+		float B[n * q] = { 1,2,3,4,5,6, 7, 8, 9, 10 };
+		float* C = (float*)malloc(m * q * sizeof(float));
+
+		mc->multiply(A, B, m, n, q, C);
+
 		std::cout << "A: " << endl;
-		m->printMatrix(A, 3, 2);
+		mc->printMatrix(A, m, n);
 		std::cout << std::endl;
 
 		std::cout << "B: " << endl;
-		m->printMatrix(B, 2, 5);
+		mc->printMatrix(B, n, q);
 		std::cout << std::endl;
 
-		std::cout << "C = A X B : " << endl;
-		m->printMatrix(C, 3, 5);
+		std::cout << "C (on CPU) = A X B : " << endl;
+		mc->printMatrix(C, m, q);
 		std::cout << std::endl;
 		std::cout << std::endl;
+
+		float *dev_A;
+		cudaMalloc((void **)&dev_A, m * n * sizeof(float));
+		cudaMemcpy(dev_A, A, m * n * sizeof(float),cudaMemcpyHostToDevice);
+		float *dev_B;
+		cudaMalloc((void **)&dev_B, q * n * sizeof(float));
+		cudaMemcpy(dev_B, B, q * n * sizeof(float), cudaMemcpyHostToDevice);
+		float *dev_C;
+		cudaMalloc((void **)&dev_C, m * q * sizeof(float));
+
+		mg->multiply(dev_A, dev_B, m, n, q, dev_C);
+
+		cudaMemcpy(C, dev_C, m * q * sizeof(float), cudaMemcpyDeviceToHost);
+		checkCUDAError("Here");
+
+		std::cout << "C (on GPU) = A X B : " << endl;
+		mg->printMatrix(C, m, q);
+		std::cout << std::endl;
+		std::cout << std::endl;
+
+		cudaFree(dev_A);
+		cudaFree(dev_B);
+		cudaFree(dev_C);
+
+
 	}
 
 	void testMatrixMultiplicationTranspose() {
-		MatrixCPU* m = new MatrixCPU();
-		float A[3 * 2] = { 1,2,3,4,5,6 };
-		float B[5 * 2] = { 1,2,3,4,5,6, 7, 8, 9, 10 };
-		float* C = (float*)malloc(3 * 5 * sizeof(float));
-		m->multiplyTranspose(A, B, 3, 2, 5, C);
+
+		const int m = 3;
+		const int n = 2;
+		const int q = 5;
+
+		MatrixCPU* mc = new MatrixCPU();
+		MatrixGPU* mg = new MatrixGPU();
+
+		float A[m * n] = { 1,2,3,4,5,6 };
+		float B[n * q] = { 1,2,3,4,5,6, 7, 8, 9, 10 };
+		float* C = (float*)malloc(m * q * sizeof(float));
+
+		mc->multiplyTranspose(A, B, m, n, q, C);
+
 		std::cout << "A: " << endl;
-		m->printMatrix(A, 3, 2);
+		mc->printMatrix(A, m, n);
 		std::cout << std::endl;
 
 		std::cout << "B: " << endl;
-		m->printMatrix(B, 5, 2);
+		mc->printMatrix(B, n, q);
 		std::cout << std::endl;
 
-		std::cout << "C = A X B : " << endl;
-		m->printMatrix(C, 3, 5);
+		std::cout << "C (on CPU) = A X BT : " << endl;
+		mc->printMatrix(C, m, q);
 		std::cout << std::endl;
 		std::cout << std::endl;
+
+		float *dev_A;
+		cudaMalloc((void **)&dev_A, m * n * sizeof(float));
+		cudaMemcpy(dev_A, A, m * n * sizeof(float), cudaMemcpyHostToDevice);
+		float *dev_B;
+		cudaMalloc((void **)&dev_B, q * n * sizeof(float));
+		cudaMemcpy(dev_B, B, q * n * sizeof(float), cudaMemcpyHostToDevice);
+		float *dev_C;
+		cudaMalloc((void **)&dev_C, m * q * sizeof(float));
+
+		mg->multiplyTranspose(dev_A, dev_B, m, n, q, dev_C);
+
+		cudaMemcpy(C, dev_C, m * q * sizeof(float), cudaMemcpyDeviceToHost);
+		checkCUDAError("Here");
+
+		std::cout << "C (on GPU) = A X BT : " << endl;
+		mg->printMatrix(C, m, q);
+		std::cout << std::endl;
+		std::cout << std::endl;
+
+		cudaFree(dev_A);
+		cudaFree(dev_B);
+		cudaFree(dev_C);
 	}
 
 	void testFCLayer() {
@@ -751,19 +832,19 @@ namespace Tests {
 		Utilities::printVectorOfFloats(op2, 15);
 		std::cout << std::endl;
 
-		std::vector<float*> og = gc1.backward(op1, false);
+		//std::vector<float*> og = gc1.backward(op, false);
 
-		std::cout << "OG: " << std::endl;
+		/*std::cout << "OG: " << std::endl;
 		Utilities::printVectorOfFloatsGPU(og, 5);
-		std::cout << std::endl;
+		std::cout << std::endl;*/
 	}
 }
 
 void tests() {
-	//cout << "********************************************************" << endl;
-	//cout << "Testing GPU Matrix Reduction ..." << endl;
-	//Tests::testMatrixGPUReduction();
-	//cout << "********************************************************" << endl;
+	cout << "********************************************************" << endl;
+	cout << "Testing GPU Matrix Reduction ..." << endl;
+	Tests::testMatrixGPUReduction();
+	cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing Matrix Transpose ..." << endl;
