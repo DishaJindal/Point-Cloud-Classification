@@ -1,4 +1,4 @@
-# Point-Cloud-Classification
+# Point Cloud Classification using Graph Convolutional Networks
 **Team**: [Saket Karve](https://www.linkedin.com/in/saket-karve-43930511b/), [Disha Jindal](https://www.linkedin.com/in/disha-jindal/), [Kushagra Goel](https://www.linkedin.com/in/kushagragoel/)
 
 [Proposal](./milestones/Proposal.pdf)
