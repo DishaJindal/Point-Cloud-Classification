@@ -531,13 +531,16 @@ __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *o
 */
 void MatrixGPU::varianceAcrossDim1(float* A, int m, int n, float* output, float* mean, cudaStream_t stream) {
 	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
-	kernMatrixSubVectorSquare << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, mean, A, m, n);
+	float *tempA;
+	cudaMalloc((void **)&tempA, m  *n * sizeof(float));
+	kernMatrixSubVectorSquare << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, mean, tempA, m, n);
 	thrust::device_vector<float> d_ones(m, 1.0f / m);
 	float alpha = 1.0f;
 	float beta = 0.0f;
 	if (stream != NULL)
 		cublasSetStream(handle, stream);
-	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, A, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output, 1));
+	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, tempA, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output, 1));
+	cudaFree(tempA);
 }
 
 /*

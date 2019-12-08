@@ -62,18 +62,18 @@ namespace Tests {
 		mg->meanAcrossDim1(dev_a, m, n, dev_b);
 
 
-		cout << "\n********************************" << endl;
-		cout << "CPU Result ..." << endl;
-		mc->printMatrix(b, 1, n);
+		//cout << "\n********************************" << endl;
+		//cout << "CPU Result ..." << endl;
+		//mc->printMatrix(b, 1, n);
 
 
 
 		cudaMemcpy(bGPU, dev_b, m * n * sizeof(float), cudaMemcpyDeviceToHost);
 
-		cout << "********************************" << endl;
-		cout << "GPU Result ..." << endl;
-		mc->printMatrix(bGPU, 1, n);
-		cout << "********************************" << endl;
+		//cout << "********************************" << endl;
+		//cout << "GPU Result ..." << endl;
+		//mc->printMatrix(bGPU, 1, n);
+		//cout << "********************************" << endl;
 
 
 		float difference = 0;
@@ -930,30 +930,30 @@ void tests() {
 	//Tests::testMatrixGPUReduction();
 	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing GPU Matrix Max Reduction ..." << endl;
-	Tests::testMatrixGPUMaxReduction();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing GPU Matrix Max Reduction ..." << endl;
+	//Tests::testMatrixGPUMaxReduction();
+	//cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing Matrix Transpose ..." << endl;
 	//Tests::testMatrixTranspose();
 	//cout << "********************************************************" << endl;
 
-	//cout << "********************************************************" << endl;
-	//cout << "Testing Matrix Multiplication ..." << endl;
-	//Tests::testMatrixMultiplication();
-	//cout << "********************************************************" << endl;
+	cout << "********************************************************" << endl;
+	cout << "Testing Matrix Multiplication ..." << endl;
+	Tests::testMatrixMultiplication();
+	cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing Matrix Multiplication Transpose ..." << endl;
 	//Tests::testMatrixMultiplicationTranspose();
 	//cout << "********************************************************" << endl;
 
-	////cout << "********************************************************" << endl;
-	////cout << "Testing Fully Connected Layer ..." << endl;
-	////Tests::testFCLayer();
-	////cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Fully Connected Layer ..." << endl;
+	//Tests::testFCLayer();
+	//cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing RELU Activation Layer ..." << endl;
@@ -980,78 +980,77 @@ void tests() {
 	//Tests::testAllBackward();
 	//cout << "********************************************************" << endl;
 
-	/*cout << "********************************************************" << endl;
-	cout << "Testing Global Pooling Layer ..." << endl;
-	Tests::testGlobalPoolingLayer();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Global Pooling Layer ..." << endl;
+	//Tests::testGlobalPoolingLayer();
+	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Softmax Layer forward GPU..." << endl;
-	Tests::testSoftmaxLayerGPU();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Softmax Layer forward GPU..." << endl;
+	//Tests::testSoftmaxLayerGPU();
+	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing RELU Layer forward CPU..." << endl;
-	Tests::testRELULayer();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing RELU Layer forward CPU..." << endl;
+	//Tests::testRELULayer();
+	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing RELU Layer forward GPU..." << endl;
-	Tests::testRELULayerGPU();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing RELU Layer forward GPU..." << endl;
+	//Tests::testRELULayerGPU();
+	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing CE LOSS GPU..." << endl;
-	Tests::testCrossEntropyLossGPU();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing CE LOSS GPU..." << endl;
+	//Tests::testCrossEntropyLossGPU();
+	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Dropout Layer ..." << endl;
-	Tests::testDropoutLayer();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Dropout Layer ..." << endl;
+	//Tests::testDropoutLayer();
+	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Droput Layer GPU..." << endl;
-	Tests::testDropoutLayerGPU();
-	cout << "********************************************************" << endl;
-	cout << "********************************************************" << endl;
-	cout << "Testing Fully Connected Layer CPU ..." << endl;
-	Tests::testFCLayer();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Droput Layer GPU..." << endl;
+	//Tests::testDropoutLayerGPU();
+	//cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Fully Connected Layer CPU ..." << endl;
+	//Tests::testFCLayer();
+	//cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing Fully Connected Layer GPU..." << endl;
 	//Tests::testFCLayerGPU();
 	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Fully Connected Layer backward GPU..." << endl;
-	Tests::testFCLayerBackwardGPU();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Fully Connected Layer backward GPU..." << endl;
+	//Tests::testFCLayerBackwardGPU();
+	//cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing GPU Matrix Reduction ..." << endl;
 	//Tests::testMatrixGPUReduction();
 	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Graph Convolutional Layer backward CPU..." << endl;
-	Tests::testGraphConvolutionLayer();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Graph Convolutional Layer backward CPU..." << endl;
+	//Tests::testGraphConvolutionLayer();
+	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Graph Convolutional Layer forward GPU..." << endl;
-	Tests::testGraphConvolutionLayerGPU();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Graph Convolutional Layer forward GPU..." << endl;
+	//Tests::testGraphConvolutionLayerGPU();
+	//cout << "********************************************************" << endl;
 
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Softmax Layer forward CPU..." << endl;
+	//Tests::testSoftmaxLayer();
+	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Softmax Layer forward CPU..." << endl;
-	Tests::testSoftmaxLayer();
-	cout << "********************************************************" << endl;*/
-
-	/*cout << "********************************************************" << endl;
-	cout << "Testing Graph Convolutional Layer forward GPU..." << endl;
-	Tests::testGraphConvolutionLayerGPU();
-	cout << "********************************************************" << endl;*/
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Graph Convolutional Layer forward GPU..." << endl;
+	//Tests::testGraphConvolutionLayerGPU();
+	//cout << "********************************************************" << endl;
 }

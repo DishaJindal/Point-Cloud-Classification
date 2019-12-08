@@ -53,9 +53,9 @@ namespace PointCloudClassification {
 			float* oneOutgoingGradient = (float*)malloc(numPoints * inputDim * sizeof(float));
 
 			// Consume Gradient coming from max pooling
-			for (int d = 0; d < this->inputDim; d++) {
+			for (int d = 0; d < this->inputDim; d++) { // j
 				// Initialize gradients propagation to all points with 0
-				for (int n = 0; n < this->numPoints; n++) {
+				for (int n = 0; n < this->numPoints; n++) { // i
 					oneOutgoingGradient[this->inputDim * n + d] = 0;
 				}
 				// Update gradient of the max point
@@ -63,8 +63,8 @@ namespace PointCloudClassification {
 			}
 				
 			// Consume Gradient coming from variance pooling
-			for (int d = 0; d < this->inputDim; d++) {
-				for (int n = 0; n < this->numPoints; n++) {
+			for (int d = 0; d < this->inputDim; d++) { // j
+				for (int n = 0; n < this->numPoints; n++) { // i
 					float del_yj_by_xij = (2 * ((Z[b][n* inputDim + d]) - this->mean[b][d])) / numPoints;
 					oneOutgoingGradient[this->inputDim * n + d] += incomingGradient[b][d] * del_yj_by_xij;
 				}

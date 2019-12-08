@@ -49,22 +49,30 @@ namespace PointCloudClassification {
 		this->X = std::vector < float* >(inputArg.begin(), inputArg.begin() + batchDim);
 		this->L = std::vector < float* >(inputArg.begin() + batchDim, inputArg.end());
 
+
 		for (int i = 0; i < batchDim; i++) {
 			float* current_input = inputArg[i];
 			float* current_L = inputArg[i + batchDim];
-			Tk_minus_2 = current_input;
+
+			//Tk_minus_2 = current_input;
+			cudaMemcpy(Tk_minus_2, current_input, numPoints * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+
 			m->multiply(current_L, current_input, numPoints, numPoints, inputDim, Tk_minus_1);
 			for (int k = 0; k < numFilters; k++) {
 				if (k == 0) {
-					Tk = Tk_minus_2;
+					//Tk = Tk_minus_2;
+					cudaMemcpy(Tk, Tk_minus_2, numPoints * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 				}
 				else if (k == 1) {
-					Tk = Tk_minus_1;
+					//Tk = Tk_minus_1;
+					cudaMemcpy(Tk, Tk_minus_1, numPoints * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 				}
 				else {
 					get_chebeshev_polynomial(Tk_minus_1, Tk_minus_2, current_L, Tk, true);
-					Tk_minus_2 = Tk_minus_1;
-					Tk_minus_1 = Tk;
+					//Tk_minus_2 = Tk_minus_1;
+					cudaMemcpy(Tk_minus_2, Tk_minus_1, numPoints * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
+					//Tk_minus_1 = Tk;
+					cudaMemcpy(Tk_minus_1, Tk, numPoints * inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 				}
 					
 				if (k == 0) {
@@ -80,6 +88,7 @@ namespace PointCloudClassification {
 			}
 			m->linearCombination(output[i], output[i], (1.0f / numFilters), 0, numPoints, outputDim, output[i]);
 		}
+
 		return output;
 	}
 
@@ -95,19 +104,24 @@ namespace PointCloudClassification {
 			float* current_input = X[i];
 			float* current_gradient = incomingGradient[i];
 
-			Tk_minus_1_back = current_L;
+			//Tk_minus_1_back = current_L;
+			cudaMemcpy(Tk_minus_1_back, current_L, numPoints * numPoints * sizeof(float), cudaMemcpyDeviceToDevice);
 
 			for (int k = 0; k < numFilters; k++) {
 				if (k == 0) {
-					Tk_back = Tk_minus_2_back;
+					//Tk_back = Tk_minus_2_back;
+					cudaMemcpy(Tk_back, Tk_minus_2_back, numPoints * numPoints * sizeof(float), cudaMemcpyDeviceToDevice);
 				}
 				else if (k == 1) {
-					Tk_back = Tk_minus_1_back;
+					//Tk_back = Tk_minus_1_back;
+					cudaMemcpy(Tk_back, Tk_minus_1_back, numPoints * numPoints * sizeof(float), cudaMemcpyDeviceToDevice);
 				}
 				else {
 					get_chebeshev_polynomial(Tk_minus_1_back, Tk_minus_2_back, current_L, Tk_back, false);
-					Tk_minus_2_back = Tk_minus_1_back;
-					Tk_minus_1_back = Tk_back;
+					//Tk_minus_2_back = Tk_minus_1_back;
+					cudaMemcpy(Tk_minus_2_back, Tk_minus_1_back, numPoints * numPoints * sizeof(float), cudaMemcpyDeviceToDevice);
+					//Tk_minus_1_back = Tk_back;
+					cudaMemcpy(Tk_minus_1_back, Tk_back, numPoints * numPoints * sizeof(float), cudaMemcpyDeviceToDevice);
 				}
 
 				// Update theta (weights) --> Local Gradient
@@ -131,7 +145,8 @@ namespace PointCloudClassification {
 			}
 			m->linearCombination(outgoing_gradient[i], outgoing_gradient[i], (1.0f / numFilters), 0, numPoints, inputDim, outgoing_gradient[i]);
 		}
-		
+
+
 		return outgoing_gradient;
 	}
 };
