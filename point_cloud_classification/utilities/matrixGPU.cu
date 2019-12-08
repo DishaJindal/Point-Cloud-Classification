@@ -1,6 +1,5 @@
 #pragma once
 #include "matrix.h"
-#include "cublas_v2.h"
 #include<thrust/device_vector.h>
 #include "common.h"
 #include "device_launch_parameters.h"
@@ -28,6 +27,9 @@ inline void __cublasSafeCall(cublasStatus_t err, const char *file, const int lin
 	}
 }
 
+MatrixGPU::MatrixGPU() {
+	cublasSafeCall(cublasCreate(&handle));
+}
 
 /*
 	A -> m x n
@@ -47,13 +49,9 @@ __global__ void kernMultiplyMatrices(float *input, float *weight, float *output,
 		output[row*k + col] = sum;
 	}
 }
-void MatrixGPU::multiply(float* A, float* B, int m, int n, int p, float* output) {
-	/*dim3 fullBlocksPerGrid((m * p + BLOCK_SIZE - 1) / BLOCK_SIZE);
-	kernMultiplyMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, p);
-	return;
-*/
-	cublasHandle_t handle;
 
+void MatrixGPU::multiply(float* A, float* B, int m, int n, int p, float* output) {
+	cublasHandle_t handle;
 	cublasSafeCall(cublasCreate(&handle));
 	float alpha = 1.0f;
 	float beta = 0.0f;
@@ -682,20 +680,13 @@ void reduce_mean(float* dev_A, int m, int n, float* dev_B, float denominator) {
 	A -> m x n
 	output = n
 */
-void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output) {
-	/*reduce_mean(A, m, n, output, m);
-	return;
-
-
-*/
-	cublasHandle_t handle;
+void MatrixGPU::meanAcrossDim1(float* A, int m, int n, float* output, cudaStream_t stream) {
 	thrust::device_vector<float> d_ones(m, 1.0f/m);
-
-	cublasSafeCall(cublasCreate(&handle));
 	float alpha = 1.0f;
 	float beta = 0.0f;
+	if (stream != NULL)
+		cublasSetStream(handle, stream);
 	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, A, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output,1));
-	cublasDestroy(handle);
 }
 
 void MatrixGPU::sumAcrossDim1(float* A, int m, int n, float* output) {
@@ -731,21 +722,15 @@ __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *o
 	A -> m x n
 	output = n
 */
-void MatrixGPU::varianceAcrossDim1(float* A, int m, int n, float* output, float* mean) {
+void MatrixGPU::varianceAcrossDim1(float* A, int m, int n, float* output, float* mean, cudaStream_t stream) {
 	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
 	kernMatrixSubVectorSquare << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, mean, A, m, n);
-
-
-	//reduce_mean(A, m, n, output, m);
-	//return;
-
-	cublasHandle_t handle;
 	thrust::device_vector<float> d_ones(m, 1.0f / m);
-	cublasSafeCall(cublasCreate(&handle));
 	float alpha = 1.0f;
 	float beta = 0.0f;
+	if (stream != NULL)
+		cublasSetStream(handle, stream);
 	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, A, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output, 1));
-	cublasDestroy(handle);
 }
 
 /*

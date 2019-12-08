@@ -18,7 +18,7 @@ using namespace std::chrono;
 
 #define blockSize 128
 #define debug false
-#define memStats true
+#define memStats false
 #define time true
 
 namespace PointCloudClassification {
