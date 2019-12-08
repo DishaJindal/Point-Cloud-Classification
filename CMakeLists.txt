@@ -4,6 +4,10 @@ project(cis565_final_project)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # Enable C++11 for host code
 set(CMAKE_CXX_STANDARD 11)
 
@@ -58,10 +62,25 @@ cuda_add_executable(${CMAKE_PROJECT_NAME}
     "src/testing_helpers.hpp"
     "src/utilityCore.hpp"
     "src/utilityCore.cpp"
+    "src/glslUtility.hpp"
+    "src/kernel.h"
+    "src/visualization.hpp"
+    "src/glslUtility.cpp"
+    "src/kernel.cu"
+    "src/visualization.cpp"
     )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
     point_cloud_classification
     ${CORELIBS}
     cublas
+    ${LIBRARIES}
+    )
+
+add_custom_command(
+    TARGET ${CMAKE_PROJECT_NAME}
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/shaders
+        ${CMAKE_BINARY_DIR}/shaders
     )

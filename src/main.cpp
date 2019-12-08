@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <point_cloud_classification/network.h>
 #include <point_cloud_classification/common.h>
-#include "utilityCore.hpp"
+#include "visualization.hpp"
 #include "point_cloud_classification/graph/graph.h"
 #include "point_cloud_classification/utilities/matrix.h"
 #include "point_cloud_classification/utilities/utils.h"
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 	//tests();
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
-	int per_class = 16;
+	int per_class = 10;
 	std::vector<float*> x_train;
 	std::vector<float*> y_train;
 
@@ -48,11 +48,17 @@ int main(int argc, char* argv[]) {
 		y_train.push_back(y_temp);
 	}
 
+
 	// Make sure you have downloaded the data
 	int count_loaded = utilityCore::load_data("bullshit", x_train, y_train, "train", per_class);
 	x_train.erase(x_train.begin() + count_loaded, x_train.end());
 	y_train.erase(y_train.begin() + count_loaded, y_train.end());
 	std::cout << "Loaded Data: " << x_train.size() << std::endl;
+
+	int index = 5;
+	visualize(x_train[index], 1024, distance(y_train[index], max_element(y_train[index], y_train[index] + 10)), -1);
+
+
 	//Build the network
 	if (GPU) {
 		PointCloudClassification::NetworkGPU gcn(Parameters::num_classes, Parameters::batch_size);
