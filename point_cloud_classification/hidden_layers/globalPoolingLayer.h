@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <math.h>
+#define MAX_STREAMS 16 
 
 namespace PointCloudClassification {
 	class GlobalPoolingLayerCPU : public Layer {
@@ -25,7 +26,7 @@ namespace PointCloudClassification {
 			
 			int numPoints;
 			int inputDim;
-			int batchDim;
+			
 			bool lastLayer;
 
 			std::vector<float*> mean;
@@ -34,6 +35,7 @@ namespace PointCloudClassification {
 			
 
 	public:
+		int batchDim;
 		GlobalPoolingLayerCPU() {};
 		GlobalPoolingLayerCPU(int numPoints, int inputDim, int batchDim, bool lastLayer) {
 			this->numPoints = numPoints;
@@ -79,7 +81,7 @@ namespace PointCloudClassification {
 
 		int numPoints;
 		int inputDim;
-		int batchDim;
+		
 		bool lastLayer;
 
 		std::vector<float*> mean;
@@ -91,10 +93,11 @@ namespace PointCloudClassification {
 
 		float* oneOutgoingGradient;
 		std::vector<float*> outgoing_gradient;
-		
-		
-
+	
 	public:
+		int batchDim;
+		int num_streams;
+		cudaStream_t streams[MAX_STREAMS];
 		GlobalPoolingLayerGPU() {};
 		GlobalPoolingLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer) {
 			this->numPoints = numPoints;
@@ -121,7 +124,10 @@ namespace PointCloudClassification {
 				outgoing_gradient.push_back(oneOutgoingGradient);
 			}
 			this->m = new MatrixGPU();
-
+			num_streams = batchDim;
+			if (batchDim > MAX_STREAMS)
+				num_streams = MAX_STREAMS;
+			for (int i = 0; i < num_streams; ++i) { cudaStreamCreate(&streams[i]); }
 		}
 
 		int getInputDim() {

@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+//#include "../src/visualization.hpp"
 
 using namespace std::chrono;
 
@@ -20,6 +21,7 @@ using namespace std::chrono;
 #define debug false
 #define memStats false
 #define time false
+
 
 namespace PointCloudClassification {
 
@@ -106,6 +108,7 @@ namespace PointCloudClassification {
 
 	std::vector<float*> NetworkGPU::forward(std::vector<float*> input, bool test) {
 		auto start = high_resolution_clock::now();
+		
 		output_gn1 = gcn_layer1.forward(input, false);
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
@@ -144,11 +147,20 @@ namespace PointCloudClassification {
 			std::cout << "GP 1 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp1, 10);
 		}
-		std::vector<float*> batch_L = std::vector<float*>(input.begin() + Parameters::batch_size, input.end());
+		std::vector<float*> batch_L;
 		std::vector<float*> output_with_L;
-		output_with_L.reserve(output_d1.size() + batch_L.size()); // preallocate memory
-		output_with_L.insert(output_with_L.end(), output_d1.begin(), output_d1.end());
-		output_with_L.insert(output_with_L.end(), batch_L.begin(), batch_L.end());
+		if (test) {
+			batch_L = std::vector<float*>(input.begin() + 1, input.end());
+			output_with_L.reserve(2); // preallocate memory
+			output_with_L.insert(output_with_L.end(), output_d1.begin(), output_d1.begin() + 1);
+			output_with_L.insert(output_with_L.end(), batch_L.begin(), batch_L.begin() + 1);
+		}
+		else {
+			batch_L = std::vector<float*>(input.begin() + Parameters::batch_size, input.end());
+			output_with_L.reserve(output_d1.size() + batch_L.size()); // preallocate memory
+			output_with_L.insert(output_with_L.end(), output_d1.begin(), output_d1.end());
+			output_with_L.insert(output_with_L.end(), batch_L.begin(), batch_L.end());
+		}
 
 		start = high_resolution_clock::now();
 		output_gcn2 = gcn_layer2.forward(output_with_L, false);
@@ -192,6 +204,7 @@ namespace PointCloudClassification {
 			std::cout << "GP 2 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_gp2, 10);
 		}
+		
 		// Concatenate
 		for (int i = 0; i < Parameters::batch_size; i++) {
 			cudaMemcpy(d3_cat[i], output_gp1[i], (Parameters::gcn1_out_features) * 2 * sizeof(float), cudaMemcpyDeviceToDevice);
@@ -212,7 +225,6 @@ namespace PointCloudClassification {
 		}
 		memPrint("After D 3");
 
-
 		if (debug) {
 			std::cout << "D 3 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d3, 10);
@@ -225,7 +237,6 @@ namespace PointCloudClassification {
 			std::cout << "GPU : (Fully Connected Layer 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
 		memPrint("After FC 1");
-
 
 		if (debug) {
 			std::cout << "FC 1 " << std::endl;
@@ -240,7 +251,6 @@ namespace PointCloudClassification {
 			std::cout << "GPU : (RELU 1 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
 		memPrint("After RELU 1");
-
 
 		if (debug) {
 			std::cout << "R 1 " << std::endl;
@@ -257,7 +267,6 @@ namespace PointCloudClassification {
 		}
 		memPrint("After D 4");
 
-
 		if (debug) {
 			std::cout << "D 4 " << std::endl;
 			Utilities::printVectorOfFloatsGPU(output_d4, 10);
@@ -271,7 +280,6 @@ namespace PointCloudClassification {
 			std::cout << "GPU : (Fully Connected Layer 2 Forward / batch) ==> " << duration.count() << " microseconds" << std::endl;
 		}
 		memPrint("After FC 2");
-
 
 		if (debug) {
 			std::cout << "FC 2 " << std::endl;
@@ -733,18 +741,21 @@ namespace PointCloudClassification {
 		}
 	}
 
-	void NetworkGPU::test(std::vector<float*> test_batch, std::vector <float*> trueLabel) {
+	std::vector<float> NetworkGPU::test(std::vector<float*> test_batch, std::vector <float*> trueLabel) {
 		std::vector<float> classification;
-		for (int i = 0; i < test_batch.size(); i++) {
+		int b_size = test_batch.size();
+		
+		for (int i = 0; i < b_size; i++) {
 			classification.push_back(0.0f);
 		}
 
 		// VISUALIZE INPUT POINT CLOUD
+		//visualize(test_batch[0], 1024, distance(trueLabel[0], max_element(trueLabel[0], trueLabel[0] + 10)), -1);
 
 		// One batch worth Laplacians on GPU
 		memPrint("Before Batch Graph Cons");
 		std::vector<float*> dev_lap;
-		for (int i = 0; i < Parameters::batch_size; i++) {
+		for (int i = 0; i < b_size; i++) {
 			float* l;
 			cudaMalloc((void**)&l, Parameters::num_points * Parameters::num_points * sizeof(float));
 			dev_lap.push_back(l);
@@ -754,7 +765,7 @@ namespace PointCloudClassification {
 		// One batch worth Input Data on GPU
 		memPrint("Before Input Data");
 		std::vector<float*> dev_in;
-		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+		for (int bi = 0; bi < b_size; bi++) {
 			float* dev_bin;
 			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::input_features * sizeof(float));
 			dev_in.push_back(dev_bin);
@@ -764,7 +775,7 @@ namespace PointCloudClassification {
 		// One batch worth labels on GPU
 		memPrint("Before Label");
 		std::vector<float*> dev_label;
-		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+		for (int bi = 0; bi < b_size; bi++) {
 			float* dev_blab;
 			cudaMalloc((void**)&dev_blab, Parameters::num_classes * sizeof(float));
 			dev_label.push_back(dev_blab);
@@ -774,43 +785,44 @@ namespace PointCloudClassification {
 		// One batch worth input on GPU
 		memPrint("Before Forward Input");
 		std::vector<float*> dev_batch;
-		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+		for (int bi = 0; bi < b_size; bi++) {
 			float* dev_bin;
 			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::input_features * sizeof(float));
 			dev_batch.push_back(dev_bin);
 		}
-		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+		for (int bi = 0; bi < b_size; bi++) {
 			float* dev_bin;
 			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::num_points * sizeof(float));
 			dev_batch.push_back(dev_bin);
 		}
 		memPrint("After Forward Input");
 
-		for (int bi = 0; bi < test_batch.size(); bi++) {
+		for (int bi = 0; bi < b_size; bi++) {
 			normalize_data(test_batch[bi], Parameters::num_points);
 		}
 		
-		for (int bi = 0; bi < test_batch.size(); bi++) {
+		
+		for (int bi = 0; bi < b_size; bi++) {
 			cudaMemcpy(dev_in[bi], test_batch[bi], Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
 		}
-
+		
 		// Laplacian of the batch data
 		get_laplacian(test_batch, dev_lap);
-
+		
 		// Copy Label and Forward Data
-		for (int bi = 0; bi < test_batch.size(); bi++) {
+		for (int bi = 0; bi < b_size; bi++) {
 			cudaMemcpy(dev_batch[bi], dev_in[bi], Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyDeviceToDevice);
 		}
-		for (int bi = test_batch.size(); bi < 2 * test_batch.size(); bi++) {
-			cudaMemcpy(dev_batch[bi], dev_lap[bi - test_batch.size()], Parameters::num_points * Parameters::num_points * sizeof(float), cudaMemcpyDeviceToDevice);
+		for (int bi = b_size; bi < 2 * b_size; bi++) {
+			cudaMemcpy(dev_batch[bi], dev_lap[bi - b_size], Parameters::num_points * Parameters::num_points * sizeof(float), cudaMemcpyDeviceToDevice);
 		}
-		for (int bi = 0; bi < test_batch.size(); bi++) {
+		for (int bi = 0; bi < b_size; bi++) {
 			cudaMemcpy(dev_label[bi], trueLabel[bi], Parameters::num_classes * sizeof(float), cudaMemcpyHostToDevice);
 		}
-
+		
 		auto start = high_resolution_clock::now();
 		// Forward Pass
-		std::vector<float*> prediction = forward(dev_batch, false);
+		std::vector<float*> prediction = forward(dev_batch, true);
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
 		if (time) {
@@ -821,15 +833,22 @@ namespace PointCloudClassification {
 
 		// Calculate Loss
 		float loss = calculateLoss(prediction, dev_label);
+		std::cout << "Loss = " << loss << std::endl;
 
 		start = high_resolution_clock::now();
-		PointCloudClassification::softmaxActivationLayerGPU softmaxLayer(numClasses, Parameters::batch_size, false);
+		PointCloudClassification::softmaxActivationLayerGPU softmaxLayer(numClasses, b_size, false);
 		std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
 
 		// Check Prediction: Can comment this in training later on..
 		getClassification(pprob, this->numClasses, classification);
 
+		std::cout << "Classification: " << std::endl;
+		Utilities::printVector(classification, b_size);
+
 		//VISUALIZE POINT CLOUD WITH PREDICTION
+		//visualize(test_batch[0], 1024, classification[0], -1);
+
+		return classification;
 	}
 	
 }

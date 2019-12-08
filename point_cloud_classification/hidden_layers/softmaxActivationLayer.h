@@ -24,11 +24,12 @@ namespace PointCloudClassification {
 			
 
 			int inputDim;
-			int batchDim;
+			
 			int outputDim;
 			bool lastLayer;
 
 		public:
+			int batchDim;
 			softmaxActivationLayerCPU() {};
 			softmaxActivationLayerCPU(int inputDim, int batchDim, bool lastLayer) {
 				this->inputDim = inputDim;

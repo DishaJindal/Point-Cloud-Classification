@@ -10,7 +10,6 @@
 #include <fstream>
 #include <string>
 #include "device_launch_parameters.h"
-
 #define blockSize 128
 
 __global__ void kernel_max_pool(float* oneOutgoingGradient, float* incomingGradient, int pts, int idim, int* argm) {
@@ -42,19 +41,25 @@ namespace PointCloudClassification {
 		this->Z = inputArg;
 
 		// Calculate Output
-		//std::vector<float*> output;
 		for (int b = 0; b < inputArg.size(); b++) {
-			
-
 			// Max Pooling and Save Argmax for back prop
 			m->maxAcrossDim1(inputArg[b], numPoints, inputDim, this->argMax[b], this->output[b]);
-
+		}
+		for (int b = 0; b < inputArg.size(); b++) {
 			// Calculate mean and Save it for back prop
-			m->meanAcrossDim1(inputArg[b], numPoints, inputDim, this->mean[b]);
-
+			m->meanAcrossDim1(inputArg[b], numPoints, inputDim, this->mean[b], streams[b%MAX_STREAMS]);
+		}
+		for (int i = 0; i < num_streams; ++i)
+		{
+			cudaStreamSynchronize(streams[i]);
+		}
+		for (int b = 0; b < inputArg.size(); b++) {
 			// Variance Pooling
-			m->varianceAcrossDim1(inputArg[b], numPoints, inputDim, this->output[b] + inputDim, this->mean[b]);
-			//output.push_back(current_output);
+			m->varianceAcrossDim1(inputArg[b], numPoints, inputDim, this->output[b] + inputDim, this->mean[b], streams[b%MAX_STREAMS]);
+		}
+		for (int i = 0; i < num_streams; ++i)
+		{
+			cudaStreamSynchronize(streams[i]);
 		}
 		return this->output;
 	}

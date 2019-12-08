@@ -23,13 +23,14 @@ namespace PointCloudClassification {
 
 		int numPoints;
 		int inputDim;
-		int batchDim;
+		
 		bool lastLayer;
 		std::vector<float*> nodesKeep;
 		std::bernoulli_distribution disturb; 
 		std::default_random_engine rand_generator;
 
 	public:
+		int batchDim;
 		DropoutLayer() {};
 		DropoutLayer(int numPoints, int inputDim, int batchDim, bool lastLayer) {
 			this->numPoints = numPoints; 

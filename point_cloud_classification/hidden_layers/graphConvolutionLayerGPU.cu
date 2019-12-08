@@ -49,7 +49,9 @@ namespace PointCloudClassification {
 		this->X = std::vector < float* >(inputArg.begin(), inputArg.begin() + batchDim);
 		this->L = std::vector < float* >(inputArg.begin() + batchDim, inputArg.end());
 
+		
 		for (int i = 0; i < batchDim; i++) {
+			
 			float* current_input = inputArg[i];
 			float* current_L = inputArg[i + batchDim];
 			Tk_minus_2 = current_input;
@@ -68,6 +70,7 @@ namespace PointCloudClassification {
 				}
 					
 				if (k == 0) {
+					
 					m->multiply(Tk, theta[k], numPoints, inputDim, outputDim, output[i]);
 				}
 				else {

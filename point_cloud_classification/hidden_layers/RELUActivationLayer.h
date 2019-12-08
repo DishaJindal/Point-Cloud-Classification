@@ -23,11 +23,12 @@ namespace PointCloudClassification {
 
 
 		int inputDim;
-		int batchDim;
+		
 		int outputDim;
 		bool lastLayer;
 
 	public:
+		int batchDim;
 		RELUActivationLayer() {};
 		RELUActivationLayer(int inputDim, int outputDim ,int batchDim, bool lastLayer) {
 			this->inputDim = inputDim;

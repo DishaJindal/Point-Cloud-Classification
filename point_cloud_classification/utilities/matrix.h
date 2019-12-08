@@ -9,6 +9,7 @@
 #include <math.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include "cublas_v2.h"
 
 class Matrix{
 public:
@@ -43,6 +44,8 @@ public:
 
 class MatrixGPU : public Matrix {
 public:
+	cublasHandle_t handle;
+	MatrixGPU();
 	void multiply(float* A, float* B, int m, int n, int p, float* output);
 	void multiplyTranspose(float* A, float* B, int m, int n, int p, float* output);
 	void transpose(float* A, int m, int n, float* output);
@@ -54,9 +57,9 @@ public:
 	void getIdentityMatrix(int m, float* A);
 	void linearCombination(float* A, float* B, float alpha, float beta, int m, int n, float* output);
 	void maxAcrossDim1(float* A, int  n, int m, int* argmaxOutput, float* output);
-	void meanAcrossDim1(float * A, int m, int n, float * output);
+	void meanAcrossDim1(float * A, int m, int n, float * output, cudaStream_t stream = NULL);
 	void sumAcrossDim1(float * A, int m, int n, float * output);
-	void varianceAcrossDim1(float * A, int m, int n, float * output, float* mean);
+	void varianceAcrossDim1(float * A, int m, int n, float * output, float* mean, cudaStream_t stream = NULL);
 	void ReluForward(float* A, int m, int n, float* output);
 	void exp(float * A, int m, int n, float * output);
 	void divide_sum(float* input, float* sum, int batchDim, int outputDim, float* output);

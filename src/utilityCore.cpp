@@ -167,8 +167,8 @@ void utilityCore::printVec3(const glm::vec3 &m) {
 std::vector<glm::vec3> utilityCore::readPointCloud(std::string filename) {
 	glm::mat4 centerTransform;
 	glm::vec3 t(0.0f, 0.0f, 0.0f);
-	glm::vec3 r(3.0f, 0.0f, 1.0f);
-	glm::vec3 s(0.01f, 0.001f, 0.001f);
+	glm::vec3 r(0.0f, 0.0f, 0.0f);
+	glm::vec3 s(0.001f, 0.001f, 0.001f);
 	centerTransform = utilityCore::buildTransformationMatrix(t, r, s);
 
 
@@ -257,6 +257,13 @@ void utilityCore::convertFromVectorToFloatPtr(std::vector<glm::vec3> &points, fl
 	}
 	//return convertedPoints;
 }
+
+void utilityCore::convertFromFloatPtrToVector(float *points, std::vector<glm::vec3> &convertedPoints, int numPoints) {
+	for (int i = 0; i < numPoints; i++) {
+		convertedPoints.push_back(glm::vec3(points[i * 3 + 0], points[i * 3 + 1], points[i * 3 + 2]));
+	}
+}
+
 
 
 std::vector<std::string> utilityCore::get_filenames(std::experimental::filesystem::path path)

@@ -8,9 +8,10 @@
 namespace PointCloudClassification {
 	class CrossEntropyLoss : public Loss {
 	protected:
-		int batchDim;
+		
 		int numClasses;
 	public:
+		int batchDim;
 			CrossEntropyLoss() {};
 			CrossEntropyLoss(int batchDim, int numClasses) {
 				this->batchDim = batchDim;

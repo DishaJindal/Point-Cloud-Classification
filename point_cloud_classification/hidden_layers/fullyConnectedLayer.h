@@ -36,11 +36,12 @@ namespace PointCloudClassification {
 		float *Z = NULL;
 
 		int inputDim;
-		int batchDim;
+		
 		int outputDim;
 		bool lastLayer;
 
 	public:
+		int batchDim;
 		FullyConnectedLayerCPU() {};
 		FullyConnectedLayerCPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			this->inputDim = inputDim;
@@ -97,7 +98,7 @@ namespace PointCloudClassification {
 		float *Z = NULL;
 
 		int inputDim;
-		int batchDim;
+		
 		int outputDim;
 		bool lastLayer;
 		float* flattenedInputForward;
@@ -107,6 +108,7 @@ namespace PointCloudClassification {
 		float* flattenedOutputBackward;
 
 	public:
+		int batchDim;
 		FullyConnectedLayerGPU() {};
 		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
 			this->inputDim = inputDim;

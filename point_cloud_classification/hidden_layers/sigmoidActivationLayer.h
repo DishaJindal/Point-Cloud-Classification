@@ -18,11 +18,12 @@ namespace PointCloudClassification {
 			float *dZ = NULL;
 			
 			int inputDim;
-			int batchDim;
+			
 			int outputDim;
 			bool lastLayer;
 
 		public:
+			int batchDim;
 			sigmoidActivationLayerCPU() {};
 			sigmoidActivationLayerCPU(int inputDim, int batchDim, bool lastLayer) {
 				this->inputDim = inputDim;
