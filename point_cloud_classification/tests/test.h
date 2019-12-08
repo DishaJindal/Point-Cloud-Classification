@@ -31,7 +31,6 @@ namespace Tests {
 
 	void testMatrixGPUReduction() {
 
-
 		MatrixCPU* mc = new MatrixCPU();
 		MatrixGPU* mg = new MatrixGPU();
 
@@ -79,13 +78,81 @@ namespace Tests {
 
 		float difference = 0;
 		for (int i = 0; i < n; i++) {
-			difference += ((bGPU[i] - b[i])*(bGPU[i] - b[i]))/n;
+			difference += ((bGPU[i] - b[i])*(bGPU[i] - b[i])) / n;
 		}
 
 		std::cout << "\nDifference between the CPU and the GPU implementation is " << difference << std::endl;
 		std::cout << std::endl;
 		std::cout << std::endl;
-			   		 
+
+	}
+
+	void testMatrixGPUMaxReduction() {
+
+		MatrixCPU* mc = new MatrixCPU();
+		MatrixGPU* mg = new MatrixGPU();
+
+
+		int m = 1<<10;
+		int n = 1000;
+		int size = n * m;
+		float * a;
+		a = (float*)malloc(size * sizeof(float));
+		Utilities::genArray(size, a);
+		//cout << "\n********************************" << endl;
+		//cout << "Original Matrix ..." << endl;
+		//mc->printMatrix(a, m, n);
+
+		float *dev_a;
+		cudaMalloc((void **)&dev_a, size * sizeof(float));
+		cudaMemcpy(dev_a, a, size * sizeof(float), cudaMemcpyHostToDevice);
+
+		float * b;
+		b = (float*)malloc(size * sizeof(float));
+		int * b_indices;
+		b_indices = (int*)malloc(n * sizeof(int));
+		float * bGPU;
+		bGPU = (float*)malloc(size * sizeof(float));
+
+
+		float *dev_b;
+		cudaMalloc((void **)&dev_b, m * n * sizeof(float));
+		int * b_indices_gpu;
+		b_indices_gpu = (int*)malloc(n * sizeof(int));
+		int *dev_b_indices;
+		cudaMalloc((void **)&dev_b_indices, n * sizeof(int));
+
+		mc->maxAcrossDim1(a, m, n, b_indices, b);
+		mg->maxAcrossDim1(dev_a, m, n, dev_b_indices, dev_b);
+
+
+		//cout << "\n********************************" << endl;
+		//cout << "CPU Result ..." << endl;
+		//mc->printMatrix(b, 1, n);
+
+
+
+		cudaMemcpy(bGPU, dev_b, m * n * sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy(b_indices_gpu, dev_b_indices, n * sizeof(float), cudaMemcpyDeviceToHost);
+
+		//cout << "********************************" << endl;
+		//cout << "GPU Result ..." << endl;
+		//mc->printMatrix(bGPU, 1, n);
+		//cout << "********************************" << endl;
+
+
+		float difference = 0;
+		float difference_Ind = 0;
+		for (int i = 0; i < n; i++) {
+			difference += ((bGPU[i] - b[i])*(bGPU[i] - b[i])) / n;
+			difference_Ind += ((b_indices_gpu[i] - b_indices[i])*(b_indices_gpu[i] - b_indices[i])) / n;
+		}
+
+		std::cout << "\nDifference between the CPU and the GPU implementation is " << difference << std::endl;
+		std::cout << "\nDifference in Index between the CPU and the GPU implementation is " << difference_Ind << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
+
 	}
 
 	void testMatrixTranspose() {
@@ -863,15 +930,20 @@ void tests() {
 	//Tests::testMatrixGPUReduction();
 	//cout << "********************************************************" << endl;
 
+	cout << "********************************************************" << endl;
+	cout << "Testing GPU Matrix Max Reduction ..." << endl;
+	Tests::testMatrixGPUMaxReduction();
+	cout << "********************************************************" << endl;
+
 	//cout << "********************************************************" << endl;
 	//cout << "Testing Matrix Transpose ..." << endl;
 	//Tests::testMatrixTranspose();
 	//cout << "********************************************************" << endl;
 
-	cout << "********************************************************" << endl;
-	cout << "Testing Matrix Multiplication ..." << endl;
-	Tests::testMatrixMultiplication();
-	cout << "********************************************************" << endl;
+	//cout << "********************************************************" << endl;
+	//cout << "Testing Matrix Multiplication ..." << endl;
+	//Tests::testMatrixMultiplication();
+	//cout << "********************************************************" << endl;
 
 	//cout << "********************************************************" << endl;
 	//cout << "Testing Matrix Multiplication Transpose ..." << endl;

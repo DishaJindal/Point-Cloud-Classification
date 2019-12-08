@@ -45,7 +45,9 @@ public:
 class MatrixGPU : public Matrix {
 public:
 	cublasHandle_t handle;
-	MatrixGPU();
+	MatrixGPU() {
+		cublasCreate(&handle);
+	}
 	void multiply(float* A, float* B, int m, int n, int p, float* output);
 	void multiplyTranspose(float* A, float* B, int m, int n, int p, float* output);
 	void transpose(float* A, int m, int n, float* output);
