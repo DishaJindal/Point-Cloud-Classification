@@ -18,8 +18,8 @@ using namespace std::chrono;
 
 #define blockSize 128
 #define debug false
-#define memStats true
-#define time true
+#define memStats false
+#define time false
 
 namespace PointCloudClassification {
 
@@ -731,6 +731,105 @@ namespace PointCloudClassification {
 			}
 			classification[i] = clazz;
 		}
+	}
+
+	void NetworkGPU::test(std::vector<float*> test_batch, std::vector <float*> trueLabel) {
+		std::vector<float> classification;
+		for (int i = 0; i < test_batch.size(); i++) {
+			classification.push_back(0.0f);
+		}
+
+		// VISUALIZE INPUT POINT CLOUD
+
+		// One batch worth Laplacians on GPU
+		memPrint("Before Batch Graph Cons");
+		std::vector<float*> dev_lap;
+		for (int i = 0; i < Parameters::batch_size; i++) {
+			float* l;
+			cudaMalloc((void**)&l, Parameters::num_points * Parameters::num_points * sizeof(float));
+			dev_lap.push_back(l);
+		}
+		memPrint("After Batch Graph Cons");
+
+		// One batch worth Input Data on GPU
+		memPrint("Before Input Data");
+		std::vector<float*> dev_in;
+		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+			float* dev_bin;
+			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::input_features * sizeof(float));
+			dev_in.push_back(dev_bin);
+		}
+		memPrint("After Input Data");
+
+		// One batch worth labels on GPU
+		memPrint("Before Label");
+		std::vector<float*> dev_label;
+		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+			float* dev_blab;
+			cudaMalloc((void**)&dev_blab, Parameters::num_classes * sizeof(float));
+			dev_label.push_back(dev_blab);
+		}
+		memPrint("After Label");
+
+		// One batch worth input on GPU
+		memPrint("Before Forward Input");
+		std::vector<float*> dev_batch;
+		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+			float* dev_bin;
+			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::input_features * sizeof(float));
+			dev_batch.push_back(dev_bin);
+		}
+		for (int bi = 0; bi < Parameters::batch_size; bi++) {
+			float* dev_bin;
+			cudaMalloc((void**)&dev_bin, Parameters::num_points * Parameters::num_points * sizeof(float));
+			dev_batch.push_back(dev_bin);
+		}
+		memPrint("After Forward Input");
+
+		for (int bi = 0; bi < test_batch.size(); bi++) {
+			normalize_data(test_batch[bi], Parameters::num_points);
+		}
+		
+		for (int bi = 0; bi < test_batch.size(); bi++) {
+			cudaMemcpy(dev_in[bi], test_batch[bi], Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyHostToDevice);
+		}
+
+		// Laplacian of the batch data
+		get_laplacian(test_batch, dev_lap);
+
+		// Copy Label and Forward Data
+		for (int bi = 0; bi < test_batch.size(); bi++) {
+			cudaMemcpy(dev_batch[bi], dev_in[bi], Parameters::num_points * Parameters::input_features * sizeof(float), cudaMemcpyDeviceToDevice);
+		}
+		for (int bi = test_batch.size(); bi < 2 * test_batch.size(); bi++) {
+			cudaMemcpy(dev_batch[bi], dev_lap[bi - test_batch.size()], Parameters::num_points * Parameters::num_points * sizeof(float), cudaMemcpyDeviceToDevice);
+		}
+		for (int bi = 0; bi < test_batch.size(); bi++) {
+			cudaMemcpy(dev_label[bi], trueLabel[bi], Parameters::num_classes * sizeof(float), cudaMemcpyHostToDevice);
+		}
+
+		auto start = high_resolution_clock::now();
+		// Forward Pass
+		std::vector<float*> prediction = forward(dev_batch, false);
+		auto stop = high_resolution_clock::now();
+		auto duration = duration_cast<microseconds>(stop - start);
+		if (time) {
+			std::cout << "************************************************************************************" << std::endl;
+			std::cout << "GPU :Inference Time ==> " << duration.count() / 1000 << " ms" << std::endl;
+			std::cout << "************************************************************************************" << std::endl;
+		}
+
+		// Calculate Loss
+		float loss = calculateLoss(prediction, dev_label);
+
+		start = high_resolution_clock::now();
+		PointCloudClassification::softmaxActivationLayerGPU softmaxLayer(numClasses, Parameters::batch_size, false);
+		std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
+
+		// Check Prediction: Can comment this in training later on..
+		getClassification(pprob, this->numClasses, classification);
+
+		//VISUALIZE POINT CLOUD WITH PREDICTION
 	}
 	
 }
