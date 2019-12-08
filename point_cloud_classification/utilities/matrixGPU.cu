@@ -26,10 +26,10 @@ inline void __cublasSafeCall(cublasStatus_t err, const char *file, const int lin
 		exit(EXIT_FAILURE);
 	}
 }
-
-MatrixGPU::MatrixGPU() {
-	cublasSafeCall(cublasCreate(&handle));
-}
+//
+//MatrixGPU::MatrixGPU() {
+//	cublasSafeCall(cublasCreate(&handle));
+//}
 
 /*
 	A -> m x n
@@ -454,228 +454,35 @@ void reduce_max(float* dev_A, int m, int n, float* dev_B) {
 }
 
 
+__global__ void kernSelectValues(float *input, int *indices, int n, float *output) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index < n) {
+		output[index] = input[(indices[index]) * n + index];
+	}
+}
+
+
 /*
 	A -> m x n
 	output = n
 */
 void MatrixGPU::maxAcrossDim1(float* A, int m, int n, int* argmaxOutput, float* output) {
-	reduce_max(A, m, n, output);
-}
-
-template <unsigned int blockSize>
-__device__ void kern_warp_reduce_mean(volatile float *sdata, unsigned int tid, int width) {
-	if (blockSize >= 64) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 32];
-		}
-	}
-	if (blockSize >= 32) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 16];
-		}
-	}
-	if (blockSize >= 16) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 8];
-		}
-	}
-	if (blockSize >= 8) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 4];
-		}
-	}
-	if (blockSize >= 4) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 2];
-		}
-	};
-	if (blockSize >= 2) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 1];
-		}
-	}
-}
-template <unsigned int blockSize>
-__global__ void kern_reduce_mean(float *g_idata, float *g_odata, unsigned int m, unsigned int startColumn, int width, int n, float denominator) {
-	extern __shared__ float sdata[];
-	unsigned int tid = threadIdx.x;
-	unsigned int i = blockIdx.x*(blockSize * 2) + tid;
-	unsigned int gridSize = blockSize * 2 * gridDim.x;
-	for (int k = 0; k < width; ++k) {
-		sdata[width * tid + k] = 0;
-	}
-	while (i < m) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += (g_idata[n * i + k + startColumn] + g_idata[n * i + k + startColumn + n * blockSize]) / denominator;
-		}
-		i += gridSize; 
-	}
-	__syncthreads();
-	if (blockSize == 1024) { if (tid < 512) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 512];
-		}
-	} __syncthreads(); }
-	if (blockSize >= 512) { if (tid < 256) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 256];
-		}
-	} __syncthreads(); }
-	if (blockSize >= 256) { if (tid < 128) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 128];
-		}
-	} __syncthreads(); }
-	if (blockSize >= 128) { if (tid < 64) {
-		for (int k = 0; k < width; ++k) {
-			sdata[width * tid + k] += sdata[width * tid + k + width * 64];
-		}
-	} __syncthreads(); }
-	if (tid < 32) kern_warp_reduce_mean<blockSize>(sdata, tid, width);
-	if (tid == 0) {
-		for (int k = 0; k < width; ++k) {
-			g_odata[n * blockIdx.x + k + startColumn] = sdata[k];
-		}
-	}
-}
-
-void reduce_mean(float* dev_A, int m, int n, float* dev_B, float denominator) {
-
-	int numFeaturesConsidered = 12;
-	int s = m;
-	int	threads = (s < 1024 * 2) ? nextPow2((s + 1) / 2) : 1024;
-	int	blocks = (s + (threads * 2 - 1)) / (threads * 2);
-
-	if (threads <= 32) {
-		numFeaturesConsidered = 6;
-	}
-	int smemSize = ((threads <= 32) ? 2 : 1) * imin(n, numFeaturesConsidered) * threads * sizeof(float);
-
-
-	for (int i = 0; i < n; i = i + numFeaturesConsidered) {
-		dim3 dimBlock(threads, 1, 1);
-		dim3 dimGrid(blocks, 1, 1);
-		switch (threads)
-		{
-		case 1024:
-			kern_reduce_mean<1024> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case 512:
-			kern_reduce_mean<512> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case 256:
-			kern_reduce_mean<256> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case 128:
-			kern_reduce_mean<128> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case 64:
-			kern_reduce_mean<64> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case 32:
-			kern_reduce_mean<32> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case 16:
-			kern_reduce_mean<16> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case  8:
-			kern_reduce_mean<8> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case  4:
-			kern_reduce_mean<4> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case  2:
-			kern_reduce_mean<2> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-
-		case  1:
-			kern_reduce_mean<1> << < dimGrid, dimBlock, smemSize >> > (dev_A, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, denominator);
-			break;
-		}
+	int *ind = (int *) malloc(n * sizeof(int));
+	float *reluA;
+	cudaMalloc((void **)&reluA, m*n * sizeof(float));
+	ReluForward(A, m, n, reluA);
+	for (int i = 0; i < n; i++) {
+		cublasSafeCall(cublasIsamax(handle, m, reluA + i, n, ind + i));
 		cudaDeviceSynchronize();
+		ind[i] -= 1;
 	}
-	s = blocks;
-
-	while (s > 1) {
-		float *dev_temp;
-
-		cudaMalloc(&dev_temp, n * s * sizeof(float));
-		cudaMemcpy(dev_temp, dev_B, n * s * sizeof(float), cudaMemcpyDeviceToDevice);
-
-		numFeaturesConsidered = 12;
-		threads = (s < 1024 * 2) ? nextPow2((s + 1) / 2) : 1024;
-		blocks = (s + (threads * 2 - 1)) / (threads * 2);
-		if (threads <= 32) {
-			numFeaturesConsidered = 6;
-		}
-		int smemSize = ((threads <= 32) ? 2 : 1) * imin(n, numFeaturesConsidered) * threads * sizeof(float);
-
-		dim3 dimBlock(threads, 1, 1);
-		dim3 dimGrid(blocks, 1, 1);
-
-		for (int i = 0; i < n; i = i + numFeaturesConsidered) {
-			switch (threads)
-			{
-			case 1024:
-				kern_reduce_mean<1024> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case 512:
-				kern_reduce_mean<512> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case 256:
-				kern_reduce_mean<256> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case 128:
-				kern_reduce_mean<128> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case 64:
-				kern_reduce_mean<64> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case 32:
-				kern_reduce_mean<32> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case 16:
-				kern_reduce_mean<16> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case  8:
-				kern_reduce_mean<8> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case  4:
-				kern_reduce_mean<4> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case  2:
-				kern_reduce_mean<2> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-
-			case  1:
-				kern_reduce_mean<1> << < dimGrid, dimBlock, smemSize >> > (dev_temp, dev_B, s, i, imin(numFeaturesConsidered, n - i), n, 1);
-				break;
-			}
-			cudaDeviceSynchronize();
-		}
-		s = (s + (threads * 2 - 1)) / (threads * 2);
-		cudaFree(dev_temp);
-	}
-
+	cudaMemcpy(argmaxOutput, ind, n * sizeof(int), cudaMemcpyHostToDevice);
+	dim3 fullBlocksPerGrid((n + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernSelectValues <<< fullBlocksPerGrid, BLOCK_SIZE >>> (A, argmaxOutput, n, output);
+	free(ind);
+	cudaFree(reluA);
 }
+
 /*
 	A -> m x n
 	output = n
@@ -724,13 +531,16 @@ __global__ void kernMatrixSubVectorSquare(float *input1, float *input2, float *o
 */
 void MatrixGPU::varianceAcrossDim1(float* A, int m, int n, float* output, float* mean, cudaStream_t stream) {
 	dim3 fullBlocksPerGrid((m * n + BLOCK_SIZE - 1) / BLOCK_SIZE);
-	kernMatrixSubVectorSquare << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, mean, A, m, n);
+	float *tempA;
+	cudaMalloc((void **)&tempA, m  *n * sizeof(float));
+	kernMatrixSubVectorSquare << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, mean, tempA, m, n);
 	thrust::device_vector<float> d_ones(m, 1.0f / m);
 	float alpha = 1.0f;
 	float beta = 0.0f;
 	if (stream != NULL)
 		cublasSetStream(handle, stream);
-	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, A, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output, 1));
+	cublasSafeCall(cublasSgemv(handle, CUBLAS_OP_N, n, m, &alpha, tempA, n, thrust::raw_pointer_cast(d_ones.data()), 1, &beta, output, 1));
+	cudaFree(tempA);
 }
 
 /*

@@ -18,10 +18,9 @@ using namespace std::chrono;
 #endif
 
 #define blockSize 128
-#define debug false
+#define debug true
 #define memStats false
 #define time false
-
 
 namespace PointCloudClassification {
 
@@ -571,6 +570,7 @@ namespace PointCloudClassification {
 
 		float* perEpochLoss = (float*)malloc(Parameters::num_epochs * sizeof(float));
 		float epochLoss = 0;
+		int epochCorrect = 0;
 		std::vector<float> classification;
 		for (int i = 0; i < this->batchSize; i++) {
 			classification.push_back(0.0f);
@@ -626,6 +626,7 @@ namespace PointCloudClassification {
 		for (int ep = 0; ep < Parameters::num_epochs; ep++) {
 			std::cout << "****************************Epoch " << ep << "***************************" << std::endl;
 			epochLoss = 0;
+			epochCorrect = 0;
 
 			// Epoch Stats
 			auto ep_start = high_resolution_clock::now();
@@ -690,8 +691,8 @@ namespace PointCloudClassification {
 				std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
 
 				// Check Prediction: Can comment this in training later on..
-				getClassification(pprob, this->numClasses, classification);
-				
+				int c = getClassification(pprob, this->numClasses, classification, trueLabel);
+				epochCorrect += c;
 				// Backward Pass
 				if (debug) {
 					std::cout << "************************************************************************************" << std::endl;
@@ -708,22 +709,25 @@ namespace PointCloudClassification {
 				}
 			}
 			epochLoss /= num_batches;
+			//epochCorrect /= (num_batches*Parameters::batch_size);
 			perEpochLoss[ep] = epochLoss;
 			auto ep_stop = high_resolution_clock::now();
 			auto duration = duration_cast<microseconds>(ep_stop - ep_start);
-			std::cout << "Epoch: " << ep << " Loss: " << epochLoss << " Time: " << duration.count() / 1000 << " ms" << std::endl;
+			std::cout << "Epoch: " << ep << " Loss: " << epochLoss << " Accuracy: "<< epochCorrect << " Total: "<<(num_batches*Parameters::batch_size) << " Time: " << duration.count() / 1000 << " ms" << std::endl;
 		}
 		std::cout << "Done with training, printing loss\n";
 		Utilities::printArray(perEpochLoss, Parameters::num_epochs);
 	}
 
 	// Returns classification between [0, classes-1] for each instance
-	void NetworkGPU::getClassification(const std::vector<float*> pprob, const int classes, std::vector<float> classification) {
+	int NetworkGPU::getClassification(const std::vector<float*> pprob, const int classes, std::vector<float> classification, std::vector<float*> dev_label) {
+		int correct = 0;
 		if (debug) {
 			std::cout << "Actual Prediction: ";
 			Utilities::printVectorOfFloatsGPU(pprob, Parameters::num_classes);
 		}
 		int n = pprob.size();
+		float correct_clazz = -1;
 		for (int i = 0; i < n; i++) {
 			float maxProb = 0;
 			float clazz = 0;
@@ -736,9 +740,14 @@ namespace PointCloudClassification {
 					clazz = j;
 					maxProb = pprob_cpu[j];
 				}
+				if (dev_label[i][j] > 0)
+					correct_clazz = j;
 			}
 			classification[i] = clazz;
+			if (clazz == correct_clazz)
+				correct++;
 		}
+		return correct;
 	}
 
 	std::vector<float> NetworkGPU::test(std::vector<float*> test_batch, std::vector <float*> trueLabel) {
@@ -840,7 +849,7 @@ namespace PointCloudClassification {
 		std::vector<float*> pprob = softmaxLayer.forward(prediction, false);
 
 		// Check Prediction: Can comment this in training later on..
-		getClassification(pprob, this->numClasses, classification);
+		getClassification(pprob, this->numClasses, classification, trueLabel);
 
 		std::cout << "Classification: " << std::endl;
 		Utilities::printVector(classification, b_size);

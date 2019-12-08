@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 	//tests();
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
-	int per_class = 10;
+	int per_class = 5;
 	std::vector<float*> x_train;
 	std::vector<float*> y_train;
 
@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
 
 	int index = 9;
 	visualize(x_train[index], 1024, distance(y_train[index], max_element(y_train[index], y_train[index] + 10)), -1);
+
 
 
 	//Build the network

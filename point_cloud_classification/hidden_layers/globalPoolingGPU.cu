@@ -14,20 +14,24 @@
 
 __global__ void kernel_max_pool(float* oneOutgoingGradient, float* incomingGradient, int pts, int idim, int* argm) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	int i = idx / pts;
-	int j = idx % pts;
-	// Initialize gradients propagation to all points with 0
-	oneOutgoingGradient[idim * j + i] = 0;
-	// Update gradient of the max point
-	oneOutgoingGradient[idim * argm[i] + i] = incomingGradient[i];
+	int i = idx / idim; // row
+	int j = idx % idim; // column
+	if (i < pts && j < idim) {
+		// Initialize gradients propagation to all points with 0
+		oneOutgoingGradient[idim * i + j] = 0;
+		// Update gradient of the max point
+		oneOutgoingGradient[idim * argm[j] + j] = incomingGradient[j];
+	}
 }
 
 __global__ void kernel_variance_pool(float* oneOutgoingGradient, float* incomingGradient, int pts, int idim, float* mea, float* Z) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	int i = idx / pts;
-	int j = idx % pts;
-	float del_yj_by_xij = (2 * ((Z[idim * j + i]) - mea[i])) / pts;
-	oneOutgoingGradient[idim * j + i] += incomingGradient[i] * del_yj_by_xij;
+	int i = idx / idim; // row
+	int j = idx % idim; // column
+	if (i < pts && j < idim) {
+		float del_yj_by_xij = (2 * ((Z[idim * i + j]) - mea[j])) / pts;
+		oneOutgoingGradient[idim * i + j] += incomingGradient[j] * del_yj_by_xij;
+	}
 }
 
 namespace PointCloudClassification {
@@ -45,22 +49,27 @@ namespace PointCloudClassification {
 			// Max Pooling and Save Argmax for back prop
 			m->maxAcrossDim1(inputArg[b], numPoints, inputDim, this->argMax[b], this->output[b]);
 		}
+
 		for (int b = 0; b < inputArg.size(); b++) {
 			// Calculate mean and Save it for back prop
 			m->meanAcrossDim1(inputArg[b], numPoints, inputDim, this->mean[b], streams[b%MAX_STREAMS]);
 		}
+
 		for (int i = 0; i < num_streams; ++i)
 		{
 			cudaStreamSynchronize(streams[i]);
 		}
+
 		for (int b = 0; b < inputArg.size(); b++) {
 			// Variance Pooling
 			m->varianceAcrossDim1(inputArg[b], numPoints, inputDim, this->output[b] + inputDim, this->mean[b], streams[b%MAX_STREAMS]);
 		}
+
 		for (int i = 0; i < num_streams; ++i)
 		{
 			cudaStreamSynchronize(streams[i]);
 		}
+
 		return this->output;
 	}
 
