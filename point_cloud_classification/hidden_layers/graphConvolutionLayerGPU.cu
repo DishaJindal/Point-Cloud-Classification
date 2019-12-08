@@ -26,13 +26,11 @@ namespace PointCloudClassification {
 	void GraphConvolutionLayerGPU::get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float*Tk, float mul) {
 		MatrixGPU* m = new MatrixGPU();
 
-		//float* Tk;
 		if (mul) {
 			float* t;
 			cudaMalloc((void**)&t, numPoints * inputDim * sizeof(float));
 			m->multiply(L, Tk1, numPoints, numPoints, inputDim, t);
 
-			//cudaMalloc((void**)&Tk, numPoints * inputDim * sizeof(float));
 			m->linearCombination(t, Tk2, 2, -1, numPoints, inputDim, Tk);
 			cudaFree(t);
 		}
@@ -41,7 +39,6 @@ namespace PointCloudClassification {
 			cudaMalloc((void**)&t, numPoints * numPoints * sizeof(float));
 			m->multiply(L, Tk1, numPoints, numPoints, numPoints, t);
 
-			//cudaMalloc((void**)&Tk, numPoints * numPoints * sizeof(float));
 			m->linearCombination(t, Tk2, 2, -1, numPoints, numPoints, Tk);
 			cudaFree(t);
 		}
@@ -49,9 +46,6 @@ namespace PointCloudClassification {
 
 	std::vector<float*> GraphConvolutionLayerGPU::forward(std::vector<float*> inputArg, bool test) {
 		MatrixGPU* m = new MatrixGPU();
-		//float* Tk;
-		
-
 		this->X = std::vector < float* >(inputArg.begin(), inputArg.begin() + batchDim);
 		this->L = std::vector < float* >(inputArg.begin() + batchDim, inputArg.end());
 
@@ -84,10 +78,8 @@ namespace PointCloudClassification {
 					cudaFree(temp_out);
 				}
 			}
-			//
 			m->linearCombination(output[i], output[i], (1.0f / numFilters), 0, numPoints, outputDim, output[i]);
 		}
-		//cudaFree(Tk);
 		return output;
 	}
 
@@ -95,11 +87,7 @@ namespace PointCloudClassification {
 		std::vector<float*> outgoingGradient;
 		MatrixGPU* m = new MatrixGPU();
 
-		//checkCUDAError("cudaMalloc((void**)&Tk_minus_2");
 		m->getIdentityMatrix(numPoints, Tk_minus_2_back);
-
-		//float* Tk;
-		
 
 		int number_of_samples = incomingGradient.size();
 		for (int i = 0; i < number_of_samples; i++) {
@@ -108,9 +96,6 @@ namespace PointCloudClassification {
 			float* current_gradient = incomingGradient[i];
 
 			Tk_minus_1_back = current_L;
-
-			//float* current_outgoing_gradient;
-			//cudaMalloc((void**)&current_outgoing_gradient, numPoints * inputDim * sizeof(float));
 
 			for (int k = 0; k < numFilters; k++) {
 				if (k == 0) {
@@ -145,14 +130,9 @@ namespace PointCloudClassification {
 					m->add(outgoing_gradient[i], temp, numPoints, inputDim, outgoing_gradient[i]);
 				}
 			}
-			//
 			m->linearCombination(outgoing_gradient[i], outgoing_gradient[i], (1.0f / numFilters), 0, numPoints, inputDim, outgoing_gradient[i]);
-			//cudaFree(current_outgoing_gradient);
-			//outgoingGradient.push_back(current_outgoing_gradient);
 		}
-
 		
-		//cudaFree(Tk);
 		return outgoing_gradient;
 	}
 };

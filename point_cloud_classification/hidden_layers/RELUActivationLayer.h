@@ -61,8 +61,18 @@ namespace PointCloudClassification {
 
 	class RELUActivationLayerGPU : public RELUActivationLayer {
 	public:
+		float* flattenedOutput;
+		float* flattenedInput;
+		std::vector<float*> outgoingGradient;
 		RELUActivationLayerGPU() {}
 		RELUActivationLayerGPU(int inputDim, int batchDim, bool lastLayer) : RELUActivationLayer(inputDim, inputDim, batchDim, lastLayer) {
+			cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
+			cudaMalloc((void**)&flattenedOutput, batchDim * outputDim * sizeof(float));
+			for (int i = 0; i < batchDim; i++) {
+				float* temp;
+				cudaMalloc((void**)&temp, inputDim * sizeof(float));
+				outgoingGradient.push_back(temp);
+			}
 		}
 		std::vector<float*> forward(std::vector<float*> input, bool test = false);
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);

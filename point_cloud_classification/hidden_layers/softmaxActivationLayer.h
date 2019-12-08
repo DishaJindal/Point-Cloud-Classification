@@ -71,12 +71,16 @@ namespace PointCloudClassification {
 		bool lastLayer;
 
 	public:
+		float* flattenedInput;
+		float* flattenedOutput;
 		softmaxActivationLayerGPU() {};
 		softmaxActivationLayerGPU(int inputDim, int batchDim, bool lastLayer) {
 			this->inputDim = inputDim;
 			this->outputDim = inputDim;
 			this->batchDim = batchDim;
 			this->lastLayer = lastLayer;
+			cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
+			cudaMalloc((void**)&flattenedOutput, batchDim * outputDim * sizeof(float));
 		}
 
 		int getInputDim() {

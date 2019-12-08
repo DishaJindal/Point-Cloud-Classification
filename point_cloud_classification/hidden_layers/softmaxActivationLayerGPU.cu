@@ -23,16 +23,12 @@
 namespace PointCloudClassification {
 
 	std::vector<float*> softmaxActivationLayerGPU::forward(std::vector<float*> inputArg, bool test) {
-		float* flattenedInput;
-		cudaMalloc((void**)&flattenedInput, batchDim * inputDim * sizeof(float));
 		int i = 0;
 		for (auto current : inputArg) {
 			cudaMemcpy(flattenedInput + (i * inputDim), current, inputDim * sizeof(float), cudaMemcpyDeviceToDevice);
 			i++;
 		}
-		float* flattenedOutput;
-		cudaMalloc((void**)&flattenedOutput, batchDim * outputDim * sizeof(float));
-
+		
 		float* temp;
 		cudaMalloc((void**)&temp, batchDim * outputDim * sizeof(float));
 

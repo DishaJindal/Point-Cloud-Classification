@@ -18,7 +18,7 @@ using namespace std::chrono;
 
 #define blockSize 128
 #define debug false
-#define memStats false
+#define memStats true
 #define time true
 
 namespace PointCloudClassification {
@@ -26,6 +26,11 @@ namespace PointCloudClassification {
 	NetworkGPU::NetworkGPU(int numClasses, int batchSize) {
 		this->numClasses = numClasses;
 		this->batchSize = batchSize;
+		for (int i = 0; i < batchSize; i++) {
+			float* vec;
+			cudaMalloc((void**)&vec, (Parameters::gcn1_out_features + Parameters::gcn2_out_features) * 2 * sizeof(float));
+			d3_cat.push_back(vec);
+		}
 	}
 
 	void NetworkGPU::addLayer(Layer* layer) {
@@ -36,8 +41,8 @@ namespace PointCloudClassification {
 		this->loss = loss;
 	}
 
-	void memPrint(const char* statement) {
-		if (memStats) {
+	void memPrint(const char* statement, bool memStat = memStats) {
+		if (memStat) {
 			size_t free_byte;
 			size_t total_byte;
 			if (cudaSuccess != cudaMemGetInfo(&free_byte, &total_byte))
@@ -188,22 +193,18 @@ namespace PointCloudClassification {
 			Utilities::printVectorOfFloatsGPU(output_gp2, 10);
 		}
 		// Concatenate
-		std::vector<float*> cat_vec;
 		for (int i = 0; i < Parameters::batch_size; i++) {
-			float* cat;
-			cudaMalloc((void**)&cat, (Parameters::gcn1_out_features + Parameters::gcn2_out_features) * 2 * sizeof(float));
-			cudaMemcpy(cat, output_gp1[i], (Parameters::gcn1_out_features) * 2 * sizeof(float), cudaMemcpyDeviceToDevice);
-			cudaMemcpy(cat + (Parameters::gcn1_out_features * 2), output_gp2[i], (Parameters::gcn2_out_features) * 2 * sizeof(float), cudaMemcpyDeviceToDevice);
-			cat_vec.push_back(cat);
+			cudaMemcpy(d3_cat[i], output_gp1[i], (Parameters::gcn1_out_features) * 2 * sizeof(float), cudaMemcpyDeviceToDevice);
+			cudaMemcpy(d3_cat[i] + (Parameters::gcn1_out_features * 2), output_gp2[i], (Parameters::gcn2_out_features) * 2 * sizeof(float), cudaMemcpyDeviceToDevice);
 		}
 
 		if (debug) {
 			std::cout << "Cat " << std::endl;
-			Utilities::printVectorOfFloatsGPU(cat_vec, 10);
+			Utilities::printVectorOfFloatsGPU(d3_cat, 10);
 		}
 
 		start = high_resolution_clock::now();
-		output_d3 = dropout_layer3.forward(cat_vec, false);
+		output_d3 = dropout_layer3.forward(d3_cat, false);
 		stop = high_resolution_clock::now();
 		duration = duration_cast<microseconds>(stop - start);
 		if (time) {
@@ -617,7 +618,10 @@ namespace PointCloudClassification {
 		for (int ep = 0; ep < Parameters::num_epochs; ep++) {
 			std::cout << "****************************Epoch " << ep << "***************************" << std::endl;
 			epochLoss = 0;
-			memPrint("Memory Stats");
+
+			// Epoch Stats
+			auto ep_start = high_resolution_clock::now();
+			memPrint("Epoch Memory Stats", true);
 
 			// Loop batch by batch
 			for (int b = 0; b < num_batches; b++) {
@@ -697,7 +701,9 @@ namespace PointCloudClassification {
 			}
 			epochLoss /= num_batches;
 			perEpochLoss[ep] = epochLoss;
-			std::cout << "Epoch: " << ep << " Loss: " << epochLoss << "\n";
+			auto ep_stop = high_resolution_clock::now();
+			auto duration = duration_cast<microseconds>(ep_stop - ep_start);
+			std::cout << "Epoch: " << ep << " Loss: " << epochLoss << " Time: " << duration.count() / 1000 << " ms" << std::endl;
 		}
 		std::cout << "Done with training, printing loss\n";
 		Utilities::printArray(perEpochLoss, Parameters::num_epochs);

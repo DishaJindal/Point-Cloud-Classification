@@ -168,8 +168,6 @@ namespace PointCloudClassification {
 				cudaMalloc((void**)&current_outgoing_gradient, numPoints * inputDim * sizeof(float));
 				outgoing_gradient.push_back(current_outgoing_gradient);
 			}
-
-
 		}
 
 		int getInputDim() {

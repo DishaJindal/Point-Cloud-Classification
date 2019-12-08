@@ -52,26 +52,6 @@ void MatrixGPU::multiply(float* A, float* B, int m, int n, int p, float* output)
 	kernMultiplyMatrices << <fullBlocksPerGrid, BLOCK_SIZE >> > (A, B, output, m, n, p);
 	return;
 */
-	//float *host_A;
-	//host_A = (float *)malloc(m * n * sizeof(float));
-	//cudaMemcpy(host_A, A, m * n * sizeof(float), cudaMemcpyDeviceToHost);
-	//MatrixCPU *mc = new MatrixCPU();
-	//mc->printMatrix(host_A, m, n);
-	//
-	//exit(0);
-
-
-
-
-
-
-
-
-
-
-
-
-
 	cublasHandle_t handle;
 
 	cublasSafeCall(cublasCreate(&handle));

@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 	//tests();
 
 	// Read data from file and store it as a vector of float pointers (length of vector -> number of samples | each sample -> 1024 x 3 floats)
-	int per_class = 32*4;
+	int per_class = 16;
 	std::vector<float*> x_train;
 	std::vector<float*> y_train;
 
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 		PointCloudClassification::CrossEntropyLossGPU celoss(Parameters::batch_size, Parameters::num_classes);
 		gcn.setLoss(&celoss);
 		std::cout << "Built Architecture!" << std::endl;
-		gcn.train(x_train, y_train, per_class * 10);
+		gcn.train(x_train, y_train, x_train.size());
 	}
 	else {
 		PointCloudClassification::NetworkCPU gcn(Parameters::num_classes, Parameters::batch_size);
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 		PointCloudClassification::CrossEntropyLossCPU celoss(Parameters::batch_size, Parameters::num_classes);
 		gcn.setLoss(&celoss);
 		std::cout << "Built Architecture!" << std::endl;
-		gcn.train(x_train, y_train, per_class * 10);
+		gcn.train(x_train, y_train, x_train.size());
 	}
 }
 

@@ -80,7 +80,7 @@ namespace PointCloudClassification {
 		PointCloudClassification::RELUActivationLayerGPU relu1;
 		PointCloudClassification::DropoutLayerGPU dropout_layer4;
 		PointCloudClassification::FullyConnectedLayerGPU fc_layer2;
-		std::vector<float *> output_gn1, output_d1, output_gp1, output_gcn2, output_d2, output_gp2, output_d3, output_fc1, output_r1, output_d4, output_fc2;
+		std::vector<float *> output_gn1, output_d1, output_gp1, output_gcn2, output_d2, output_gp2, output_d3, output_fc1, output_r1, output_d4, output_fc2, d3_cat;
 	public:
 		NetworkGPU(int numClasses, int batchSize);
 		void addLayer(Layer* layer);
