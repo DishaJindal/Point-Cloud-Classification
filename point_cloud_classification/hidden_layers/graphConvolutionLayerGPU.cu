@@ -12,6 +12,8 @@
 #include <string>
 #include "device_launch_parameters.h"
 #include <chrono>
+#include <fstream>
+using namespace std;
 
 using namespace std::chrono;
 
@@ -44,11 +46,24 @@ namespace PointCloudClassification {
 		}
 	}
 
+	void GraphConvolutionLayerGPU::saveModel(std::string file_name) {
+		// Save Weights
+		for (int i = 0; i < numFilters; i++) {
+			float* W_host = new float[inputDim * outputDim];
+			cudaMemcpy(W_host, theta[i], inputDim * outputDim * sizeof(float), cudaMemcpyDeviceToHost);
+			ofstream out(file_name + std::to_string(i) + "_W.txt");
+			for (int i = 0; i < inputDim * outputDim; ++i) {
+				out << W_host[i] << "\n";
+			}
+			out.close();
+		}
+		//Utilities::printArrayGPU(theta[0], 10);
+	}
+
 	std::vector<float*> GraphConvolutionLayerGPU::forward(std::vector<float*> inputArg, bool test) {
 		MatrixGPU* m = new MatrixGPU();
 		this->X = std::vector < float* >(inputArg.begin(), inputArg.begin() + batchDim);
 		this->L = std::vector < float* >(inputArg.begin() + batchDim, inputArg.end());
-
 
 		for (int i = 0; i < batchDim; i++) {
 			

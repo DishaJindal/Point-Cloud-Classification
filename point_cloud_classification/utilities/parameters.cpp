@@ -9,7 +9,7 @@ namespace PointCloudClassification {
 
 		// Network Parameters
 		 int batch_size = 32;
-		 int num_epochs = 1;//260
+		 int num_epochs = 10;//260
 		 float learning_rate = 0.01;
 
 		 float keep_prob = 1.0f;

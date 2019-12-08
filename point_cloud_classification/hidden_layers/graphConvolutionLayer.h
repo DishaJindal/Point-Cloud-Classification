@@ -62,7 +62,6 @@ namespace PointCloudClassification {
 		int getOutputDim() {
 			return outputDim;
 		}
-		
 		std::vector<float*> forward(std::vector<float*> input, bool test = false);
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
 		float* GraphConvolutionLayerCPU::get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float mul = false);
@@ -111,7 +110,7 @@ namespace PointCloudClassification {
 	public:
 		int batchDim;
 		GraphConvolutionLayerGPU() {};
-		GraphConvolutionLayerGPU(int numPoints, int inputDim, int outputDim, int batchDim, int numFilters, bool lastLayer) {
+		GraphConvolutionLayerGPU(int numPoints, int inputDim, int outputDim, int batchDim, int numFilters, bool lastLayer, std::string filename = "") {
 			this->numPoints = numPoints;
 			this->inputDim = inputDim;
 			this->outputDim = outputDim;
@@ -122,10 +121,15 @@ namespace PointCloudClassification {
 				float* temp;
 				cudaMalloc((void**)&temp, inputDim * outputDim * sizeof(float));
 				float* temp_cpu = (float*)malloc(inputDim * outputDim * sizeof(float));
-				Utilities::genArray(inputDim * outputDim, temp_cpu);
+				if (filename.empty())
+					Utilities::genArray(inputDim * outputDim, temp_cpu);
+				else
+					Utilities::loadWeights(filename + std::to_string(i) + "_W.txt", inputDim*outputDim, temp_cpu);
 				cudaMemcpy(temp, temp_cpu, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 				theta.push_back(temp);
 			}
+			//if(!filename.empty())
+			//	Utilities::printArrayGPU(theta[0], 10);
 			cudaMalloc((void**)&Tk, numPoints * inputDim * sizeof(float));
 
 			cudaMalloc((void**)&Tk_minus_2, numPoints * inputDim * sizeof(float));
@@ -178,7 +182,7 @@ namespace PointCloudClassification {
 		int getOutputDim() {
 			return outputDim;
 		}
-
+		void saveModel(std::string file_name);
 		std::vector<float*> forward(std::vector<float*> input, bool test = false);
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
 		void get_chebeshev_polynomial(float* Tk1, float* Tk2, float* L, float* Tk, float mul = false);

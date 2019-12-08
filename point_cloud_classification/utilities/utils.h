@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include <cmath>
+#include <fstream>
 
 #ifndef imin
 #define imin(a,b) (((a)<(b))?(a):(b))
@@ -30,6 +31,14 @@ namespace Utilities {
 				std::cout << a[i] << std::endl;
 				a[i] = imax(imin(a[i], 1.0f), - 1.0f);
 			}
+		}
+	}
+
+	inline void loadWeights(std::string filename, int n, float*a) {
+		std::ifstream in(filename);
+		for (int i = 0; i < n; i++) {
+			//in.getline(a[i]);
+			in >> a[i];
 		}
 	}
 

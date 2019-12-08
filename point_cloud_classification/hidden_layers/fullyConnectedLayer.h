@@ -110,7 +110,7 @@ namespace PointCloudClassification {
 	public:
 		int batchDim;
 		FullyConnectedLayerGPU() {};
-		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer) {
+		FullyConnectedLayerGPU(int inputDim, int outputDim, int batchDim, bool lastLayer, std::string filename = "") {
 			this->inputDim = inputDim;
 			this->outputDim = outputDim;
 			this->batchDim = batchDim;
@@ -118,11 +118,18 @@ namespace PointCloudClassification {
 
 			cudaMalloc((void **)&W, inputDim * outputDim * sizeof(float));
 			float *weightRand = new float[inputDim * outputDim];
-			Utilities::genArray(inputDim * outputDim, weightRand);
+			if (filename.empty())
+				Utilities::genArray(inputDim * outputDim, weightRand);
+			else
+				Utilities::loadWeights(filename + "_W.txt", inputDim*outputDim, weightRand);
+
 			cudaMemcpy(W, weightRand, inputDim * outputDim * sizeof(float), cudaMemcpyHostToDevice);
 			cudaMalloc((void **)&B, outputDim * sizeof(float));
 			float *biasRand = new float[outputDim];
-			Utilities::genArray(outputDim, biasRand);
+			if (filename.empty())
+				Utilities::genArray(outputDim, biasRand);
+			else
+				Utilities::loadWeights(filename + "_B.txt", outputDim, biasRand);
 			cudaMemcpy(B, biasRand, outputDim * sizeof(float), cudaMemcpyHostToDevice);
 			cudaMalloc((void**)&A, inputDim * batchDim * sizeof(float));
 			cudaMalloc((void**)&dW, inputDim * outputDim * sizeof(float));
@@ -132,6 +139,12 @@ namespace PointCloudClassification {
 			cudaMalloc((void**)&flattenedOutputForward, batchDim * outputDim * sizeof(float));
 			cudaMalloc((void**)&flattenedInputBackward, batchDim * outputDim * sizeof(float));
 			cudaMalloc((void**)&flattenedOutputBackward, batchDim * inputDim * sizeof(float));
+			//if (!filename.empty()) {
+			//	std::cout << "\n\Loaded FC\n\n";
+			//	Utilities::printArrayGPU(W, 10);
+			//	Utilities::printArrayGPU(B, 10);
+			//	std::cout << "\n\nLoaded FC\n\n";
+			//}
 		}
 
 		int getInputDim() {
@@ -141,6 +154,7 @@ namespace PointCloudClassification {
 		int getOutputDim() {
 			return outputDim;
 		}
+		void saveModel(std::string file_name);
 		std::vector<float*> forward(std::vector<float*> input, bool test = false);
 		std::vector<float*> backward(std::vector<float*> incomingGradient, float learningRate);
 	};

@@ -29,7 +29,7 @@
 using namespace std;
 using namespace PointCloudClassification;
 #define GPU true
-#define TEST true
+#define TEST false
 
 int main(int argc, char* argv[]) {
 
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "Loaded Data: " << x_train.size() << std::endl;
 
 	int index = 9;
-	visualize(x_train[index], 1024, distance(y_train[index], max_element(y_train[index], y_train[index] + 10)), -1);
+	//visualize(x_train[index], 1024, distance(y_train[index], max_element(y_train[index], y_train[index] + 10)), -1);
 
 
 
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 		gcn.train(x_train, y_train, x_train.size());
 	}
 
-	visualize(x_train[0], 1024, distance(y_train[0], max_element(y_train[0], y_train[0] + 10)), -1);
+	//visualize(x_train[0], 1024, distance(y_train[0], max_element(y_train[0], y_train[0] + 10)), -1);
 }
 
 

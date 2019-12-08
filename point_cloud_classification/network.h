@@ -93,7 +93,7 @@ namespace PointCloudClassification {
 		void backward(std::vector<float*> prediction, std::vector<float*> trueLabel, float learningRate);
 		void train(std::vector<float*> input, std::vector<float*> label, int n);
 		std::vector<float> test(std::vector<float*> test_batch, std::vector < float* > trueLabel);
-
+		void saveModel();
 		int getClassification(const std::vector<float*> prediction, const int classes, std::vector<float> classification, std::vector<float*> dev_label);
 		void freeForwardGarbage();
 	};

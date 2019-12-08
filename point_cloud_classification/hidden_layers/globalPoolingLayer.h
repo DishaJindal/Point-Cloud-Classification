@@ -99,7 +99,7 @@ namespace PointCloudClassification {
 		int num_streams;
 		cudaStream_t streams[MAX_STREAMS];
 		GlobalPoolingLayerGPU() {};
-		GlobalPoolingLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer) {
+		GlobalPoolingLayerGPU(int numPoints, int inputDim, int batchDim, bool lastLayer, std::string filename = "") {
 			this->numPoints = numPoints;
 			this->inputDim = inputDim;
 			this->batchDim = batchDim;

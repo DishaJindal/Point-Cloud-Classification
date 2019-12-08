@@ -18,9 +18,10 @@ using namespace std::chrono;
 #endif
 
 #define blockSize 128
-#define debug true
+#define debug false
 #define memStats false
 #define time false
+#define loadModel false
 
 namespace PointCloudClassification {
 
@@ -60,8 +61,14 @@ namespace PointCloudClassification {
 	void NetworkGPU::buildArchitecture()
 	{
 		// GCN Layer 1
-		PointCloudClassification::GraphConvolutionLayerGPU gcn_layer1(Parameters::num_points, Parameters::input_features, Parameters::gcn1_out_features, Parameters::batch_size, Parameters::chebyshev1_order, false);
-		this->gcn_layer1 = gcn_layer1;
+		if (loadModel) {
+			PointCloudClassification::GraphConvolutionLayerGPU gcn_layer1(Parameters::num_points, Parameters::input_features, Parameters::gcn1_out_features, Parameters::batch_size, Parameters::chebyshev1_order, false, "gcn_layer1"); 
+			this->gcn_layer1 = gcn_layer1;
+		}
+		else {
+			PointCloudClassification::GraphConvolutionLayerGPU gcn_layer1(Parameters::num_points, Parameters::input_features, Parameters::gcn1_out_features, Parameters::batch_size, Parameters::chebyshev1_order, false);
+			this->gcn_layer1 = gcn_layer1;
+		}
 
 		// Dropout 1
 		PointCloudClassification::DropoutLayerGPU dropout_layer1(Parameters::num_points, Parameters::gcn1_out_features, Parameters::batch_size, false, Parameters::keep_drop_prob1);
@@ -72,8 +79,14 @@ namespace PointCloudClassification {
 		this->gp_layer1 = gp_layer1;
 
 		// GCN Layer 2
-		PointCloudClassification::GraphConvolutionLayerGPU gcn_layer2(Parameters::num_points, Parameters::gcn1_out_features, Parameters::gcn2_out_features, Parameters::batch_size, Parameters::chebyshev2_order, false);
-		this->gcn_layer2 = gcn_layer2;
+		if (loadModel) {
+			PointCloudClassification::GraphConvolutionLayerGPU gcn_layer2(Parameters::num_points, Parameters::gcn1_out_features, Parameters::gcn2_out_features, Parameters::batch_size, Parameters::chebyshev2_order, false, "gcn_layer2");
+			this->gcn_layer2 = gcn_layer2;
+		}
+		else {
+			PointCloudClassification::GraphConvolutionLayerGPU gcn_layer2(Parameters::num_points, Parameters::gcn1_out_features, Parameters::gcn2_out_features, Parameters::batch_size, Parameters::chebyshev2_order, false);
+			this->gcn_layer2 = gcn_layer2;
+		}
 
 		// Dropout 2
 		PointCloudClassification::DropoutLayerGPU dropout_layer2(Parameters::num_points, Parameters::gcn2_out_features, Parameters::batch_size, false, Parameters::keep_drop_prob2);
@@ -89,9 +102,13 @@ namespace PointCloudClassification {
 		this->dropout_layer3 = dropout_layer3;
 
 		// Fully Connected Layer 1
-		PointCloudClassification::FullyConnectedLayerGPU fc_layer1(cat_features * 2, Parameters::fc1_out_features, Parameters::batch_size, false);
-		this->fc_layer1 = fc_layer1;
-
+		if (loadModel) {
+			PointCloudClassification::FullyConnectedLayerGPU fc_layer1(cat_features * 2, Parameters::fc1_out_features, Parameters::batch_size, false, "fc_layer1");
+			this->fc_layer1 = fc_layer1;
+		}else {
+			PointCloudClassification::FullyConnectedLayerGPU fc_layer1(cat_features * 2, Parameters::fc1_out_features, Parameters::batch_size, false);
+			this->fc_layer1 = fc_layer1;
+		}
 		// ReLU 1
 		PointCloudClassification::RELUActivationLayerGPU relu1(Parameters::fc1_out_features, Parameters::batch_size, false);
 		this->relu1 = relu1;
@@ -101,8 +118,14 @@ namespace PointCloudClassification {
 		this->dropout_layer4 = dropout_layer4;
 
 		// Fully Connected Layer 2
-		PointCloudClassification::FullyConnectedLayerGPU fc_layer2(Parameters::fc1_out_features, Parameters::num_classes, Parameters::batch_size, false);
-		this->fc_layer2 = fc_layer2;
+		if (loadModel) {
+			PointCloudClassification::FullyConnectedLayerGPU fc_layer2(Parameters::fc1_out_features, Parameters::num_classes, Parameters::batch_size, false, "fc_layer2");
+			this->fc_layer2 = fc_layer2;
+		}
+		else {
+			PointCloudClassification::FullyConnectedLayerGPU fc_layer2(Parameters::fc1_out_features, Parameters::num_classes, Parameters::batch_size, false);
+			this->fc_layer2 = fc_layer2;
+		}
 	}
 
 	std::vector<float*> NetworkGPU::forward(std::vector<float*> input, bool test) {
@@ -566,6 +589,12 @@ namespace PointCloudClassification {
 		output_fc2.clear();
 	}
 
+	void NetworkGPU::saveModel() {
+		gcn_layer1.saveModel("gcn_layer1");
+		gcn_layer2.saveModel("gcn_layer2");
+		fc_layer1.saveModel("fc_layer1");
+		fc_layer2.saveModel("fc_layer2");
+	}
 	void NetworkGPU::train(std::vector<float*> input, std::vector<float*> label, int n) {
 
 		float* perEpochLoss = (float*)malloc(Parameters::num_epochs * sizeof(float));
@@ -716,6 +745,11 @@ namespace PointCloudClassification {
 			std::cout << "Epoch: " << ep << " Loss: " << epochLoss << " Accuracy: "<< epochCorrect << " Total: "<<(num_batches*Parameters::batch_size) << " Time: " << duration.count() / 1000 << " ms" << std::endl;
 		}
 		std::cout << "Done with training, printing loss\n";
+
+		if (!loadModel) {
+			std::cout << "Saving the Model\n";
+			saveModel();
+		}
 		Utilities::printArray(perEpochLoss, Parameters::num_epochs);
 	}
 
