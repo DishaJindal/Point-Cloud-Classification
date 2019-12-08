@@ -11,7 +11,7 @@
 #include <filesystem>
 #include <iomanip>
 
-#define MAX_FRAME_COUNT 100
+#define MAX_FRAME_COUNT 1000
 
 
 namespace PointCloudClassification {

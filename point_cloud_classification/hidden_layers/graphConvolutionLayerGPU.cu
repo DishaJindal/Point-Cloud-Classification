@@ -114,11 +114,10 @@ namespace PointCloudClassification {
 				m->multiply(Tk_back, current_input, numPoints, numPoints, inputDim, TX);
 
 				m->transpose(TX, numPoints, inputDim, TXT);
-
+				
 				m->multiply(TXT, current_gradient, inputDim, numPoints, outputDim, dtheta);
 
 				m->linearCombination(theta[k], dtheta, (1.0f - Parameters::lamba_reg), (-1.0f *learningRate) / numFilters, inputDim, outputDim, theta[k]);
-
 				// Calculate outgoing gradient
 				m->multiply(Tk_back, current_gradient, numPoints, numPoints, outputDim, TG);
 				m->transpose(theta[k], inputDim, outputDim, thetaT);
