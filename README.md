@@ -139,36 +139,53 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 
 ![]()
 
+# Analysis/Optimizations
 
-<p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.PNG" width="600"/> </p>
+## Speed Optimizations
+Firt main component covered in the analysis if the performance optimizations. We played around with a number of different implementations and configurations to reach our final model. Following is the brief discription of each excercise:
+
+### Graph Construction
+
+<p align="center"><img src="./plots/PA_GraphConstruction.PNG" width="600"/> </p>  
+We can see that the time taken for graph construction increases as number of points sampled points for both GPUs and CPUs. But we see a huge difference between the time taken by the CPU and the GPU which is expected due to significantly more cores in the GPU.
+
+### Training - Forward Pass
+
+<p align="center"><img src="./plots/PA_Training_Forward_TimeBatch.PNG" width="600"/> </p>  
+As expected, we observe that time taken by the GPU is significantly lower than time taken by the CPU. The time taken with respect to batch-size doesn't increase much after 15 samples/batch as GPU is able to scale better as number of samples increases than the CPU as smaller batches are not fully utilizing the GPU's resources.
+
+
+### Training - Backward Pass
+
+<p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.PNG" width="600"/> </p> 
+Similar to the forward case, We see that bigger batches are better at optimally using the GPU's resources.
 
 ### Training - Layer wise Split
 
 <p align="center"><img src="./plots/PA_Training_Layerwise_Split.PNG" width="600"/> </p>
-
-## Performance Optimizations
-
-### Learning Curve
-
-<p align="center"><img src="./plots/PA_Loss.PNG" width="600"/> </p>
+In accordance with our expectation, implementing graph convolutions on GPU indeed is significantly faster than implementing on CPU due to the massive parallelization opportunities in the layer implementation. Since graph convolution uses matrix operations heavily, CUDA is able to accelerate it significantly. We observe similar stories with other layers too.
 
 ### Streams in Global Pooling Layer
 
-<p align="center"><img src="./plots/streams_snapshot.PNG" width="400"/><img src="./plots/PA_Streams.PNG" width="400"/> </p>
+<p align="center"><img src="./plots/streams_snapshot.PNG" width="400"/><img src="./plots/PA_Streams.PNG" width="400"/> </p>  
+We experimented with streams to improve speed by parallezing across batches, but it doesn't show significant improvements as we are already using very fast cuda operations and synchronising streams causes overheads to negate the benefits of streams for our use case.
 
 ### Block Size
 
-<p align="center"><img src="./plots/PA_BlockSize.PNG" width="600"/> </p>
+<p align="center"><img src="./plots/PA_BlockSize.PNG" width="600"/> </p>  
+We observe that block size indeed has an effect of improving time taken but the improvement is diminishing as we have more and more threads in a block.
 
 ## Hyper Parameter Tuning
 
 ### Number of Neighbors
 
-<p align="center"><img src="./plots/PA_Neighbors.PNG" width="600"/> </p>
+<p align="center"><img src="./plots/PA_Neighbors.PNG" width="600"/> </p>  
+Here we have noted the loss after a fixed number of epochs (large enough) for different number of neighbors considered. We see from our performance analysis, increasing number of neighbors increases the time for graph generation significantly. From this graph, we can see that having 40 neighbors gives us a good tradeoff between having a lower final loss and having fast enough graph generation.
 
 ### Learning Rate
 
-<p align="center"><img src="./plots/PA_LearningRate.PNG" width="600"/> </p>
+<p align="center"><img src="./plots/PA_LearningRate.PNG" width="600"/> </p>  
+In this chart we see that having too low (red) of a learning rate causes the network to learn very slowly whereas having too high (orange) of a learning rate makes the network saturate at a large loss value as the network cannot fine tune the parameters with enough granularity. So we decided to go with 0.01 learning rate as it provides us with fast enough convergence while still allowing enough granularity for the network to learn optimally.
 
 # Predictions from the network
 
