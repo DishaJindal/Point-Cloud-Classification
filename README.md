@@ -60,31 +60,77 @@ We have implemented the Graph Convolution Layer as defined in the ChebNet paper.
 
 The forward pass of this network is defined using the Chebyshev Polynomials of order K (number of filters) - which is a tunable hyperparameter. The value of K is equivalent to the number of hops every node in the graph looks at during the forward pass. The following equation shows the forward pass for this layer.
 
+![]()
+
 Theta is the learnable parameter in this layer which is updated in the backward pass.
+
+In the backward pass, we calculate the gradient of the loss with respect to the parameters (theta) to update them and with respect to the input to the layer which will be passed to the previous layer. The backward pass is implemented as per the following equations.
+
+![]()
 
 ### Global Pooling Layer
 
 ### Fully Connected Layer
 
+This is the basic layer used in the traditional neural network. It simply transforms its input using a weight matrix - which is the learnable parameter of this layer.
 
+The forward pass is implemented using the following equation.
+
+![]()
+
+In the backward pass, the gradient with respect to the weights is calculated as follows,
+
+![]()
+
+And the gradient with respect to the inout is cacluated as,
+
+![]()
 
 ## Activation functions
 
+These layer does not have any learnable parameters. This is used to introduce some non-linearity in the network since all other layers are essentially performing some linear operation on the input. This helps the network learn more complex functions.
+
 ### ReLU
+
+In this layer all negative inputs are made 0 and positive inputs are kept as is. The following equation is implemented in the forward pass.
+
+![]()
 
 ### Sigmoid
 
+All inputs are converted in the range between 0 and 1. This layers implements the follwing equation in the forward pass.
+
+![]()
+
 ### Softmax
+
+This layer implements the following equation in the forward pass.
+
+![]()
+
+The output of this layer is such that the sum of each row is 1 and each element is between 0 and 1 (representing probabilities).
 
 ## Regularization
 
+We do not want out model to memorize the inputs on which it is trained on. We want the model to generalize well on data it has not seen during trainineg. To avoid such memorization (also called as overfitting), we use different regularization techniques.
+
 ### Dropout
+
+In this technique, we randomly drop some weights in the layer after which it is applied based on some probability.
 
 ### L2 regularization
 
 ## Loss Functions
 
 ### Cross Entropy Loss
+
+Cross entropy loss is used for multi class classification tasks. The loss is calculated as follows,
+
+![]()
+
+The gradient of this loss with respect to the inputs (along with softmax) is given by the following equation,
+
+![]()
 
 # Analysis
 ## Speed Optimizations
