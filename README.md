@@ -138,13 +138,6 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 
 ![]()
 
-
-<p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.PNG" width="600"/> </p>
-
-### Training - Layer wise Split
-
-<p align="center"><img src="./plots/PA_Training_Layerwise_Split.PNG" width="600"/> </p>
-
 # Analysis/Optimizations
 
 ## Speed Optimizations
