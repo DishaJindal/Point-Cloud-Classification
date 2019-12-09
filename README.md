@@ -2,9 +2,6 @@
 **Team**: [Saket Karve](https://www.linkedin.com/in/saket-karve-43930511b/), [Disha Jindal](https://www.linkedin.com/in/disha-jindal/), [Kushagra Goel](https://www.linkedin.com/in/kushagragoel/)
 
 [Proposal](./milestones/Proposal.pdf)
-[Data](https://drive.google.com/file/d/1c2gZ2URDaMdimGsyt1sK17F6H6byQCMq/view?usp=sharing)
-
-![](./img/Chair.gif)
 
 # Table of Contents
 
@@ -89,11 +86,33 @@ Theta is the learnable parameter in this layer which is updated in the backward 
 
 ### Cross Entropy Loss
 
-# Performance Analysis
+# Analysis
+## Speed Optimizations
+### Graph Construction
 
-![](./img/fwd.png)
+<p align="center"><img src="./plots/PA_GraphConstruction.PNG" width="600"/> </p>
 
-![](./img/layer_wise.png)
+### Training - Forward Pass
+
+<p align="center"><img src="./plots/PA_Training_Forward_TimeBatch.PNG" width="600"/> </p>
+
+### Training - Backward Pass
+
+<p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.PNG" width="600"/> </p>
+
+### Training - Layer wise Split
+
+<p align="center"><img src="./plots/PA_Training_Layerwise_Split.PNG" width="600"/> </p>
+
+## Performance Optimizations
+
+## Learning Curve
+
+<p align="center"><img src="./plots/PA_Loss.PNG" width="600"/> </p>
+
+## Streams in Global Pooling Layer
+
+<p align="center"><img src="./plots/streams_snapshot.PNG" width="400"/><img src="./plots/PA_Streams.PNG" width="400"/> </p>
 
 # Predictions from the network
 
