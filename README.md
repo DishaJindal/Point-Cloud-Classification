@@ -1,12 +1,17 @@
 # Point Cloud Classification using Graph Convolutional Networks
 **Team**: [Saket Karve](https://www.linkedin.com/in/saket-karve-43930511b/), [Disha Jindal](https://www.linkedin.com/in/disha-jindal/), [Kushagra Goel](https://www.linkedin.com/in/kushagragoel/)
 
-[Proposal](./milestones/Proposal.pdf)
 
+# Overview
+
+In this project we have implemented 3D point cloud classification using Graph Convolutional Neural Networks on CUDA. Most of the 3D Point cloud data is obtained from LiDAR sensors especially in scenarios when the lighting is limited. In such settings, it is preferred to use point cloud data. Classifying such point cloud data is an important task for various applications such as detecting obstacles for drones. Rather than binning point clouds into voxels, graph-based approaches fit a graph with one vertex for each point and edges between nearby points, and then operate on the graph.
+
+GCNs are very effective because they efficiently exploit the local structure in point clouds. The overall architecture involves nearest neighbor search to construct the graph from the point clouds.  Input to the network is a graph which propagates through the network preserving the graph structure across layers. The architecture we have implemented uses graph convolution layers  Graph neural networks are an ongoing topic of research and have applications in various fields. 
+
+In this project, we have implemented a full end to end graph convolution network on GPU using CUDA and CPU as a benchmark for performance analysis. We also implemented an optimized version of various kernels performing reductions and matrix operations.
 
 # Table of Contents
 
-- [Overview](#Overview)
 - [Data loading and Graph Generation](#Data)
 - [Network Architecture](#Network)
   - [Layers](#Layers)
@@ -15,7 +20,6 @@
     - [Fully Connected Layer](#Fully)
    - [Activation functions](#Activation)
      - [ReLU](#ReLU)
-     - [Sigmoid](#Sigmoid)
      - [Softmax](#Softmax)
     - [Regularization](#Regularization)
       - [Dropout](#Dropout)
@@ -28,19 +32,6 @@
 - [Code Walkthrough](#Code)
 - [References](#References)
      
-
-
-<a name = "Overview"/>  
-
-
-# Overview
-
-In this project we have implemented 3D point cloud classification using Graph Convolutional Neural Networks on CUDA. Most of the 3D Point cloud data is obtained from LiDAR sensors especially in scenarios when the lighting is limited. In such settings, it is preferred to use point cloud data. Classifying such point cloud data is an important task for various applications such as detecting obstacles for drones. Rather than binning point clouds into voxels, graph-based approaches fit a graph with one vertex for each point and edges between nearby points, and then operate on the graph.
-
-GCNs are very effective because they efficiently exploit the local structure in point clouds. The overall architecture involves nearest neighbor search to construct the graph from the point clouds.  Input to the network is a graph which propagates through the network preserving the graph structure across layers. The architecture we have implemented uses graph convolution layers  Graph neural networks are an ongoing topic of research and have applications in various fields. 
-
-In this project, we have implemented a full end to end graph convolution network on GPU using CUDA and CPU as a benchmark for performance analysis. We also implemented an optimized version of various kernels performing reductions and matrix operations.
-
 # Features Implemented
 
 - [x] Designed a framework for implementing any generic neural network architecture
@@ -272,17 +263,22 @@ Table   |   <img src="./plots/table.PNG" width="300"/>
 Bed | <img src="./plots/bed2.PNG" width="300"/> 
 Dresser | <img src="./plots/dresser.PNG" width="300"/> 
 
+<a name = "Point"/>    
+
 # Point Wise Classification
 
 To understand exactly how the network is learning the classes on the point clouds, we tried visualizing the point wise classification on each point cloud. We passed the point cloud through the network but now, instead of classifying the entire point cloud in a class, we tried to get the classification for each point. The way the graph convolution layers works (gathering some information in a smart manner from its neighbors), the classification of each point in thensame neighborhood is expected to predict the same class preferably the true class of the entire point cloud.
 
 Some of these visualizations can be seen in the figures below. Each class is represented using a different color. So, if points have the same color, they are predicted in the same class.
 
-![]()
+<p align=center><img src="./img/legend_h.PNG"/></p>
 
-As we can see, 
-
-<a name = "Code"/>    
+Point Cloud        |  Point Cloud           |  Point Cloud 
+:-------------------------:|:-------------------------:|:-------------------------:
+ <img src="./img/point1.png" width="250"/>   |   <img src="./img/point2.png" width="250"/> |   <img src="./img/point3.png" width="250"/> 
+ <img src="./img/point4.png" width="250"/>   |   <img src="./img/point5.png" width="250"/> |   <img src="./img/point6.png" width="250"/> 
+ <img src="./img/point7.png" width="250"/>   |   <img src="./img/point8.png" width="250"/> |   <img src="./img/point9.png" width="250"/>   
+<a name = "Code"/>
 
 # Code Walkthrough
 
