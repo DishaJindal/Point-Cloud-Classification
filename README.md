@@ -73,6 +73,8 @@ The above figure gives a higher level idea of the way the data will flow through
 
 
 <a name = "Graph"/>    
+
+
 ### Graph Convolution Layer  
 
 We have implemented the Graph Convolution Layer as defined in the ChebNet paper. This layer takes two inputs - the actual input (X) which is some N x m matrix. In our case, N is the number of points (1024 after farthest sampling) and m is the x, y and z coordinates. So, m = 3. This layer also takes the Laplacian matrix of the graph which is constructed using the Adjecencey matrix of the graph as described above.
