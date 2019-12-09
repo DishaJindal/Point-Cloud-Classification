@@ -152,13 +152,25 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 
 ## Performance Optimizations
 
-## Learning Curve
+### Learning Curve
 
 <p align="center"><img src="./plots/PA_Loss.PNG" width="600"/> </p>
 
-## Streams in Global Pooling Layer
+### Streams in Global Pooling Layer
 
 <p align="center"><img src="./plots/streams_snapshot.PNG" width="400"/><img src="./plots/PA_Streams.PNG" width="400"/> </p>
+
+### Block Size
+
+## Hyper Parameter Tuning
+
+### Number of Neighbors
+
+<p align="center"><img src="./plots/PA_Neighbors.PNG" width="600"/> </p>
+
+### Learning Rate
+
+<p align="center"><img src="./plots/PA_LearningRate.PNG" width="600"/> </p>
 
 # Predictions from the network
 
