@@ -10,6 +10,8 @@ GCNs are very effective because they efficiently exploit the local structure in 
 
 In this project, we have implemented a full end to end graph convolution network on GPU using CUDA and CPU as a benchmark for performance analysis. We also implemented an optimized version of various kernels performing reductions and matrix operations.
 
+<p align="center"><img src="./img/Combined (1).gif" width="500"/> </p>
+
 # Table of Contents
 
 - [Data loading and Graph Generation](#Data)
@@ -76,15 +78,15 @@ We have implemented the Graph Convolution Layer as defined in the ChebNet paper.
 
 The forward pass of this network is defined using the Chebyshev Polynomials of order K (number of filters) - which is a tunable hyperparameter. The value of K is equivalent to the number of hops every node in the graph looks at during the forward pass. The following equation shows the forward pass for this layer.
 
-<p align="center"><img src="./img/gcn_fwd.PNG" width="300"/> </p>
+<p align="center"><img src="./img/gcn_fwd.PNG" width="220"/> </p>
 
 Theta is the learnable parameter in this layer which is updated in the backward pass.
 
 In the backward pass, we calculate the gradient of the loss with respect to the parameters (theta) to update them and with respect to the input to the layer which will be passed to the previous layer. The backward pass is implemented as per the following equations.
 
-<p align="center"><img src="./img/gcn_back1.PNG" width="300"/> </p>
+<p align="center"><img src="./img/gcn_back1.PNG" width="200"/> </p>
 
-<p align="center"><img src="./img/gcn_back2.PNG" width="300"/> </p>
+<p align="center"><img src="./img/gcn_back2.PNG" width="200"/> </p>
 
 
 
@@ -97,10 +99,7 @@ This layer takes input of the form N x m (like the above layer) and performs ess
 
 The following diagrams explain the max-pooling and variance pooling operations more intuitively.
 
-<p align="center"><img src="./img/max_pool.PNG" width="300"/> </p>
-
-<p align="center"><img src="./img/variance_pool.PNG" width="300"/> </p>
-
+<p align="center"><img src="./img/max_pool.PNG" width="300"/>                  <img src="./img/variance_pool.PNG" width="300"/> </p>
 
 <a name = "Fully"/>    
 
@@ -115,12 +114,11 @@ The forward pass is implemented using the following equation.
 
 In the backward pass, the gradient with respect to the weights is calculated as follows,
 
-<p align="center"><img src="./img/fc_back1.PNG" width="150"/> </p>
+<p align="center"><img src="./img/fc_back1.PNG" width="100"/> </p>
 
 And the gradient with respect to the inout is cacluated as,
 
-<p align="center"><img src="./img/fc_back2.PNG" width="150"/> </p>
-
+<p align="center"><img src="./img/fc_back2.PNG" width="100"/> </p>
 
 
 <a name = "Activation"/> 
@@ -137,7 +135,7 @@ These layer does not have any learnable parameters. This is used to introduce so
 
 In this layer all negative inputs are made 0 and positive inputs are kept as is. The following equation is implemented in the forward pass.
 
-<p align="center"><img src="./img/relu_fwd.PNG" width="200"/> </p>
+<p align="center"><img src="./img/relu_fwd.PNG" width="150"/> </p>
 
 
 <a name = "Softmax"/>  
@@ -147,7 +145,7 @@ In this layer all negative inputs are made 0 and positive inputs are kept as is.
 
 This layer implements the following equation in the forward pass.
 
-<p align="center"><img src="./img/softmax.PNG" width="200"/> </p>
+<p align="center"><img src="./img/softmax.PNG" width="150"/> </p>
 
 The output of this layer is such that the sum of each row is 1 and each element is between 0 and 1 (representing probabilities).
 
@@ -188,11 +186,11 @@ Here, we add some penalty to the optimization objective so the weights do not ex
 
 Cross entropy loss is used for multi class classification tasks. The loss is calculated as follows,
 
-<p align="center"><img src="./img/cross_entropy_fwd.PNG" width="200"/> </p>
+<p align="center"><img src="./img/cross_entropy_fwd.PNG" width="150"/> </p>
 
 The gradient of this loss with respect to the inputs (along with softmax) is given by the following equation,
 
-<p align="center"><img src="./img/cross_entropy_back.PNG" width="200"/> </p>
+<p align="center"><img src="./img/cross_entropy_back.PNG" width="150"/> </p>
 
 <a name = "Performance"/>    
 
@@ -273,7 +271,7 @@ Some of these visualizations can be seen in the figures below. Each class is rep
 
 <p align=center><img src="./img/legend_h.PNG"/></p>
 
-Point Cloud        |  Point Cloud           |  Point Cloud 
+3D Point Wise Classification        |  3D Point Wise Classification            |  3D Point Wise Classification   
 :-------------------------:|:-------------------------:|:-------------------------:
  <img src="./img/point1.png" width="250"/>   |   <img src="./img/point2.png" width="250"/> |   <img src="./img/point3.png" width="250"/> 
  <img src="./img/point4.png" width="250"/>   |   <img src="./img/point5.png" width="250"/> |   <img src="./img/point6.png" width="250"/> 
