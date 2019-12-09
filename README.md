@@ -261,16 +261,16 @@ In this chart we see that having too low (red) of a learning rate causes the net
 
 
 # Predictions from the network
+Our model is trained on ModelNet10 dataset. It has 10 classes: Bathtub, Bed, Chair, Desk, Dresser, Monitor, Night Stand, Sofa, Table and Toilet. Following are some the example predictions from our model.
 
-<p align="center"><img src="./img/table.jpg" width="500"/> </p>
-
-The above input was predicted as a 'Table' by our network.
-
-<p align="center"><img src="./img/toilet.jpeg" width="500"/> </p>
-
-The above input was predicted as a 'Toilet' by our network.
-
-<a name = "Point"/>   
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Label &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Visualization &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+:------------------------------:|:---------------------------------:
+Toilet  |   <img src="./plots/toilet.PNG" width="300"/> 
+Chair |   <img src="./plots/chair.PNG" width="300"/> 
+Bathtub   |   <img src="./plots/bathtub.PNG" width="300"/>
+Table   |   <img src="./plots/table.PNG" width="300"/> 
+Bed | <img src="./plots/bed2.PNG" width="300"/> 
+Dresser | <img src="./plots/dresser.PNG" width="300"/> 
 
 # Point Wise Classification
 
