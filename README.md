@@ -142,7 +142,7 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 # Analysis/Optimizations
 
 ## Speed Optimizations
-Firt main component covered in the analysis if the performance optimizations. We played around with a number of different implementations and configurations to reach our final model. Following is the brief discription of each excercise:
+First main component covered in the analysis is the performance analysis and optimizations. We played around with a number of different implementations and configurations to reach our final model. Following is the brief discription of each experiment:
 
 ### Graph Construction
 
