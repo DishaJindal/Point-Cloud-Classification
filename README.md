@@ -138,17 +138,6 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 
 ![]()
 
-# Analysis
-## Speed Optimizations
-### Graph Construction
-
-<p align="center"><img src="./plots/PA_GraphConstruction.PNG" width="600"/> </p>
-
-### Training - Forward Pass
-
-<p align="center"><img src="./plots/PA_Training_Forward_TimeBatch.PNG" width="600"/> </p>
-
-### Training - Backward Pass
 
 <p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.PNG" width="600"/> </p>
 
@@ -167,6 +156,8 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 <p align="center"><img src="./plots/streams_snapshot.PNG" width="400"/><img src="./plots/PA_Streams.PNG" width="400"/> </p>
 
 ### Block Size
+
+<p align="center"><img src="./plots/PA_BlockSize.PNG" width="600"/> </p>
 
 ## Hyper Parameter Tuning
 
