@@ -3,30 +3,35 @@
 
 [Proposal](./milestones/Proposal.pdf)
 
+
 # Table of Contents
 
-- Overview
-- Data loading and Graph Generation
-- Network Architecture
-  - Layers
-    - Graph Convolution Layer
-    - Global Pooling Layer
-    - Fully Connected Layer
-   - Activation functions
-     - ReLU
-     - Sigmoid
-     - Softmax
-    - Regularization
-      - Dropout
-      - L2 regularization
-    - Loss Functions
-      - Cross Entropy Loss
-- Performance Analysis
-- Predictions from the network
-- Point Wise Classification
-- Code Walkthrough
-- References
+- [Overview](#Overview)
+- [Data loading and Graph Generation](#Data)
+- [Network Architecture](#Network)
+  - [Layers](#Layers)
+    - [Graph Convolution Layer](#Graph)
+    - [Global Pooling Layer](#Global)
+    - [Fully Connected Layer](#Fully)
+   - [Activation functions](#Activation)
+     - [ReLU](#ReLU)
+     - [Sigmoid](#Sigmoid)
+     - [Softmax](#Softmax)
+    - [Regularization](#Regularization)
+      - [Dropout](#Dropout)
+      - [L2 regularization](#L2)
+    - [Loss Functions](#Loss)
+      - [Cross Entropy Loss](#Cross)
+- [Performance Analysis](#Performance)
+- [Predictions from the network](#Predictions)
+- [Point Wise Classification](#Point)
+- [Code Walkthrough](#Code)
+- [References](#References)
      
+
+
+<a name = "Overview"/>  
+
 
 # Overview
 
@@ -45,7 +50,17 @@ In this project, we have implemented a full end to end graph convolution network
 - [x] GPU implementation of all layers
 - [x] Optimization of various kernels using memory optimiztion and streams
 
+
+<a name = "Data"/>   
+
+
 # Data Loading and Graph Generation
+
+
+
+<a name = "Network"/>   
+
+
 
 # Network Architecture
 
@@ -53,7 +68,16 @@ In this project, we have implemented a full end to end graph convolution network
 
 The above figure gives a higher level idea of the way the data will flow through the network. First, the point cloud data is used to construct a K-nearest neighbor graph (based on the euclidean distance between points). This graph is then input to the network which has a Graph Convolution Layer as the first layer. The input to this layer is a N x 3 matrix which is tranformed to a N x 1000 matrix. This is followed by another graph convolution layer which also outputs an N x 1000 matrix. The outputs of both these layers is passed through a Global Pooling layer which helps the network learn a latent representation summarizing each point cloud as a single point. The outputs of both the global pooling layers is the concatenated into one long vector which is then passed to the fully connected layers whic in the end output a class prediction. Dropout is used after both the graph convolution layers and also after the fully connected layers to avoid overfitting (so that the network does not memorize the training set but generalizes well). ReLU activation is also used to bring in non-linearity after the fully connected layers. The output of the last layer is passed through Softmax activation to get probabilities of classifying in each class. As this is a multi-class classification task, we use cross entropy loss. 
 
+
+<a name = "Layers"/>      
+
+
 ## Layers
+
+
+
+<a name = "Graph"/>    
+
 
 ### Graph Convolution Layer
 
@@ -71,6 +95,11 @@ In the backward pass, we calculate the gradient of the loss with respect to the 
 
 <p align="center"><img src="./img/gcn_back2.PNG" width="300"/> </p>
 
+
+
+<a name = "Global"/>    
+
+
 ### Global Pooling Layer
 
 This layer takes input of the form N x m (like the above layer) and performs essentially two operations. One, it takes the maximum of each column (max pooling) which outputs N x 1 matrix. Similarly we also take the variance of each colums to output a N x 1 matrix (variance pooling). Then these two matrixes are concatenated across the second dimension to get an N x 2 matrix.
@@ -80,6 +109,10 @@ The following diagrams explain the max-pooling and variance pooling operations m
 <p align="center"><img src="./img/max_pool.PNG" width="300"/> </p>
 
 <p align="center"><img src="./img/variance_pool.PNG" width="300"/> </p>
+
+
+<a name = "Fully"/>    
+
 
 ### Fully Connected Layer
 
@@ -97,15 +130,27 @@ And the gradient with respect to the inout is cacluated as,
 
 <p align="center"><img src="./img/fc_back2.PNG" width="150"/> </p>
 
+
+
+<a name = "Activation"/> 
+
+
 ## Activation functions
 
 These layer does not have any learnable parameters. This is used to introduce some non-linearity in the network since all other layers are essentially performing some linear operation on the input. This helps the network learn more complex functions.
+
+<a name = "ReLU"/>   
+
 
 ### ReLU
 
 In this layer all negative inputs are made 0 and positive inputs are kept as is. The following equation is implemented in the forward pass.
 
 <p align="center"><img src="./img/relu_fwd.PNG" width="200"/> </p>
+
+
+<a name = "Softmax"/>  
+
 
 ### Softmax
 
@@ -115,19 +160,38 @@ This layer implements the following equation in the forward pass.
 
 The output of this layer is such that the sum of each row is 1 and each element is between 0 and 1 (representing probabilities).
 
+<a name = "Regularization"/>    
+
+
 ## Regularization
 
 We do not want out model to memorize the inputs on which it is trained on. We want the model to generalize well on data it has not seen during trainineg. To avoid such memorization (also called as overfitting), we use different regularization techniques.
+
+
+<a name = "Dropout"/>    
+
 
 ### Dropout
 
 In this technique, we randomly drop some weights in the layer after which it is applied based on some probability.
 
+
+
+<a name = "L2"/>  
+
+
+
 ### L2 regularization
 
 Here, we add some penalty to the optimization objective so the weights do not explode during training
 
+<a name = "Loss"/> 
+
+
 ## Loss Functions
+
+<a name = "Cross"/>    
+
 
 ### Cross Entropy Loss
 
@@ -138,6 +202,8 @@ Cross entropy loss is used for multi class classification tasks. The loss is cal
 The gradient of this loss with respect to the inputs (along with softmax) is given by the following equation,
 
 <p align="center"><img src="./img/cross_entropy_back.PNG" width="200"/> </p>
+
+<a name = "Performance"/>    
 
 # Analysis/Optimizations
 
@@ -175,6 +241,10 @@ We experimented with streams to improve speed by parallezing across batches, but
 <p align="center"><img src="./plots/PA_BlockSize.PNG" width="600"/> </p>  
 We observe that block size indeed has an effect of improving time taken but the improvement is diminishing as we have more and more threads in a block.
 
+
+<a name = "Hyper"/>  
+
+ 
 ## Hyper Parameter Tuning
 
 ### Number of Neighbors
@@ -185,7 +255,10 @@ Here we have noted the loss after a fixed number of epochs (large enough) for di
 ### Learning Rate
 
 <p align="center"><img src="./plots/PA_LearningRate.PNG" width="600"/> </p>  
-In this chart we see that having too low (red) of a learning rate causes the network to learn very slowly whereas having too high (orange) of a learning rate makes the network saturate at a large loss value as the network cannot fine tune the parameters with enough granularity. So we decided to go with 0.01 learning rate as it provides us with fast enough convergence while still allowing enough granularity for the network to learn optimally.
+In this chart we see that having too low (red) of a learning rate causes the network to learn very slowly whereas having too high (orange) of a learning rate makes the network saturate at a large loss value as the network cannot fine tune the parameters with enough granularity. So we decided to go with 0.01 learning rate as it provides us with fast enough convergence while still allowing enough granularity for the network to learn optimally.  
+
+<a name = "Predictions"/>    
+
 
 # Predictions from the network
 
@@ -197,6 +270,8 @@ The above input was predicted as a 'Table' by our network.
 
 The above input was predicted as a 'Toilet' by our network.
 
+<a name = "Point"/>   
+
 # Point Wise Classification
 
 To understand exactly how the network is learning the classes on the point clouds, we tried visualizing the point wise classification on each point cloud. We passed the point cloud through the network but now, instead of classifying the entire point cloud in a class, we tried to get the classification for each point. The way the graph convolution layers works (gathering some information in a smart manner from its neighbors), the classification of each point in thensame neighborhood is expected to predict the same class preferably the true class of the entire point cloud.
@@ -206,6 +281,8 @@ Some of these visualizations can be seen in the figures below. Each class is rep
 ![]()
 
 As we can see, 
+
+<a name = "Code"/>    
 
 # Code Walkthrough
 
@@ -218,6 +295,9 @@ As we can see,
 ```point_cloud_classification/graph``` : This folder contains the code for reading data and constructing the graph (and laplacian matrix).
 
 ```point_cloud_classification/tests``` : This folder contains all the unit tests we implemented for all the layers and matrix operations. 
+
+
+<a name = "References"/>    
 
 # References
 
