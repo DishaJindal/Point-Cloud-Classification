@@ -214,33 +214,5 @@ As we can see,
 
 [KroneckerIntro](http://www.mathcs.emory.edu/~nagy/courses/fall10/515/KroneckerIntro.pdf)
 
-# Tasks
 
-| Task                | &#x265a;Saket&#x265a;  | 	&#x265b; Disha 	&#x265b; | &#x2654; Kushagra &#x2654;            |
-| ---                 | ---    | ---        | ---                  |
-|  RELUActivationLayerGPU    |   |       |              |  
-|  crossEntropyLossGPU   |   |       |              |
-|  fullyConnectedLayerGPU   |   |       |              |
-|  globalPoolingGPU   |   |       |              |
-|  graphConvolutionLayerGPU   |   |       |              |
-|  sigmoidActivationLayerGPU   |   |       |              |
-|  softmaxActivationLayerGPU   |   |       |              |
-| Graph Convolution CPU Forward    | &#x2611;   |  |            |
-| Droput CPU Forward    | | &#x2611;     |           |
-| Dropout CPU Backward    |  | &#x2611;        |            |
-| Global Pool CPU Forward    |   | &#x2611;       |            |
-| Global Pool CPU Backward    |  | &#x2611;        |             |
-| Eigen Math Library    | &#x25CB;  |    |           |
-| Data Sampling    | |   | &#x2611;              |
-| Data Loading    | |   | &#x2611;              |
-| Label Loading    |  |    |  &#x2611;              |
-| Architecture     |  |  &#x25CB;  |                |
-| Train on CPU     |  |  &#x25CB;  |               |
-| GPU kernels for Utils   |   |                | &#x25CB; |
-| Layers on GPU   |    |                |    |
-
-
-
-|Markdown Icon Legend                 | &#x2611; Completed    | &#x2612; Not Doing      |&#x25CB; Currently Working on            |  
-| ---                 | ---    | ---        | ---                  |
 
