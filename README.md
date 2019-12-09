@@ -70,6 +70,12 @@ In the backward pass, we calculate the gradient of the loss with respect to the 
 
 ### Global Pooling Layer
 
+This layer takes input of the form N x m (like the above layer) and performs essentially two operations. One, it takes the maximum of each column (max pooling) which outputs N x 1 matrix. Similarly we also take the variance of each colums to output a N x 1 matrix (variance pooling). Then these two matrixes are concatenated across the second dimension to get an N x 2 matrix.
+
+The following diagrams explain the max-pooling and variance pooling operations more intuitively.
+
+![]()
+
 ### Fully Connected Layer
 
 This is the basic layer used in the traditional neural network. It simply transforms its input using a weight matrix - which is the learnable parameter of this layer.
