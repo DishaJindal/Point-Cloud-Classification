@@ -145,11 +145,26 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 
 <p align="center"><img src="./plots/PA_Training_Layerwise_Split.PNG" width="600"/> </p>
 
-## Performance Optimizations
+# Analysis/Optimizations
 
-### Learning Curve
+## Speed Optimizations
+Firt main component covered in the analysis if the performance optimizations. We played around with a number of different implementations and configurations to reach our final model. Following is the brief discription of each excercise:
 
-<p align="center"><img src="./plots/PA_Loss.PNG" width="600"/> </p>
+### Graph Construction
+
+<p align="center"><img src="./plots/PA_GraphConstruction.PNG" width="600"/> </p>
+
+### Training - Forward Pass
+
+<p align="center"><img src="./plots/PA_Training_Forward_TimeBatch.PNG" width="600"/> </p>
+
+### Training - Backward Pass
+
+<p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.PNG" width="600"/> </p>
+
+### Training - Layer wise Split
+
+<p align="center"><img src="./plots/PA_Training_Layerwise_Split.PNG" width="600"/> </p>
 
 ### Streams in Global Pooling Layer
 
@@ -159,7 +174,12 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 
 <p align="center"><img src="./plots/PA_BlockSize.PNG" width="600"/> </p>
 
-## Hyper Parameter Tuning
+## Model Convergence/Parameter Tuning
+This component captures the experiments around tuning the hyperparameters for model convergence and performance.
+
+### Learning Curve
+
+<p align="center"><img src="./plots/PA_Loss.PNG" width="600"/> </p>
 
 ### Number of Neighbors
 
