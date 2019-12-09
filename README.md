@@ -24,6 +24,7 @@
 - Performance Analysis
 - Predictions from the network
 - Point Wise Classification
+- Code Walkthrough
 - References
      
 
@@ -37,12 +38,12 @@ In this project, we have implemented a full end to end graph convolution network
 
 # Features Implemented
 
-- Designed a framework for implementing any generic neural network architecture
-- Farthest sampling of point clouds
-- Graph generation of data on CPU and GPU
-- CPU implementation of all layers
-- GPU implementation of all layers
-- Optimization of various kernels using memory optimiztion and streams
+- [x] Designed a framework for implementing any generic neural network architecture
+- [x] Farthest sampling of point clouds
+- [x] Graph generation of data on CPU and GPU
+- [x] CPU implementation of all layers
+- [x] GPU implementation of all layers
+- [x] Optimization of various kernels using memory optimiztion and streams
 
 # Data Loading and Graph Generation
 
@@ -138,26 +139,18 @@ The gradient of this loss with respect to the inputs (along with softmax) is giv
 
 ![]()
 
-# Analysis/Optimizations
-
-## Speed Optimizations
-Firt main component covered in the analysis if the performance optimizations. We played around with a number of different implementations and configurations to reach our final model. Following is the brief discription of each excercise:
-
-### Graph Construction
-
-<p align="center"><img src="./plots/PA_GraphConstruction.PNG" width="600"/> </p>
-
-### Training - Forward Pass
-
-<p align="center"><img src="./plots/PA_Training_Forward_TimeBatch.PNG" width="600"/> </p>
-
-### Training - Backward Pass
 
 <p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.PNG" width="600"/> </p>
 
 ### Training - Layer wise Split
 
 <p align="center"><img src="./plots/PA_Training_Layerwise_Split.PNG" width="600"/> </p>
+
+## Performance Optimizations
+
+### Learning Curve
+
+<p align="center"><img src="./plots/PA_Loss.PNG" width="600"/> </p>
 
 ### Streams in Global Pooling Layer
 
@@ -167,12 +160,7 @@ Firt main component covered in the analysis if the performance optimizations. We
 
 <p align="center"><img src="./plots/PA_BlockSize.PNG" width="600"/> </p>
 
-## Model Convergence/Parameter Tuning
-This component captures the experiments around tuning the hyperparameters for model convergence and performance.
-
-### Learning Curve
-
-<p align="center"><img src="./plots/PA_Loss.PNG" width="600"/> </p>
+## Hyper Parameter Tuning
 
 ### Number of Neighbors
 
@@ -201,6 +189,18 @@ Some of these visualizations can be seen in the figures below. Each class is rep
 ![]()
 
 As we can see, 
+
+# Code Walkthrough
+
+```main.cpp``` : This file contains the main script. The network architecture is built here and the training function is called if you want to train the model. You can set te flags defined on top of this file to run in different modes (like test mode)
+
+```point_cloud_classification/network.h``` : This file defines the network and related functions we have implemented. The train loop and inference functions are in this file.
+
+```point_cloud_classification/hidden_layers``` : This folder contains the implementation of all layers used in the network. The framewor is designed such that we can easily add a new layer by just creating a class and implementing the forward and backward methods.
+
+```point_cloud_classification/graph``` : This folder contains the code for reading data and constructing the graph (and laplacian matrix).
+
+```point_cloud_classification/tests``` : This folder contains all the unit tests we implemented for all the layers and matrix operations. 
 
 # References
 
