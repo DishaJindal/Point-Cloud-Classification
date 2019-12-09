@@ -146,23 +146,23 @@ First main component covered in the analysis is the performance analysis and opt
 
 ### Graph Construction
 
-<p align="center"><img src="./plots/PA_GraphConstruction.PNG" width="600"/> </p>  
+<p align="center"><img src="./plots/PA_GraphConstruction.jpg" width="600"/> </p>  
 We can see that the time taken for graph construction increases as number of points sampled points for both GPUs and CPUs. But we see a huge difference between the time taken by the CPU and the GPU which is expected due to significantly more cores in the GPU.
 
 ### Training - Forward Pass
 
-<p align="center"><img src="./plots/PA_Training_Forward_TimeBatch.PNG" width="600"/> </p>  
+<p align="center"><img src="./plots/PA_Training_Forward_TimeBatch.jpg" width="600"/> </p>  
 As expected, we observe that time taken by the GPU is significantly lower than time taken by the CPU. The time taken with respect to batch-size doesn't increase much after 15 samples/batch as GPU is able to scale better as number of samples increases than the CPU as smaller batches are not fully utilizing the GPU's resources.
 
 
 ### Training - Backward Pass
 
-<p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.PNG" width="600"/> </p> 
+<p align="center"><img src="./plots/PA_Training_Backward_TimeBatch.jpg" width="600"/> </p> 
 Similar to the forward case, We see that bigger batches are better at optimally using the GPU's resources.
 
 ### Training - Layer wise Split
 
-<p align="center"><img src="./plots/PA_Training_Layerwise_Split.PNG" width="600"/> </p>
+<p align="center"><img src="./plots/PA_Training_Layerwise_Split.jpg" width="600"/> </p>
 In accordance with our expectation, implementing graph convolutions on GPU indeed is significantly faster than implementing on CPU due to the massive parallelization opportunities in the layer implementation. Since graph convolution uses matrix operations heavily, CUDA is able to accelerate it significantly. We observe similar stories with other layers too.
 
 ### Streams in Global Pooling Layer
